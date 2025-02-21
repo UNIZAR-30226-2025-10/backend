@@ -93,6 +93,14 @@ class EstaEscuchando(Base):
     usuario: Mapped["Usuario"] = relationship("Usuario", back_populates="estaEscuchando")
     cancion: Mapped["Cancion"] = relationship("Cancion")
 
+# Tabla intermedia para "Like"
+like_table = Table(
+    "Like", Base.metadata,
+    Column("Usuario_correo", ForeignKey("Usuario.correo"), primary_key=True),
+    Column("Noizzy_Usuario_correo", ForeignKey("Noizzy.Usuario_correo"), primary_key=True),
+    Column("Noizzy_fechaHora", ForeignKey("Noizzy.fechaHora"), primary_key=True)
+)
+
 # Tabla intermedia para "EsParteDePlaylist"
 class EsParteDePlaylist(Base):
     __tablename__ = "EsParteDePlaylist"
@@ -104,12 +112,12 @@ class EsParteDePlaylist(Base):
     puesto: Mapped[int] = mapped_column(nullable=False)
 
 # Tabla intermedia para "Pertenece"
-class Pertenece(Base):
-    __tablename__ = "Pertenece"
-
-    Cancion_nombre: Mapped[str] = mapped_column(ForeignKey("Cancion.nombre"), primary_key=True)
-    Cancion_Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Cancion.usuario_correo"), primary_key=True)
-    Genero_nombre: Mapped[str] = mapped_column(ForeignKey("Cancion.nombre"), primary_key=True)
+pertenece_table = Table(
+    "Pertenece", Base.metadata,
+    Column("Cancion_nombre", ForeignKey("Cancion.nombre"), primary_key=True),
+    Column("Cancion_Usuario_correo", ForeignKey("Cancion.Usuario_correo"), primary_key=True),
+    Column("Genero_nombre", ForeignKey("Genero.nombre"), primary_key=True)
+)
 
 # Entidad ContraReset
 class ContraReset(Base):
@@ -209,8 +217,16 @@ class Usuario(Base):
         cascade="all, delete-orphan"
     )
     
-    # Relacion "Postea" con Usuario (1 a N)
-    noizzys: Mapped["Noizzy"] = relationship(back_populates="usuario")
+    # Relacion "Postea" con Noizzy (1 a N)
+    noizzys: Mapped["Noizzy"] = relationship("Postea", back_populates="usuario", cascade="all, delete-orphan")
+
+    # Relacion "Like" con Noizzy (N a M)
+    liked: Mapped[list["Noizzy"]] = relationship(
+        "Noizzy",
+        secondary=like_table,
+        back_populates="likes",
+        cascade="all, delete-orphan"
+    )
 
 class Pendiente(Usuario):
     __tablename__ = 'Pendiente'
@@ -337,6 +353,14 @@ class Noizzy(Base):
 
     # Relacion "Referencia" con Cancion (1 a N)
     cancion: Mapped["Noizzys"] = relationship(back_populates="noizzys")
+
+    # Relacion "Like" con Usuario (N a M)
+    likes: Mapped[list["Usuario"]] = relationship(
+        "Usuario",
+        secondary=like_table,
+        back_populates="liked",
+        cascade="all, delete-orphan"
+    )
 
 # Entidad Noizzito
 class Noizzito(Noizzy):
