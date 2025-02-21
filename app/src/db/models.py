@@ -2,9 +2,9 @@ from datetime import datetime
 from datetime import date
 from datetime import time
 from typing import List
-from sqlalchemy import Table, Column, ForeignKey, Integer, CheckConstraint, String
+from triggers import trg_estaInvitado, trg_eliminarInvitado, trg_noParticipante, trg_10Playlists, trg_50Canciones
+from sqlalchemy import Table, Column, ForeignKey, Integer, CheckConstraint, String, event
 from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase, validates
-from db import get_db
 
 class Base(DeclarativeBase):
     pass
@@ -14,7 +14,8 @@ sigue_table = Table(
     "Sigue", 
     Base.metadata,
     Column("Seguidor_correo", ForeignKey("Usuario.correo"), primary_key=True),
-    Column("Seguido_correo", ForeignKey("Usuario.correo"), primary_key=True)
+    Column("Seguido_correo", ForeignKey("Usuario.correo"), primary_key=True),
+    CheckConstraint("Seguidor_correo != Seguido_correo", name="chk_noAutoSeguimiento")
 )
 
 # Tabla intermedia para 'Participante'
@@ -22,16 +23,23 @@ participante_table = Table(
     "Participante", Base.metadata,
     Column("Usuario_correo", ForeignKey("Usuario.correo"), primary_key=True),
     Column("Playlist_nombre", ForeignKey("Playlist.nombre"), primary_key=True),
-    Column("Playlist_Usuario_correo", ForeignKey("Playlist.Usuario_correo"), primary_key=True)
+    Column("Playlist_Usuario_correo", ForeignKey("Playlist.Usuario_correo"), primary_key=True),
+    CheckConstraint("Usuario_correo != Playlist_Usuario_correo", name="chk_participanteNoCreador")
 )
+
+event.listen(participante_table, "after_create", trg_estaInvitado)
+event.listen(participante_table, "after_create", trg_eliminarInvitado)
 
 # Tabla intermedia para 'Invitado'
 invitado_table = Table(
     "Invitado", Base.metadata,
     Column("Usuario_correo", ForeignKey("Usuario.correo"), primary_key=True),
     Column("Playlist_nombre", ForeignKey("Playlist.nombre"), primary_key=True),
-    Column("Playlist_Usuario_correo", ForeignKey("Playlist.Usuario_correo"), primary_key=True)
+    Column("Playlist_Usuario_correo", ForeignKey("Playlist.Usuario_correo"), primary_key=True),
+    CheckConstraint("Usuario_correo != Playlist_Usuario_correo", name="chk_invitadoNoCreador")
 )
+
+event.listen(invitado_table, "after_create", trg_noParticipante)
 
 # Tabla intermedia para 'HistorialPlaylist'
 class HistorialPlaylist(Base):
@@ -46,6 +54,8 @@ class HistorialPlaylist(Base):
     usuario: Mapped["Usuario"] = relationship("Usuario", back_populates="historialPlaylist")
     playlist: Mapped["Playlist"] = relationship("Playlist", back_populates="historialPlaylist")
 
+event.listen(HistorialPlaylist, "after_create", trg_10Playlists)
+
 # Tabla intermedia para 'HistorialCancion'
 class HistorialCancion(Base):
     __tablename__ = "HistorialCancion"
@@ -56,21 +66,23 @@ class HistorialCancion(Base):
     fechaHora: Mapped[datetime] = mapped_column(nullable=False)
 
     usuario: Mapped["Usuario"] = relationship("Usuario", back_populates="historialCancion")
-    cancion: Mapped["Cancion"] = relationship("Cancion")
+    cancion: Mapped["Cancion"] = relationship("Cancion", back_populates="historialCancion")
+
+event.listen(HistorialPlaylist, "after_create", trg_50Canciones)
 
 # Tabla intermedia para "EstaEscuchando"
 class EstaEscuchando(Base):
     __tablename__ = "EstaEscuchando"
 
     Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Usuario.correo"), primary_key=True)
-    Cancion_nombre: Mapped[str] = mapped_column(ForeignKey("Cancion.nombre"), primary_key=True)
-    Cancion_Artista_Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Cancion.Artista_Usuario_correo"), primary_key=True)
+    Cancion_nombre: Mapped[str] = mapped_column(ForeignKey("Cancion.nombre"))
+    Cancion_Artista_Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Cancion.Artista_Usuario_correo"))
     minuto: Mapped[int] = mapped_column(nullable=False)
     segundo: Mapped[int] = mapped_column(nullable=False)
 
     # Restricción de minuto (0-60) a nivel de BD
     __table_args__ = (
-        CheckConstraint('minuto BETWEEN 0 AND 100', name='check_volumen'),
+        CheckConstraint('minuto BETWEEN 0 AND 60', name='check_volumen'),
     )
 
     # Restricción de minuto (0-60) a nivel de Python
@@ -82,7 +94,7 @@ class EstaEscuchando(Base):
     
     # Restricción de segundo (0-60) a nivel de BD
     __table_args__ = (
-        CheckConstraint('segundo BETWEEN 0 AND 100', name='check_volumen'),
+        CheckConstraint('segundo BETWEEN 0 AND 60', name='check_volumen'),
     )
 
     # Restricción de segundo (0-60) a nivel de Python
@@ -370,7 +382,7 @@ class GeneroMusical(Base):
 class Noizzy(Base):
     __tablename__ = "Noizzy"
     
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True) # Id necesario por conflictos herencia y clave foranea compuesta
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)  # Id necesario por conflictos herencia y clave foranea compuesta
     Usuario_correo: Mapped[str] = mapped_column(ForeignKey('Usuario.correo'), nullable=False)
     fechaHora: Mapped[datetime] = mapped_column(nullable=False)
     texto: Mapped[str] = mapped_column(nullable=False)
@@ -404,6 +416,7 @@ class Noizzito(Noizzy):
     __tablename__ = 'Noizzito'
 
     id: Mapped[int] = mapped_column(ForeignKey('Noizzy.id'), primary_key=True)
+    Noizzy_id: Mapped[int] = mapped_column(ForeignKey('Noizzy.id'), primary_key=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'noizzito',
