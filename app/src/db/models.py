@@ -3,7 +3,7 @@ from datetime import date
 from datetime import time
 from typing import List
 from sqlalchemy import Table, Column, ForeignKey, Integer, CheckConstraint, String
-from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase
+from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase, validates
 from db import get_db
 
 class Base(DeclarativeBase):
@@ -11,7 +11,8 @@ class Base(DeclarativeBase):
 
 # Tabla intermedia para 'Sigue'
 sigue_table = Table(
-    "Sigue", Base.metadata,
+    "Sigue", 
+    Base.metadata,
     Column("Seguidor_correo", ForeignKey("Usuario.correo"), primary_key=True),
     Column("Seguido_correo", ForeignKey("Usuario.correo"), primary_key=True)
 )
@@ -41,8 +42,9 @@ class HistorialPlaylist(Base):
     Playlist_Usuario_Correo: Mapped[str] = mapped_column(ForeignKey("Playlist.Usuario_correo"), primary_key=True)
     fechaHora: Mapped[datetime] = mapped_column(nullable=False)
 
+    # Relaciones con Usuario y Playlist
     usuario: Mapped["Usuario"] = relationship("Usuario", back_populates="historialPlaylist")
-    playlist: Mapped["Playlist"] = relationship("Playlist")
+    playlist: Mapped["Playlist"] = relationship("Playlist", back_populates="historialPlaylist")
 
 # Tabla intermedia para 'HistorialCancion'
 class HistorialCancion(Base):
@@ -50,7 +52,7 @@ class HistorialCancion(Base):
 
     Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Usuario.correo"), primary_key=True)
     Cancion_nombre: Mapped[str] = mapped_column(ForeignKey("Cancion.nombre"), primary_key=True)
-    Cancion_Usuario_Correo: Mapped[str] = mapped_column(ForeignKey("Cancion.Usuario_correo"), primary_key=True)
+    Cancion_Artista_Usuario_Correo: Mapped[str] = mapped_column(ForeignKey("Cancion.Artista_Usuario_correo"), primary_key=True)
     fechaHora: Mapped[datetime] = mapped_column(nullable=False)
 
     usuario: Mapped["Usuario"] = relationship("Usuario", back_populates="historialCancion")
@@ -62,7 +64,7 @@ class EstaEscuchando(Base):
 
     Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Usuario.correo"), primary_key=True)
     Cancion_nombre: Mapped[str] = mapped_column(ForeignKey("Cancion.nombre"), primary_key=True)
-    Cancion_Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Cancion.usuario_correo"), primary_key=True)
+    Cancion_Artista_Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Cancion.Artista_Usuario_correo"), primary_key=True)
     minuto: Mapped[int] = mapped_column(nullable=False)
     segundo: Mapped[int] = mapped_column(nullable=False)
 
@@ -106,17 +108,17 @@ class EsParteDePlaylist(Base):
     __tablename__ = "EsParteDePlaylist"
 
     Cancion_nombre: Mapped[str] = mapped_column(ForeignKey("Cancion.nombre"), primary_key=True)
-    Cancion_Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Cancion.usuario_correo"), primary_key=True)
-    Album_nombre: Mapped[str] = mapped_column(ForeignKey("Cancion.nombre"), primary_key=True)
-    Album_Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Cancion.usuario_correo"), primary_key=True)
+    Cancion_Artista_Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Cancion.Artista_Usuario_correo"), primary_key=True)
+    Playlist_nombre: Mapped[str] = mapped_column(ForeignKey("Playlist.nombre"), primary_key=True)
+    Playlist_Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Playlist.Usuario_correo"), primary_key=True)
     puesto: Mapped[int] = mapped_column(nullable=False)
 
 # Tabla intermedia para "Pertenece"
 pertenece_table = Table(
     "Pertenece", Base.metadata,
     Column("Cancion_nombre", ForeignKey("Cancion.nombre"), primary_key=True),
-    Column("Cancion_Usuario_correo", ForeignKey("Cancion.Usuario_correo"), primary_key=True),
-    Column("Genero_nombre", ForeignKey("Genero.nombre"), primary_key=True)
+    Column("Cancion_Artista_Usuario_correo", ForeignKey("Cancion.Artista_Usuario_correo"), primary_key=True),
+    Column("GeneroMusical_nombre", ForeignKey("GeneroMusical.nombre"), primary_key=True)
 )
 
 # Entidad ContraReset
@@ -156,16 +158,8 @@ class Usuario(Base):
         if not (0 <= value <= 100):
             raise ValueError("Volumen debe estar entre 0 y 100")
         return value
-
-    # Relacion "Sigue" reflexiva (N a M) 
-    seguidores: Mapped[list["Usuario"]] = relationship(
-        "Usuario",
-        secondary=sigue_table,
-        primaryjoin=correo == sigue_table.c.Seguido_correo,
-        secondaryjoin=correo == sigue_table.c.Seguidor_correo,
-        backref="seguidos"
-    )
-
+    
+    # Relacion "Seguidos" y "Seguidores"
     seguidos: Mapped[list["Usuario"]] = relationship(
         "Usuario",
         secondary=sigue_table,
@@ -181,7 +175,7 @@ class Usuario(Base):
         back_populates="participantes",
         cascade="all, delete-orphan"
     )
-
+    
     # Relacion "Invitado" con Playlist (N a M)
     invitado: Mapped[list["Playlist"]] = relationship(
         "Playlist",
@@ -189,12 +183,20 @@ class Usuario(Base):
         back_populates="invitados",
         cascade="all, delete-orphan"
     )
-
-    # Relacion "HistorialPlaylist" con Playlist (N a M)
+    
+    # Relacion con HistorialPlaylist (1:N)
     historialPlaylist: Mapped[list["HistorialPlaylist"]] = relationship(
         "HistorialPlaylist",
         back_populates="usuario",
         cascade="all, delete-orphan"
+    )
+
+    # Relacion con Playlist (N:M) a traves de HistorialPlaylist, ordenada por fechaHora DESC
+    playlistsHistorial: Mapped[list["Playlist"]] = relationship(
+        "Playlist",
+        secondary="HistorialPlaylist",
+        back_populates="usuariosHistorial",
+        order_by="HistorialPlaylist.fechaHora.desc()"  # Ordenar por fechaHora de HistorialPlaylist
     )
 
     # Relacion "HistorialCancion" con Cancion (N a M)
@@ -208,7 +210,7 @@ class Usuario(Base):
     contraReset: Mapped["ContraReset"] = relationship(  # Puede ser None
         "ContraReset", uselist=False, back_populates="usuario", cascade="all, delete-orphan"
     )
-
+    
     # Relacion "EstaEscuchando" con Usuario (1 a N)
     estaEscuchando: Mapped["EstaEscuchando"] = relationship(
         "EstaEscuchando",
@@ -219,7 +221,7 @@ class Usuario(Base):
     
     # Relacion "Postea" con Noizzy (1 a N)
     noizzys: Mapped["Noizzy"] = relationship("Postea", back_populates="usuario", cascade="all, delete-orphan")
-
+    
     # Relacion "Like" con Noizzy (N a M)
     liked: Mapped[list["Noizzy"]] = relationship(
         "Noizzy",
@@ -227,7 +229,7 @@ class Usuario(Base):
         back_populates="likes",
         cascade="all, delete-orphan"
     )
-
+    
 class Pendiente(Usuario):
     __tablename__ = 'Pendiente'
 
@@ -261,7 +263,7 @@ class Album(Base):
     nombre: Mapped[str] = mapped_column(String, primary_key=True)
     Usuario_correo: Mapped[str] = mapped_column(ForeignKey('Artista.Usuario_correo'), primary_key=True)
     fotoPortada: Mapped[str] = mapped_column(nullable=False)
-    fechaPublicacion: Mapped[date] = mapped_column(primary_key=True)
+    fechaPublicacion: Mapped[date] = mapped_column(nullable=False)
 
     # Relacion "CreaAlbum" con Artista (1 a N)
     artista: Mapped["Artista"] = relationship(back_populates="albumes")
@@ -270,16 +272,44 @@ class Album(Base):
     canciones: Mapped[List["Cancion"]] = relationship(back_populates="album", cascade="all, delete-orphan")
 
 class Playlist(Base):
-    __tablename__ = 'Album'
+    __tablename__ = 'Playlist'
 
     nombre: Mapped[str] = mapped_column(String, primary_key=True)
-    Usuario_correo: Mapped[str] = mapped_column(ForeignKey('Artista.Usuario_correo'), primary_key=True)
+    Usuario_correo: Mapped[str] = mapped_column(ForeignKey('Usuario.correo'), primary_key=True)
     fotoPortada: Mapped[str] = mapped_column(nullable=False)
-    privacidad: Mapped[bool] = mapped_column(primary_key=True)
+    privacidad: Mapped[bool] = mapped_column(nullable=False)
+
+    # Relacion directa con la tabla intermedia (1:N)
+    historialPlaylist: Mapped[list["HistorialPlaylist"]] = relationship(
+        "HistorialPlaylist",
+        back_populates="playlist",
+        cascade="all, delete-orphan"
+    )
+
+    # Relacion indirecta con Usuario (N:M) a traves de HistorialPlaylist
+    usuariosHistorial: Mapped[list["Usuario"]] = relationship(
+        "Usuario",
+        secondary="HistorialPlaylist",
+        back_populates="playlistsHistorial"
+    )
+
+    # Relacion con "Usuario" (N:M) a traves de la la tabla intermedia "Creador"
+    participantes: Mapped[list["Usuario"]] = relationship(
+        "Usuario",
+        secondary=participante_table,
+        back_populates="participante"
+    )
+
+    # Relacion con "Usuario" (N:M) a traves de la la tabla intermedia "Invitado"
+    invitados: Mapped[list["Usuario"]] = relationship(
+        "Usuario",
+        secondary=invitado_table,
+        back_populates="invitado"
+    )
 
     # Relacion "CreaPlaylist" con Artista (1 a N)
     usuario: Mapped["Artista"] = relationship(back_populates="playlists")
-
+    
     # Relacion "EsParteDePlaylist" con Usuario (N a M)
     canciones: Mapped[List["Cancion"]] = relationship(
         "Cancion", 
@@ -287,7 +317,7 @@ class Playlist(Base):
         order_by="EsParteDePlaylist.puesto",
         back_populates="playlists"
     )
-
+    
 # Entidad Cancion
 class Cancion(Base):
     __tablename__ = "Cancion"
@@ -298,6 +328,13 @@ class Cancion(Base):
     audio: Mapped[str] = mapped_column(nullable=False)
     fechaPublicacion: Mapped[date] = mapped_column(nullable=False)
     reproducciones: Mapped[int] = mapped_column(nullable=False)
+
+    # Relacion con "Usuario" (N:M) a traves de la tabla intermedia "HistorialCancion"
+    historialCancion: Mapped[list["HistorialCancion"]] = relationship(
+        "HistorialCancion",
+        back_populates="cancion",
+        cascade="all, delete-orphan"
+    )
     
     # Relacion "EsParteDePlaylist" con Playlist (N a M)
     playlists: Mapped[List["Playlist"]] = relationship(
@@ -307,35 +344,35 @@ class Cancion(Base):
     )
     
     # Relacion "Referencia" con Noizzy (1 a N)
-    noizzys: Mapped[List["Noizzy"]] = relationship(back_populates="artista", cascade="all, delete-orphan")
-
+    noizzys: Mapped[List["Noizzy"]] = relationship(back_populates="cancion", cascade="all, delete-orphan")
+    
     # Relacion "Pertenece" con GeneroMusical (N a M)
-    pertenece: Mapped[List["Pertenece"]] = relationship(
+    generosMusicales: Mapped[List["GeneroMusical"]] = relationship(
         "Pertenece",
-        secondary="Pertenece",
+        secondary=pertenece_table,
         back_populates="canciones"
     )
-
+    
 # Entidad Genero Musical
 class GeneroMusical(Base):
     __tablename__ = "GeneroMusical"
     
     nombre: Mapped[str] = mapped_column(primary_key=True)
-
+    
     # Relacion "Pertenece" con Cancion (N a M)
-    pertenece: Mapped[List["Pertenece"]] = relationship(
+    pertenece: Mapped[List["Cancion"]] = relationship(
         "Pertenece",
-        secondary="Pertenece",
+        secondary=pertenece_table,
         back_populates="generosMusicales"
     )
-    
 
 # Entidad Noizzy
 class Noizzy(Base):
     __tablename__ = "Noizzy"
     
-    Usuario_correo: Mapped[str] = mapped_column(ForeignKey('Usuario.correo'), primary_key=True)
-    fechaHora: Mapped[datetime] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True) # Id necesario por conflictos herencia y clave foranea compuesta
+    Usuario_correo: Mapped[str] = mapped_column(ForeignKey('Usuario.correo'), nullable=False)
+    fechaHora: Mapped[datetime] = mapped_column(nullable=False)
     texto: Mapped[str] = mapped_column(nullable=False)
     tipo: Mapped[str] = mapped_column(nullable=False)
 
@@ -352,8 +389,8 @@ class Noizzy(Base):
     noizzitos: Mapped["Noizzito"] = relationship(back_populates="noizzy")
 
     # Relacion "Referencia" con Cancion (1 a N)
-    cancion: Mapped["Noizzys"] = relationship(back_populates="noizzys")
-
+    cancion: Mapped["Cancion"] = relationship(back_populates="noizzys")
+    
     # Relacion "Like" con Usuario (N a M)
     likes: Mapped[list["Usuario"]] = relationship(
         "Usuario",
@@ -361,13 +398,12 @@ class Noizzy(Base):
         back_populates="liked",
         cascade="all, delete-orphan"
     )
-
+    
 # Entidad Noizzito
 class Noizzito(Noizzy):
     __tablename__ = 'Noizzito'
 
-    Usuario_correo: Mapped[str] = mapped_column(ForeignKey('Usuario.correo'), primary_key=True)
-    fechaHora: Mapped[datetime] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(ForeignKey('Noizzy.id'), primary_key=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'noizzito',
