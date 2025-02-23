@@ -61,7 +61,7 @@ END;
 """)
 
 # Trigger para mantener el historial de canciones a 50 canciones
-trg_50_Canciones = DDL("""
+trg_50Canciones = DDL("""
 CREATE TRIGGER trg_50Canciones
 AFTER INSERT ON HistorialCancion
 FOR EACH ROW
