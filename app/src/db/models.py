@@ -49,7 +49,7 @@ class HistorialPlaylist(Base):
     # Relaciones con Usuario y Playlist
     usuario: Mapped["Usuario"] = relationship(back_populates="historialPlaylist")
     playlist: Mapped["Playlist"] = relationship(back_populates="historialPlaylist")
-event.listen(HistorialPlaylist, "after_create", trg_10Playlists)
+event.listen(HistorialPlaylist, "after_insert", trg_10Playlists)
 
 # Tabla intermedia para 'HistorialCancion'
 class HistorialCancion(Base):
@@ -62,7 +62,7 @@ class HistorialCancion(Base):
 
     usuario: Mapped["Usuario"] = relationship(back_populates="historialCancion")
     cancion: Mapped["Cancion"] = relationship(back_populates="historialCancion")
-event.listen(HistorialCancion, "after_create", trg_50Canciones)
+event.listen(HistorialCancion, "after_insert", trg_50Canciones)
 
 # Tabla intermedia para "EstaEscuchando"
 class EstaEscuchando(Base):
@@ -311,7 +311,7 @@ class Playlist(Base):
 class Cancion(Base):
     __tablename__ = "Cancion"
 
-    Artista_Usuario_correo: Mapped[str] = mapped_column(primary_key=True)
+    Artista_Usuario_correo: Mapped[str] = mapped_column(ForeignKey('Artista.Usuario_correo'), primary_key=True)
     nombre: Mapped[str] = mapped_column(primary_key=True)
     duracion: Mapped[int] = mapped_column(nullable=False)
     audio: Mapped[str] = mapped_column(nullable=False)
@@ -322,7 +322,7 @@ class Cancion(Base):
     puesto: Mapped[int] = mapped_column(nullable=False)
 
     __table_args__ = (
-        CheckConstraint("Cancion_Artista_Usuario_correo == Album_Artista_Usuario_correo", name="chk_cancionAlbum"),
+        CheckConstraint("Artista_Usuario_correo == Album_Artista_Usuario_correo", name="chk_cancionAlbum"),
     )
 
     # Relacion "CreaCancion" con Artista (1 a N)
@@ -405,7 +405,12 @@ class Noizzito(Noizzy):
 
     __mapper_args__ = {
         'polymorphic_identity': 'noizzito',
+        'inherit_condition': (id == Noizzy.id)
     }
+
+    __table_args__ = (
+        CheckConstraint("id != Noizzy_id", name="check_no_self_response"),
+    )
 
     # Relacion "Responde" con Noizzy (1 a N)
     noizzy: Mapped["Noizzy"] = relationship(uselist=False, back_populates="noizzitos")
