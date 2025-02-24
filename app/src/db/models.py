@@ -133,7 +133,7 @@ class EsParteDePlaylist(Base):
     Cancion_Artista_Usuario_correo: Mapped[str] = mapped_column(primary_key=True)
     Playlist_nombre: Mapped[str] = mapped_column(primary_key=True)
     Playlist_Usuario_correo: Mapped[str] = mapped_column(primary_key=True)
-    puesto: Mapped[int] = mapped_column(nullable=False)
+    puesto: Mapped[int] = mapped_column(unique=True, nullable=False)
 
     __table_args__ = (
         ForeignKeyConstraint(
@@ -320,7 +320,7 @@ class Cancion(Base):
     reproducciones: Mapped[int] = mapped_column(nullable=False)
     Album_Artista_Usuario_correo:  Mapped[str] = mapped_column(nullable=False)
     Album_nombre: Mapped[str] = mapped_column(nullable=False)
-    puesto: Mapped[int] = mapped_column(nullable=False)
+    puesto: Mapped[int] = mapped_column(unique=True, nullable=False)
 
     __table_args__ = (
         CheckConstraint("Artista_Usuario_correo == Album_Artista_Usuario_correo", name="chk_cancionAlbum"),
