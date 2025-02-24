@@ -238,6 +238,16 @@ class Usuario(Base):
     # Relacion "Like" con Noizzy (N a M)
     liked: Mapped[list["Noizzy"]] = relationship(secondary=like_table, back_populates="likes",
         passive_deletes=True)
+
+    # Convertir a diccionario para devolver en formato JSON
+    def to_dict(self):
+        return {
+            "correo": self.correo,
+            "nombreUsuario": self.nombreUsuario,
+            "fotoPerfil": self.fotoPerfil,
+            "volumen": self.volumen,
+            "tipo": self.tipo
+        }
         
 class Pendiente(Usuario):
     __tablename__ = 'Pendiente'
