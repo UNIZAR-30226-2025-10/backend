@@ -1,8 +1,8 @@
 from datetime import datetime
 from datetime import date
 from datetime import time
-from triggers import trg_estaInvitado, trg_eliminarInvitado, trg_noParticipante, trg_10Playlists, trg_50Canciones
-from sqlalchemy import Table, Column, ForeignKey, Integer, CheckConstraint, String, event
+from .triggers import trg_estaInvitado, trg_eliminarInvitado, trg_noParticipante #, trg_10Playlists, trg_50Canciones
+from sqlalchemy import Table, Column, ForeignKey, CheckConstraint, event, ForeignKeyConstraint, String
 from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase, validates
 
 class Base(DeclarativeBase):
@@ -11,17 +11,22 @@ class Base(DeclarativeBase):
 # Tabla intermedia para 'Sigue'
 sigue_table = Table(
     "Sigue", Base.metadata,
-    Column("Seguidor_correo", ForeignKey("Usuario.correo", ondelete="CASCADE"), primary_key=True),
-    Column("Seguido_correo", ForeignKey("Usuario.correo", ondelete="CASCADE"), primary_key=True),
+    Column("Seguidor_correo", String, ForeignKey("Usuario.correo", ondelete="CASCADE"), primary_key=True),
+    Column("Seguido_correo", String, ForeignKey("Usuario.correo", ondelete="CASCADE"), primary_key=True),
     CheckConstraint("Seguidor_correo != Seguido_correo", name="chk_noAutoSeguimiento")
 )
 
 # Tabla intermedia para 'Participante'
 participante_table = Table(
     "Participante", Base.metadata,
-    Column("Usuario_correo", ForeignKey("Usuario.correo", ondelete="CASCADE"), primary_key=True),
-    Column("Playlist_nombre", ForeignKey("Playlist.nombre", ondelete="CASCADE"), primary_key=True),
-    Column("Playlist_Usuario_correo", ForeignKey("Playlist.Usuario_correo", ondelete="CASCADE"), primary_key=True),
+    Column("Usuario_correo", String, ForeignKey("Usuario.correo", ondelete="CASCADE"), primary_key=True),
+    Column("Playlist_nombre", String, primary_key=True),
+    Column("Playlist_Usuario_correo", String, primary_key=True),
+
+    ForeignKeyConstraint(
+        ["Playlist_nombre", "Playlist_Usuario_correo"], ["Playlist.nombre", "Playlist.Usuario_correo"],
+        ondelete="CASCADE"),
+
     CheckConstraint("Usuario_correo != Playlist_Usuario_correo", name="chk_participanteNoCreador")
 )
 event.listen(participante_table, "after_create", trg_estaInvitado)
@@ -30,9 +35,14 @@ event.listen(participante_table, "after_create", trg_eliminarInvitado)
 # Tabla intermedia para 'Invitado'
 invitado_table = Table(
     "Invitado", Base.metadata,
-    Column("Usuario_correo", ForeignKey("Usuario.correo", ondelete="CASCADE"), primary_key=True),
-    Column("Playlist_nombre", ForeignKey("Playlist.nombre", ondelete="CASCADE"), primary_key=True),
-    Column("Playlist_Usuario_correo", ForeignKey("Playlist.Usuario_correo", ondelete="CASCADE"), primary_key=True),
+    Column("Usuario_correo", String, ForeignKey("Usuario.correo", ondelete="CASCADE"), primary_key=True),
+    Column("Playlist_nombre", String, primary_key=True),
+    Column("Playlist_Usuario_correo", String, primary_key=True),
+
+    ForeignKeyConstraint(
+        ["Playlist_nombre", "Playlist_Usuario_correo"], ["Playlist.nombre", "Playlist.Usuario_correo"],
+        ondelete="CASCADE"),
+
     CheckConstraint("Usuario_correo != Playlist_Usuario_correo", name="chk_invitadoNoCreador")
 )
 event.listen(invitado_table, "after_create", trg_noParticipante)
@@ -42,56 +52,63 @@ class HistorialPlaylist(Base):
     __tablename__ = "HistorialPlaylist"
 
     Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Usuario.correo"), primary_key=True)
-    Playlist_nombre: Mapped[str] = mapped_column(ForeignKey("Playlist.nombre"), primary_key=True)
-    Playlist_Usuario_Correo: Mapped[str] = mapped_column(ForeignKey("Playlist.Usuario_correo"), primary_key=True)
+    Playlist_nombre: Mapped[str] = mapped_column(primary_key=True)
+    Playlist_Usuario_correo: Mapped[str] = mapped_column(primary_key=True)
     fechaHora: Mapped[datetime] = mapped_column(nullable=False)
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["Playlist_nombre", "Playlist_Usuario_correo"], ["Playlist.nombre", "Playlist.Usuario_correo"]),
+    )
 
     # Relaciones con Usuario y Playlist
     usuario: Mapped["Usuario"] = relationship(back_populates="historialPlaylist")
     playlist: Mapped["Playlist"] = relationship(back_populates="historialPlaylist")
-event.listen(HistorialPlaylist, "after_insert", trg_10Playlists)
+# event.listen(HistorialPlaylist, "after_insert", trg_10Playlists)
 
 # Tabla intermedia para 'HistorialCancion'
 class HistorialCancion(Base):
     __tablename__ = "HistorialCancion"
 
     Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Usuario.correo"), primary_key=True)
-    Cancion_nombre: Mapped[str] = mapped_column(ForeignKey("Cancion.nombre"), primary_key=True)
-    Cancion_Artista_Usuario_Correo: Mapped[str] = mapped_column(ForeignKey("Cancion.Artista_Usuario_correo"), primary_key=True)
+    Cancion_nombre: Mapped[str] = mapped_column(primary_key=True)
+    Cancion_Artista_Usuario_correo: Mapped[str] = mapped_column(primary_key=True)
     fechaHora: Mapped[datetime] = mapped_column(nullable=False)
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["Cancion_nombre", "Cancion_Artista_Usuario_correo"], ["Cancion.nombre", "Cancion.Artista_Usuario_correo"]),
+    )
 
     usuario: Mapped["Usuario"] = relationship(back_populates="historialCancion")
     cancion: Mapped["Cancion"] = relationship(back_populates="historialCancion")
-event.listen(HistorialCancion, "after_insert", trg_50Canciones)
+# event.listen(HistorialCancion, "after_insert", trg_50Canciones)
 
 # Tabla intermedia para "EstaEscuchando"
 class EstaEscuchando(Base):
     __tablename__ = "EstaEscuchando"
 
     Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Usuario.correo"), primary_key=True)
-    Cancion_nombre: Mapped[str] = mapped_column(ForeignKey("Cancion.nombre"), nullable=False)
-    Cancion_Artista_Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Cancion.Artista_Usuario_correo"), nullable=False)
+    Cancion_nombre: Mapped[str] = mapped_column(nullable=False)
+    Cancion_Artista_Usuario_correo: Mapped[str] = mapped_column(nullable=False)
     minuto: Mapped[int] = mapped_column(nullable=False)
     segundo: Mapped[int] = mapped_column(nullable=False)
 
-    # Restricción de minuto (0-60) a nivel de BD
+    # Restricciones a nivel de BD
     __table_args__ = (
         CheckConstraint('minuto BETWEEN 0 AND 60', name='chk_minuto'),
+        CheckConstraint('segundo BETWEEN 0 AND 60', name='chk_segundo'),
+        ForeignKeyConstraint(
+            ["Cancion_nombre", "Cancion_Artista_Usuario_correo"], ["Cancion.nombre", "Cancion.Artista_Usuario_correo"]),
     )
 
-    # Restricción de minuto (0-60) a nivel de Python
+    # Restricciones a nivel de Python
     @validates("minuto")
     def validate_minuto(self, key, value):
         if not (0 <= value <= 60):
             raise ValueError("Minuto debe estar entre 0 y 60")
         return value
     
-    # Restricción de segundo (0-60) a nivel de BD
-    __table_args__ = (
-        CheckConstraint('segundo BETWEEN 0 AND 60', name='chk_segundo'),
-    )
-
-    # Restricción de segundo (0-60) a nivel de Python
     @validates("segundo")
     def validate_segundo(self, key, value):
         if not (0 <= value <= 60):
@@ -112,11 +129,18 @@ like_table = Table(
 class EsParteDePlaylist(Base):
     __tablename__ = "EsParteDePlaylist"
 
-    Cancion_nombre: Mapped[str] = mapped_column(ForeignKey("Cancion.nombre"), primary_key=True)
-    Cancion_Artista_Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Cancion.Artista_Usuario_correo"), primary_key=True)
-    Playlist_nombre: Mapped[str] = mapped_column(ForeignKey("Playlist.nombre"), primary_key=True)
-    Playlist_Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Playlist.Usuario_correo"), primary_key=True)
+    Cancion_nombre: Mapped[str] = mapped_column(primary_key=True)
+    Cancion_Artista_Usuario_correo: Mapped[str] = mapped_column(primary_key=True)
+    Playlist_nombre: Mapped[str] = mapped_column(primary_key=True)
+    Playlist_Usuario_correo: Mapped[str] = mapped_column(primary_key=True)
     puesto: Mapped[int] = mapped_column(nullable=False)
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["Playlist_nombre", "Playlist_Usuario_correo"], ["Playlist.nombre", "Playlist.Usuario_correo"]),
+        ForeignKeyConstraint(
+            ["Cancion_nombre", "Cancion_Artista_Usuario_correo"], ["Cancion.nombre", "Cancion.Artista_Usuario_correo"]),
+    )
 
     cancion: Mapped["Cancion"] = relationship(back_populates="esParteDePlaylist")
     playlist: Mapped["Playlist"] = relationship(back_populates="esParteDePlaylist")
@@ -124,9 +148,13 @@ class EsParteDePlaylist(Base):
 # Tabla intermedia para "Pertenece"
 pertenece_table = Table(
     "Pertenece", Base.metadata,
-    Column("Cancion_nombre", ForeignKey("Cancion.nombre", ondelete="CASCADE"), primary_key=True),
-    Column("Cancion_Artista_Usuario_correo", ForeignKey("Cancion.Artista_Usuario_correo", ondelete="CASCADE"), primary_key=True),
-    Column("GeneroMusical_nombre", ForeignKey("GeneroMusical.nombre", ondelete="CASCADE"), primary_key=True)
+    Column("Cancion_nombre", primary_key=True),
+    Column("Cancion_Artista_Usuario_correo", primary_key=True),
+    Column("GeneroMusical_nombre", ForeignKey("GeneroMusical.nombre", ondelete="CASCADE"), primary_key=True),
+
+    ForeignKeyConstraint(
+        ["Cancion_nombre", "Cancion_Artista_Usuario_correo"], ["Cancion.nombre", "Cancion.Artista_Usuario_correo"],
+        ondelete="CASCADE"),
 )
 
 # Entidad ContraReset
@@ -134,7 +162,7 @@ class ContraReset(Base):
     __tablename__ = "ContraReset"
     
     Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Usuario.correo"), primary_key=True)
-    token: Mapped[int] = mapped_column(nullable=False)
+    token: Mapped[str] = mapped_column(nullable=False)
 
     # Relacion "Cambio" 1 a 1 con Usuario    
     usuario: Mapped["Usuario"] = relationship(uselist=False, back_populates="contraReset")
@@ -172,9 +200,13 @@ class Usuario(Base):
     playlists: Mapped[list["Playlist"]] = relationship(back_populates="usuario", cascade="all, delete-orphan")
 
     # Relacion "Seguidos" y "Seguidores"
-    seguidos: Mapped[list["Usuario"]] = relationship(secondary=sigue_table,
-        primaryjoin=correo == sigue_table.c.Seguido_correo, secondaryjoin=correo == sigue_table.c.Seguidor_correo,
-        backref="seguidores", passive_deletes=True)
+    seguidos: Mapped[list["Usuario"]] = relationship(
+        secondary=sigue_table,
+        primaryjoin=correo == sigue_table.c.Seguidor_correo,  # El usuario actual es el seguidor
+        secondaryjoin=correo == sigue_table.c.Seguido_correo,  # Se une con los usuarios seguidos
+        backref="seguidores", passive_deletes=True
+    )
+
 
     # Relacion "Participante" con Playlist (N a M)
     participante: Mapped[list["Playlist"]] = relationship(secondary=participante_table, back_populates="participantes",
@@ -184,25 +216,13 @@ class Usuario(Base):
     invitado: Mapped[list["Playlist"]] = relationship(secondary=invitado_table, back_populates="invitados",
        passive_deletes=True)
     
-    # Relacion "HistorialCancion" con Cancion (N a M)
-    cancionesHistorial: Mapped[list["Cancion"]] = relationship(secondary="HistorialCancion", back_populates="usuariosHistorial",
-        cascade="all, delete-orphan")
-
-    # Relacion con HistorialPlaylist (1:N)
+    # Relacion con HistorialPlaylist (N:M)
     historialPlaylist: Mapped[list["HistorialPlaylist"]] = relationship(back_populates="usuario",
-        cascade="all, delete-orphan")
+        cascade="all, delete")
 
-    # Relacion con Playlist (N:M) a traves de HistorialPlaylist, ordenada por fechaHora DESC
-    playlistsHistorial: Mapped[list["Playlist"]] = relationship(secondary="HistorialPlaylist", back_populates="usuariosHistorial",
-        cascade="all, delete-orphan", order_by="HistorialPlaylist.fechaHora.desc()")  # Ordenar por fechaHora de HistorialPlaylist
-    
     # Relacion con tabla intermedia "HistorialCancion"
     historialCancion: Mapped[list["HistorialCancion"]] = relationship(back_populates="usuario",
-        cascade="all, delete-orphan")
-
-    # Relacion "HistorialCancion" con Cancion (N a M)
-    cancionesHistorial: Mapped[list["Cancion"]] = relationship(secondary="HistorialCancion", back_populates="usuariosHistorial",
-        cascade="all, delete-orphan", order_by="HistorialCancion.fechaHora.desc()")  # Ordenar por fechaHora de HistorialCancion
+        cascade="all, delete")
 
     # Relacion "Cambio" con ContraReset (1 a 1)
     contraReset: Mapped["ContraReset"] = relationship(uselist=False, back_populates="usuario",
@@ -211,10 +231,7 @@ class Usuario(Base):
     # Relacion con tabla intermedia "EstaEscuchando"
     estaEscuchando: Mapped["EstaEscuchando"] = relationship(uselist=False, back_populates="usuario",
         cascade="all, delete-orphan")
-
-    # Relacion "EstaEscuchando" con Usuario (1 a N)
-    cancionActual: Mapped["Cancion"] = relationship(uselist=False, secondary="EstaEscuchando")
-    
+        
     # Relacion "Postea" con Noizzy (1 a N)
     noizzys: Mapped[list["Noizzy"]] = relationship(back_populates="usuario", cascade="all, delete-orphan")
     
@@ -226,7 +243,7 @@ class Pendiente(Usuario):
     __tablename__ = 'Pendiente'
 
     Usuario_correo: Mapped[str] = mapped_column(ForeignKey('Usuario.correo'), primary_key=True)
-    codigo: Mapped[int] = mapped_column(nullable=False)
+    codigo: Mapped[str] = mapped_column(nullable=False)
 
     __mapper_args__ = {
         'polymorphic_identity': 'pendiente',
@@ -252,7 +269,7 @@ class Artista(Usuario):
 class Album(Base):
     __tablename__ = 'Album'
 
-    nombre: Mapped[str] = mapped_column(String, primary_key=True)
+    nombre: Mapped[str] = mapped_column(primary_key=True)
     Artista_Usuario_correo: Mapped[str] = mapped_column(ForeignKey('Artista.Usuario_correo'), primary_key=True)
     fotoPortada: Mapped[str] = mapped_column(nullable=False)
     fechaPublicacion: Mapped[date] = mapped_column(nullable=False)
@@ -267,7 +284,7 @@ class Album(Base):
 class Playlist(Base):
     __tablename__ = 'Playlist'
 
-    nombre: Mapped[str] = mapped_column(String, primary_key=True)
+    nombre: Mapped[str] = mapped_column(primary_key=True)
     Usuario_correo: Mapped[str] = mapped_column(ForeignKey('Usuario.correo'), primary_key=True)
     fotoPortada: Mapped[str] = mapped_column(nullable=False)
     privacidad: Mapped[bool] = mapped_column(nullable=False)
@@ -276,17 +293,9 @@ class Playlist(Base):
     esParteDePlaylist: Mapped[list["EsParteDePlaylist"]] = relationship(back_populates="playlist",
         cascade="all, delete-orphan")
     
-    # Relacion "EsParteDePlaylist" con Playlist (N a M)
-    canciones: Mapped[list["Cancion"]] = relationship(secondary="EsParteDePlaylist", back_populates="playlists",
-        order_by="EsParteDePlaylist.puesto")
-
-    # Relacion directa con la tabla intermedia "HistorialPlaylist" (1:N)
+    # Relacion directa con la tabla intermedia "HistorialPlaylist" (N a M)
     historialPlaylist: Mapped[list["HistorialPlaylist"]] = relationship(back_populates="playlist",
-        cascade="all, delete-orphan")
-
-    # Relacion indirecta con Usuario (N:M) a traves de HistorialPlaylist
-    usuariosHistorial: Mapped[list["Usuario"]] = relationship(secondary="HistorialPlaylist", back_populates="playlistsHistorial",
-        cascade="all, delete-orphan")
+        cascade="all, delete")
 
     # Relacion con "Usuario" (N:M) a traves de la la tabla intermedia "Participantes"
     participantes: Mapped[list["Usuario"]] = relationship(secondary=participante_table, back_populates="participante",
@@ -299,30 +308,24 @@ class Playlist(Base):
     # Relacion "CreaPlaylist" con Usuario (1 a N)
     usuario: Mapped["Usuario"] = relationship(uselist=False, back_populates="playlists")
     
-    # Relacion "EsParteDePlaylist" con Usuario (N a M)
-    canciones: Mapped[list["Cancion"]] = relationship(
-        "Cancion", 
-        secondary="EsParteDePlaylist",  
-        order_by="EsParteDePlaylist.puesto",
-        back_populates="playlists"
-    )
-    
 # Entidad Cancion
 class Cancion(Base):
     __tablename__ = "Cancion"
 
     Artista_Usuario_correo: Mapped[str] = mapped_column(ForeignKey('Artista.Usuario_correo'), primary_key=True)
     nombre: Mapped[str] = mapped_column(primary_key=True)
-    duracion: Mapped[int] = mapped_column(nullable=False)
+    duracion: Mapped[int] = mapped_column(nullable=False)   # Duracion en segundos
     audio: Mapped[str] = mapped_column(nullable=False)
     fechaPublicacion: Mapped[date] = mapped_column(nullable=False)
     reproducciones: Mapped[int] = mapped_column(nullable=False)
-    Album_Artista_Usuario_correo:  Mapped[str] = mapped_column(ForeignKey('Album.Artista_Usuario_correo'), nullable=False)
-    Album_nombre: Mapped[str] = mapped_column(ForeignKey('Album.nombre'), nullable=False)
+    Album_Artista_Usuario_correo:  Mapped[str] = mapped_column(nullable=False)
+    Album_nombre: Mapped[str] = mapped_column(nullable=False)
     puesto: Mapped[int] = mapped_column(nullable=False)
 
     __table_args__ = (
         CheckConstraint("Artista_Usuario_correo == Album_Artista_Usuario_correo", name="chk_cancionAlbum"),
+        ForeignKeyConstraint(
+            ["Album_nombre", "Album_Artista_Usuario_correo"], ["Album.nombre", "Album.Artista_Usuario_correo"]),
     )
 
     # Relacion "CreaCancion" con Artista (1 a N)
@@ -330,18 +333,11 @@ class Cancion(Base):
 
     # Relacion con tabla intermedia "HistorialCancion"
     historialCancion: Mapped[list["HistorialCancion"]] = relationship(back_populates="cancion",
-        cascade="all, delete-orphan")
+        cascade="all, delete")
 
-    # Relacion con "Usuario" (N:M) a traves de la tabla intermedia "HistorialCancion"
-    usuariosHistorial: Mapped[list["Usuario"]] = relationship(secondary="HistorialCancion", back_populates="cancionesHistorial",
-        cascade="all, delete-orphan")
-    
     # Relacion con tabla intermedia "EsParteDePlaylist"
     esParteDePlaylist: Mapped[list["EsParteDePlaylist"]] = relationship(back_populates="cancion",
-        cascade="all, delete-orphan")
-    
-    # Relacion "EsParteDePlaylist" con Playlist (N a M)
-    playlists: Mapped[list["Playlist"]] = relationship(secondary="EsParteDePlaylist", back_populates="canciones")
+        cascade="all, delete")
     
     # Relacion "Referencia" con Noizzy (1 a N)
     noizzys: Mapped[list["Noizzy"]] = relationship(back_populates="cancion", cascade="all, delete-orphan")
@@ -376,6 +372,8 @@ class Noizzy(Base):
     fechaHora: Mapped[datetime] = mapped_column(nullable=False)
     texto: Mapped[str] = mapped_column(nullable=False)
     tipo: Mapped[str] = mapped_column(nullable=False)
+    Cancion_nombre: Mapped[str]
+    Cancion_Artista_Usuario_correo: Mapped[str]
 
     # Parametros de herencia
     __mapper_args__ = {
@@ -383,11 +381,17 @@ class Noizzy(Base):
         'polymorphic_on': tipo  
     }
 
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["Cancion_nombre", "Cancion_Artista_Usuario_correo"], ["Cancion.nombre", "Cancion.Artista_Usuario_correo"]),
+    )
+
     # Relacion "Postea" con Usuario (1 a N)
     usuario: Mapped["Usuario"] = relationship(uselist=False, back_populates="noizzys")
 
     # Relacion "Responde" con Noizzito (1 a N)
-    noizzitos: Mapped[list["Noizzito"]] = relationship(back_populates="noizzy", cascade="all, delete-orphan")
+    noizzitos: Mapped[list["Noizzito"]] = relationship(back_populates="noizzy", foreign_keys="[Noizzito.Noizzy_id]", 
+        cascade="all, delete-orphan")
 
     # Relacion "Referencia" con Cancion (1 a N)
     cancion: Mapped["Cancion"] = relationship(uselist=False, back_populates="noizzys")
@@ -409,8 +413,9 @@ class Noizzito(Noizzy):
     }
 
     __table_args__ = (
-        CheckConstraint("id != Noizzy_id", name="check_no_self_response"),
+        CheckConstraint("id != Noizzy_id", name="chk_noAutoComentario"),
     )
 
     # Relacion "Responde" con Noizzy (1 a N)
-    noizzy: Mapped["Noizzy"] = relationship(uselist=False, back_populates="noizzitos")
+    noizzy: Mapped["Noizzy"] = relationship(uselist=False, foreign_keys=[Noizzy_id], primaryjoin="Noizzito.Noizzy_id == Noizzy.id",
+        back_populates="noizzitos")

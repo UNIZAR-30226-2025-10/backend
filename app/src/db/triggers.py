@@ -42,6 +42,7 @@ BEGIN
 END;
 """)
 
+'''
 # Trigger para mantener el historial de playlists a 10 playlists
 trg_10Playlists = DDL("""
 CREATE TRIGGER trg_10Playlists
@@ -60,6 +61,7 @@ BEGIN
 END;
 """)
 
+
 # Trigger para mantener el historial de canciones a 50 canciones
 trg_50Canciones = DDL("""
 CREATE TRIGGER trg_50Canciones
@@ -77,3 +79,4 @@ BEGIN
     AND (SELECT COUNT(*) FROM HistorialCancion WHERE Usuario_correo = NEW.Usuario_correo) > 50;
 END;
 """)
+'''
