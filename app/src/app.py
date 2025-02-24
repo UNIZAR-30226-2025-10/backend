@@ -21,6 +21,76 @@ app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 mail = Mail(app)
 
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "Datos incorrectos."}), 400
+
+    correo = data.get("correo")
+    nombreUsuario = data.get("nombreUsuario")
+    contrasenya = data.get("contrasenya")
+    
+    if not contrasenya:
+        return jsonify({"error": "Falta la contraseña."}), 400
+    if not correo and not nombreUsuario:
+        return jsonify({"error": "Falta el nombre de usario o correo."}), 400
+              
+    try:
+        with closing(next(get_db())) as db:
+            if nombreUsuario:
+                usuario = db.query(Usuario).filter(Usuario.nombreUsuario == nombreUsuario).first()
+            elif correo:
+                usuario = db.get(Usuario, correo)
+            
+            if usuario and verify(contrasenya, usuario.contrasenya):
+                access_token = create_access_token(identity=usuario.correo)
+                return jsonify({"token": access_token,
+                                "usuario": usuario.to_dict()}), 200 
+            else:
+                return jsonify({"message": "Credenciales incorrectas."}), 401
+    
+    except Exception as e:
+        return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+
+@app.route("/register-oyente", methods=["POST"])
+def register():
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "Datos incorrectos."}), 400
+
+    correo = data.get("correo")
+    nombreUsuario = data.get("nombreUsuario")
+    contrasenya = data.get("contrasenya")
+
+    if not correo or not nombreUsuario or not contrasenya:
+        return jsonify({"error": "Faltan campos"}), 400
+              
+    try:
+        with closing(next(get_db())) as db:
+            correo_existente = db.get(Usuario, correo)
+            if correo_existente:
+                return jsonify({"error": "El correo {correo_existente.correo} ya está en uso."}), 400
+                        
+            nombreUsuario_existente = db.query(Usuario).filter(Usuario.nombreUsuario == nombreUsuario).first()
+            if nombreUsuario_existente:
+                return jsonify({"error": "El nombre de usuario {nombreUsuario_existente.nombreUsuario} ya está en uso."}), 400
+
+            contrasenyaHash = hash(contrasenya)           
+            usuario = Usuario(correo=correo, nombreUsuario=nombreUsuario,
+                              contrasenya=contrasenyaHash, fotoPerfil="DEFAULT",
+                              volumen=100, tipo="oyente")
+            db.add(usuario) 
+            db.commit() 
+            access_token = create_access_token(identity=usuario.correo)
+            return jsonify({"token": access_token,
+                            "usuario": usuario.to_dict()}), 200 
+               
+    except Exception as e:
+        return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+
 @app.route('/verify-artista', methods=['POST'])
 def verify_artista():
     data = request.get_json()
