@@ -11,6 +11,83 @@ from datetime import timedelta
 auth_bp = Blueprint('auth', __name__) 
 
 
+"""Inicia sesion en la app"""
+@auth_bp.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Datos incorrectos."}), 400
+
+    correo = data.get("correo")
+    nombreUsuario = data.get("nombreUsuario")
+    contrasenya = data.get("contrasenya")
+    
+    if not contrasenya:
+        return jsonify({"error": "Falta la contraseña."}), 400
+    if not correo and not nombreUsuario:
+        return jsonify({"error": "Falta el nombre de usario o correo."}), 400
+
+    with get_db() as db:
+        if nombreUsuario:
+            usuario = db.query(Usuario).filter(Usuario.nombreUsuario == nombreUsuario).first()
+        elif correo:
+            usuario = db.get(Usuario, correo)
+                
+        if not usuario:
+            return jsonify({"error": "Nombre de usuario o correo no válido."}), 401
+        if not verify(contrasenya, usuario.contrasenya):
+            return jsonify({"error": "Contraseña incorrecta."}), 401
+        
+        usuario_dict=usuario.to_dict()
+    access_token = create_access_token(identity=usuario.correo, 
+                                       additional_claims={"tokenVersion": usuario.tokenVersion,
+                                                          "tipo": usuario.tipo},
+                                       expires_delta=timedelta(hours=1))
+
+    # Si es otro tipo de usuario, solo devuelve el token
+    return jsonify({"token": access_token, "usuario":usuario_dict}), 200 
+
+
+"""Crea una cuenta de oyente en la app"""
+@auth_bp.route("/register-oyente", methods=["POST"])
+def register_oyente():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Datos incorrectos."}), 400
+
+    correo = data.get("correo")
+    nombreUsuario = data.get("nombreUsuario")
+    contrasenya = data.get("contrasenya")
+
+    if not correo or not nombreUsuario or not contrasenya:
+        return jsonify({"error": "Faltan campos"}), 400
+              
+    with get_db() as db:
+        correo_entry = db.get(Usuario, correo)
+        if correo_entry:
+            return jsonify({"error": f"El correo {correo_entry.correo} ya está en uso."}), 409
+                    
+        nombreUsuario_entry = db.query(Usuario).filter(Usuario.nombreUsuario == nombreUsuario).first()
+        if nombreUsuario_entry:
+            return jsonify({"error": f"El nombre de usuario {nombreUsuario_entry.nombreUsuario} ya está en uso."}), 409
+
+        contrasenyaHash = hash(contrasenya)           
+        oyente = Oyente(correo=correo, nombreUsuario=nombreUsuario,
+                            contrasenya=contrasenyaHash, fotoPerfil="DEFAULT",
+                            volumen=50, tokenVersion=1)
+        db.add(oyente) 
+        try:
+            db.commit()              
+        except Exception as e:
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+    
+    access_token = create_access_token(identity=oyente.correo,
+                                       additional_claims={"tokenVersion": 1,
+                                                          "tipo": "oyente"},
+                                       expires_delta=timedelta(hours=1))
+    return jsonify({"token": access_token, "oyente": oyente.to_dict()}), 201 
+
+
 """Crea una cuenta de artista pendiente de validacion en la app"""
 @auth_bp.route("/register-artista", methods=["POST"])
 def register_artista():
@@ -59,6 +136,8 @@ def register_artista():
 """Verifica el codigo de validacion de una cuenta de artista y la crea en la app"""
 @auth_bp.route('/verify-artista', methods=['POST'])
 @jwt_required()
+@tokenVersion_required()
+@roles_required("valido")
 def verify_artista():
     data = request.get_json()
     if not data:
@@ -213,3 +292,52 @@ def reset_password():
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
 
     return jsonify({"message": "Contraseña cambiada con éxito."}), 200
+
+
+"""Elimina una cuenta de la app"""
+@auth_bp.route('/delete-account', methods=['POST'])
+@jwt_required()
+@tokenVersion_required()
+def delete_account():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Datos no válidos."}), 400
+
+    # Recuperar campos peticion
+    contrasenya = data.get("contrasenya")
+    if not correo:
+        return jsonify({"error": "Faltan campos en la peticion."}), 400  
+
+    correo = get_jwt_identity()
+    with get_db() as db:
+        usuario = db.get(correo)
+        if not verify(contrasenya, usuario.contrasenya):
+            return jsonify({"error": "Contraseña incorrecta."}), 401
+
+        db.delete(usuario)
+        try:
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+        
+    return jsonify({"message": "Cuenta eliminada con éxito."}), 200
+
+
+"""Cierra sesion en la app"""
+@auth_bp.route('/logout', methods=['POST'])
+@jwt_required()
+@tokenVersion_required()
+def logout():
+    correo = get_jwt_identity()
+    with get_db() as db:
+        # Invalidar token
+        usuario = db.get(Usuario, correo)
+        usuario.tokenVersion += 1
+        try:
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+
+    return jsonify({"message": "Sesion cerrada con éxito."}), 200

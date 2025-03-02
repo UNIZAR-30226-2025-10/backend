@@ -1,11 +1,11 @@
-from sqlalchemy import create_engine
-from db import engine  # Importa el motor de la base de datos
-from models import Base  # Importa la clase Base que define tus modelos
+from db import engine
+from models import Base
 
+"""Crea las tablas en la BD Turso"""
 def create_tables():
-    """Borra las tablas en la base de datos."""
+    #Borra las tablas en la base de datos
     Base.metadata.drop_all(engine)
-    """Crea las tablas en la base de datos."""
+    #Crea las tablas en la base de datos
     Base.metadata.create_all(engine)
     print("Tablas creadas exitosamente.")
 

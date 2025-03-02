@@ -1,6 +1,7 @@
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine.url import URL
 from sqlalchemy import create_engine
+from contextlib import contextmanager
 import os
 from dotenv import load_dotenv
 
@@ -28,6 +29,10 @@ engine = create_engine(db_url, connect_args={"check_same_thread": False}, echo=T
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 
 '''Obtiene una sesion para conectarse a la BD'''
+@contextmanager
 def get_db():
     db = SessionLocal()
-    yield db  # Devuelve la sesión para que la use el endpoint
+    try:
+        yield db  # Devuelve la sesión para que la use el endpoint
+    finally:
+        db.close()  # Asegura que la sesión se cierre correctamente
