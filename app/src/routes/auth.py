@@ -206,9 +206,15 @@ def forgot_password():
         codigo = new_code()
         codigoHash = hash(codigo)
 
-        # Crear nueva entrada en la tabla ContraReset
-        reset_entry = ContraReset(Usuario_correo=correo, codigo=codigoHash)
-        db.add(reset_entry)
+        # Comprobar usuario no tiene codigo
+        reset_entry = db.get(ContraReset, correo)
+        if reset_entry:
+            # Actualizar entrada en tabla ContraReset
+            reset_entry.codigo=codigoHash
+        else:
+            # Crear nueva entrada en tabla ContraReset
+            reset_entry = ContraReset(Usuario_correo=correo, codigo=codigoHash)
+            db.add(reset_entry)
         try:
             db.commit()
         except Exception as e:
