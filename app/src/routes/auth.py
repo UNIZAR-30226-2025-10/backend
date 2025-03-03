@@ -305,12 +305,12 @@ def delete_account():
 
     # Recuperar campos peticion
     contrasenya = data.get("contrasenya")
-    if not correo:
+    if not contrasenya:
         return jsonify({"error": "Faltan campos en la peticion."}), 400  
 
     correo = get_jwt_identity()
     with get_db() as db:
-        usuario = db.get(correo)
+        usuario = db.get(Usuario, correo)
         if not verify(contrasenya, usuario.contrasenya):
             return jsonify({"error": "Contraseña incorrecta."}), 401
 
