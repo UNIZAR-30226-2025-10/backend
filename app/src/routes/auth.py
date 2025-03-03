@@ -181,7 +181,7 @@ def verify_artista():
                                        additional_claims={"tokenVersion": new_artist.tokenVersion,
                                                           "tipo": "artista"},
                                        expires_delta=timedelta(hours=1))
-    return jsonify({"token": access_token, "artista_valido": artista_dict}), 200
+    return jsonify({"token": access_token, "artista_valido": artista_dict, "tipo": "artista"}), 200
 
 
 """Envia un correo con un codigo para restablecer la contraseña en caso de olvido"""
