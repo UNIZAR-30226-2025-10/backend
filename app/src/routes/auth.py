@@ -45,7 +45,7 @@ def login():
                                        expires_delta=timedelta(hours=1))
 
     # Si es otro tipo de usuario, solo devuelve el token
-    return jsonify({"token": access_token, "usuario":usuario_dict}), 200 
+    return jsonify({"token": access_token, "usuario": usuario_dict, "tipo": usuario.tipo}), 200 
 
 
 """Crea una cuenta de oyente en la app"""
@@ -85,7 +85,7 @@ def register_oyente():
                                        additional_claims={"tokenVersion": 1,
                                                           "tipo": "oyente"},
                                        expires_delta=timedelta(hours=1))
-    return jsonify({"token": access_token, "oyente": oyente.to_dict()}), 201 
+    return jsonify({"token": access_token, "oyente": oyente.to_dict(), "tipo": "oyente"}), 201 
 
 
 """Crea una cuenta de artista pendiente de validacion en la app"""
@@ -130,7 +130,7 @@ def register_artista():
                                                           "tipo": "pendiente"},
                                        expires_delta=timedelta(hours=1))
 
-    return jsonify({"token": access_token, "pendiente": pendiente_dict}), 200
+    return jsonify({"token": access_token, "pendiente": pendiente_dict, "tipo": "pendiente"}), 200
 
 
 """Verifica el codigo de validacion de una cuenta de artista y la crea en la app"""
@@ -181,7 +181,7 @@ def verify_artista():
                                        additional_claims={"tokenVersion": new_artist.tokenVersion,
                                                           "tipo": "artista"},
                                        expires_delta=timedelta(hours=1))
-    return jsonify({"token": access_token, "artista_valido": artista_dict}), 200
+    return jsonify({"token": access_token, "artista_valido": artista_dict, "tipo": "artista"}), 200
 
 
 """Envia un correo con un codigo para restablecer la contraseña en caso de olvido"""

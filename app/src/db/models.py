@@ -184,6 +184,13 @@ class Usuario(Base):
     __table_args__ = (
         CheckConstraint("tipo IN ('admin', 'pendiente', 'valido', 'oyente', 'artista')", 
                         name="chk_tipo_valido"),)
+    
+    # Convertir a diccionario para devolver en formato JSON
+    def to_dict(self):
+        return {
+            "correo": self.correo,
+            "nombreUsuario": self.nombreUsuario
+        }
 
 # Entidad Admin
 class Admin(Usuario):
@@ -194,14 +201,6 @@ class Admin(Usuario):
     __mapper_args__ = {
         'polymorphic_identity': 'admin',
     }
-
-    # Convertir a diccionario para devolver en formato JSON
-    def to_dict(self):
-        return {
-            "correo": self.correo,
-            "nombreUsuario": self.nombreUsuario,
-            "tipo": self.tipo
-        }
 
 # Entidad Pendiente
 class Pendiente(Usuario):
@@ -214,14 +213,6 @@ class Pendiente(Usuario):
         'polymorphic_identity': 'pendiente',
     }
 
-    # Convertir a diccionario para devolver en formato JSON
-    def to_dict(self):
-        return {
-            "correo": self.correo,
-            "nombreUsuario": self.nombreUsuario,
-            "tipo": self.tipo
-        }
-
 # Entidad Valido
 class Valido(Usuario):
     __tablename__ = 'Valido'
@@ -233,14 +224,6 @@ class Valido(Usuario):
     __mapper_args__ = {
         'polymorphic_identity': 'valido',
     }
-
-    # Convertir a diccionario para devolver en formato JSON
-    def to_dict(self):
-        return {
-            "correo": self.correo,
-            "nombreUsuario": self.nombreUsuario,
-            "tipo": self.tipo
-        }
 
 # Entidad Oyente
 class Oyente(Usuario):
@@ -311,8 +294,7 @@ class Oyente(Usuario):
             "correo": self.correo,
             "nombreUsuario": self.nombreUsuario,
             "fotoPerfil": self.fotoPerfil,
-            "volumen": self.volumen,
-            "tipo": self.tipo
+            "volumen": self.volumen
         }
 
 class Artista(Oyente):
@@ -340,8 +322,7 @@ class Artista(Oyente):
             "biografia": self.biografia,
             "nombreUsuario": self.nombreUsuario,
             "fotoPerfil": self.fotoPerfil,
-            "volumen": self.volumen,
-            "tipo": self.tipo
+            "volumen": self.volumen
         }
 
 class Album(Base):
@@ -430,6 +411,20 @@ class Cancion(Base):
     # Relacion "EstaEscuchando" con Usuario (1 a N)
     estaEscuchando: Mapped["EstaEscuchando"] = relationship(uselist=False, back_populates="cancion",
         cascade="all, delete-orphan")
+
+    # Convertir a diccionario para devolver en formato JSON
+    def to_dict(self):
+        return {
+            "artista": self.Artista_correo,
+            "nombre": self.nombre,
+            "duracion": self.duracion,
+            "audio": self.audio,
+            "fechaPublicacion": self.fechaPublicacion,
+            "reproducciones": self.reproducciones,
+            "album":self.Album_nombre,
+            "puesto":self.puesto,
+            "fotoPortada":self.album.fotoPortada
+        }
 
 # Entidad Genero Musical
 class GeneroMusical(Base):

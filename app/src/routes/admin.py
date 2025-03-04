@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
+from sqlalchemy import select
 from db.db import get_db
 from db.models import *
 from utils.hash import hash
@@ -8,6 +9,20 @@ from utils.mail import send_mail
 from utils.decorators import roles_required, tokenVersion_required
 
 admin_bp = Blueprint('admin', __name__) 
+
+"""Devuelve una lista con todos los usuarios registrados como 
+   artistas pendientes de validacion"""
+@admin_bp.route('/get-pendientes', methods=['GET'])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("admin")
+def get_pendientes():
+    with get_db() as db:
+        pendientes_result = db.execute(select(Pendiente)).scalars().all()
+        pendientes = [p.to_dict() for p in pendientes_result]
+    
+    return jsonify({"pendientes": pendientes}), 200
+
 
 """Valida o invalida una cuenta de artista pendiente:
     - si es valida genera un codigo de verificacion y la cuenta de artista pasa 
