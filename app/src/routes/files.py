@@ -1,9 +1,27 @@
 import os
+from flask import Blueprint, request, jsonify
 from dotenv import load_dotenv
+
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 import cloudinary.utils
+
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.engine.url import URL
+from sqlalchemy import create_engine
+from contextlib import contextmanager
+from datetime import date
+
+from db.models import Base, Usuario, Artista, Album, Cancion, GeneroMusical, Oyente
+from db.db import get_db
+from utils.hash import hash
+
+files_bp = Blueprint('files', __name__)
+
+#############################################################
+## CONF ##
+##########
 
 # Carga las variables de entorno desde el archivo .env
 load_dotenv()
@@ -16,64 +34,48 @@ cloudinary.config(
   secure = True
 )
 
-#############################################
-
-## UPLOAD ##
-# Función para subir una imagen
-def upload_image(image_path, name):
-    try:
-        response = cloudinary.uploader.upload(image_path, public_id=name, resource_type="image", folder="imagenes")
-        return response.get("url")
-    except Exception as e:
-        return f"Error al subir la imagen: {e}"
-
-# Función para subir una cancion
-def upload_video(song_path, name):
-    try:
-        response = cloudinary.uploader.upload(song_path, public_id=name, resource_type="video", folder="canciones")
-        return response.get("url")
-    except Exception as e:
-        return f"Error al subir la canción: {e}"
-    
+#############################################################    
 ## GET ##
-# Función para obtener una imagen por su nombre
-def get_image_by_name(public_id):
-    try:
-        response = cloudinary.api.resource("imagenes/"+public_id)
-        return response.get("url")
-    except Exception as e:
-        return f"Error al recuperar la imagen: {e}"
+#########
 
-# Función para obtener una canción por su nombre
-def get_song_by_name(public_id):
+@files_bp.route('/get-song-and-album', methods=['POST'])
+def get_song_and_album():
+    data = request.get_json()
+    song_name = data.get('song_name')
+    artist_mail = data.get('artist_mail')
+
     try:
-        response = cloudinary.api.resource("canciones/"+public_id, resource_type="video")
-        return response.get("url")
+        with get_db() as session:
+            # Obtener la canción
+            cancion = session.query(Cancion).filter_by(nombre=song_name, Artista_correo=artist_mail).first()
+
+            if not cancion:
+                return jsonify({"error": f"No se encontró la canción '{song_name}' del artista con correo '{artist_mail}'."}), 404
+
+            # Acceder al álbum relacionado para obtener la fotoPortada
+            album = session.query(Album).filter_by(
+                nombre=cancion.Album_nombre,
+                Artista_correo=cancion.Album_Artista_correo
+            ).first()
+
+            if not album:
+                return jsonify({"error": f"No se encontró el álbum '{cancion.Album_nombre}' asociado a la canción."}), 404
+
+            # Devolver los valores requeridos
+            return jsonify({
+                "audio": cancion.audio,
+                "fotoPortada": album.fotoPortada
+            }), 200
+
     except Exception as e:
-        return f"Error al recuperar la canción: {e}"
-    
-# Función para obtener un paquete cancion-imagen por sus nombres
-def get_both_by_name(song_public_id, image_public_id):
+        return jsonify({"error": f"Error al encontrar la información en la base de datos: {e}"}), 500
+
+
+@files_bp.route('/get-tags', methods=['GET'])
+def get_tags():
     try:
-        response = cloudinary.api.resource(song_public_id, resource_type="image")
-        response2 = cloudinary.api.resource(image_public_id, resource_type="video")
-        return response.get("url"), response2.get("url")
+        with get_db() as session:
+            tags = session.query(GeneroMusical).all()
+            return jsonify([tag.nombre for tag in tags]), 200
     except Exception as e:
-        return f"Error al recuperar el paquete: {e}"
-    
-## DELETE ##
-# Función para eliminar una imagen por su nombre
-def delete_image_by_name(public_id):
-    try:
-        response = cloudinary.uploader.destroy("imagenes/"+public_id, resource_type="image")
-        return response.get("result")
-    except Exception as e:
-        return f"Error al eliminar la imagen: {e}"
-    
-# Función para eliminar una canción por su nombre
-def delete_song_by_name(public_id):
-    try:
-        response = cloudinary.uploader.destroy("canciones/"+public_id, resource_type="video")
-        return response.get("result")
-    except Exception as e:
-        return f"Error al eliminar la canción: {e}"
+        return jsonify({"error": f"Error al obtener los tags: {e}"}), 500
