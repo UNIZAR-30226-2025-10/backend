@@ -1,4 +1,5 @@
 import os
+from flask import Blueprint, request, jsonify
 from dotenv import load_dotenv
 
 import cloudinary
@@ -15,6 +16,8 @@ from datetime import date
 from db.models import Base, Usuario, Artista, Album, Cancion, GeneroMusical, Oyente
 from db.db import get_db
 from utils.hash import hash
+
+files_bp = Blueprint('files', __name__)
 
 #############################################################
 ## CONF ##
@@ -35,15 +38,19 @@ cloudinary.config(
 ## GET ##
 #########
 
-## Función para obtener un paquete canción-imagen por sus nombres
-def get_song_and_album(song_name, artist_mail):
+@files_bp.route('/get-song-and-album', methods=['POST'])
+def get_song_and_album():
+    data = request.get_json()
+    song_name = data.get('song_name')
+    artist_mail = data.get('artist_mail')
+
     try:
         with get_db() as session:
             # Obtener la canción
             cancion = session.query(Cancion).filter_by(nombre=song_name, Artista_correo=artist_mail).first()
 
             if not cancion:
-                return f"No se encontró la canción '{song_name}' del artista con correo '{artist_mail}'."
+                return jsonify({"error": f"No se encontró la canción '{song_name}' del artista con correo '{artist_mail}'."}), 404
 
             # Acceder al álbum relacionado para obtener la fotoPortada
             album = session.query(Album).filter_by(
@@ -52,23 +59,23 @@ def get_song_and_album(song_name, artist_mail):
             ).first()
 
             if not album:
-                return f"No se encontró el álbum '{cancion.Album_nombre}' asociado a la canción."
+                return jsonify({"error": f"No se encontró el álbum '{cancion.Album_nombre}' asociado a la canción."}), 404
 
             # Devolver los valores requeridos
-            return {
+            return jsonify({
                 "audio": cancion.audio,
                 "fotoPortada": album.fotoPortada
-            }
+            }), 200
 
     except Exception as e:
-        return f"Error al encontrar la información en la base de datos: {e}"
+        return jsonify({"error": f"Error al encontrar la información en la base de datos: {e}"}), 500
 
 
-## Función para obtener la lista de tags
+@files_bp.route('/get-tags', methods=['GET'])
 def get_tags():
     try:
         with get_db() as session:
             tags = session.query(GeneroMusical).all()
-            return [tag.nombre for tag in tags]
+            return jsonify([tag.nombre for tag in tags]), 200
     except Exception as e:
-        return f"Error al obtener los tags: {e}"
+        return jsonify({"error": f"Error al obtener los tags: {e}"}), 500
