@@ -38,14 +38,21 @@ def login():
         if not verify(contrasenya, usuario.contrasenya):
             return jsonify({"error": "Contraseña incorrecta."}), 401
         
-        usuario_dict=usuario.to_dict()
+        usuario_dict = {
+            "fotoPerfil": usuario.fotoPerfil,
+            "volumen": usuario.volumen
+        } if usuario.tipo in ["oyente", "artista"] else None
+        tipo = usuario.tipo
+
     access_token = create_access_token(identity=usuario.correo, 
                                        additional_claims={"tokenVersion": usuario.tokenVersion,
                                                           "tipo": usuario.tipo},
                                        expires_delta=timedelta(hours=1))
 
-    # Si es otro tipo de usuario, solo devuelve el token
-    return jsonify({"token": access_token, "usuario": usuario_dict, "tipo": usuario.tipo}), 200 
+    if usuario_dict:
+        return jsonify({"token": access_token, "usuario": usuario_dict, "tipo": tipo}), 200
+    else:
+        return jsonify({"token": access_token, "tipo": tipo}), 200
 
 
 """Crea una cuenta de oyente en la app"""
@@ -85,7 +92,10 @@ def register_oyente():
                                        additional_claims={"tokenVersion": 1,
                                                           "tipo": "oyente"},
                                        expires_delta=timedelta(hours=1))
-    return jsonify({"token": access_token, "oyente": oyente.to_dict(), "tipo": "oyente"}), 201 
+    return jsonify({"token": access_token, 
+                    "oyente": {"fotoPerfil": oyente.fotoPerfil,
+                               "volumen": oyente.volumen}, 
+                    "tipo": "oyente"}), 201 
 
 
 """Crea una cuenta de artista pendiente de validacion en la app"""
@@ -123,14 +133,13 @@ def register_artista():
             db.commit() 
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
-        
-        pendiente_dict=pendiente.to_dict()
+
         access_token = create_access_token(identity=pendiente.correo,
                                        additional_claims={"tokenVersion": 1,
                                                           "tipo": "pendiente"},
                                        expires_delta=timedelta(hours=1))
 
-    return jsonify({"token": access_token, "pendiente": pendiente_dict, "tipo": "pendiente"}), 200
+    return jsonify({"token": access_token, "tipo": "pendiente"}), 200
 
 
 """Verifica el codigo de validacion de una cuenta de artista y la crea en la app"""
@@ -176,12 +185,14 @@ def verify_artista():
             db.rollback()
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
 
-        artista_dict=new_artist.to_dict()
     access_token = create_access_token(identity=new_artist.correo,
                                        additional_claims={"tokenVersion": new_artist.tokenVersion,
                                                           "tipo": "artista"},
                                        expires_delta=timedelta(hours=1))
-    return jsonify({"token": access_token, "artista_valido": artista_dict, "tipo": "artista"}), 200
+    return jsonify({"token": access_token, 
+                    "artista_valido": {"fotoPerfil": new_artist.fotoPerfil,
+                                       "volumen": new_artist.volumen}, 
+                    "tipo": "artista"}), 200
 
 
 """Envia un correo con un codigo para restablecer la contraseña en caso de olvido"""

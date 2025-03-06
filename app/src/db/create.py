@@ -4,9 +4,9 @@ from sqlalchemy import text
 
 triggers = [
     """
-    -- Trigger para evitar ser pendiente de una Playlist propia
-    CREATE TRIGGER trg_pendienteNoCreador
-    BEFORE INSERT ON Pendiente
+    -- Trigger para evitar ser participante de una Playlist propia
+    CREATE TRIGGER trg_participanteNoCreador
+    BEFORE INSERT ON Participante
     FOR EACH ROW
     BEGIN
         SELECT CASE
