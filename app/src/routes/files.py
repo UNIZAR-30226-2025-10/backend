@@ -1,21 +1,14 @@
 import os
 from flask import Blueprint, request, jsonify
 from dotenv import load_dotenv
-
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 import cloudinary.utils
-
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.engine.url import URL
-from sqlalchemy import create_engine
-from contextlib import contextmanager
-from datetime import date
-
-from db.models import Base, Usuario, Artista, Album, Cancion, GeneroMusical, Oyente
+from db.models import *
 from db.db import get_db
-from utils.hash import hash
+from utils.decorators import roles_required, tokenVersion_required
+from flask_jwt_extended import jwt_required
 
 files_bp = Blueprint('files', __name__)
 
@@ -38,38 +31,28 @@ cloudinary.config(
 ## GET ##
 #########
 
-@files_bp.route('/get-song-and-album', methods=['POST'])
-def get_song_and_album():
-    data = request.get_json()
-    song_name = data.get('song_name')
-    artist_mail = data.get('artist_mail')
-
-    try:
-        with get_db() as session:
-            # Obtener la canción
-            cancion = session.query(Cancion).filter_by(nombre=song_name, Artista_correo=artist_mail).first()
-
-            if not cancion:
-                return jsonify({"error": f"No se encontró la canción '{song_name}' del artista con correo '{artist_mail}'."}), 404
-
-            # Acceder al álbum relacionado para obtener la fotoPortada
-            album = session.query(Album).filter_by(
-                nombre=cancion.Album_nombre,
-                Artista_correo=cancion.Album_Artista_correo
-            ).first()
-
-            if not album:
-                return jsonify({"error": f"No se encontró el álbum '{cancion.Album_nombre}' asociado a la canción."}), 404
-
-            # Devolver los valores requeridos
-            return jsonify({
-                "audio": cancion.audio,
-                "fotoPortada": album.fotoPortada
+"""Devuelve informacion de una cancion"""
+@files_bp.route("/get-cancion", methods=["GET"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente","artista")
+def get_cancion():
+    cancion = request.args.get("id")
+    if not cancion:
+        return jsonify({"error": "Falta la cancion."}), 400
+    
+    with get_db() as db:
+        # Obtener la canción
+        cancion = db.get(Cancion, id)
+        if not cancion:
+            return jsonify({"error": "La canción no existe."}), 401
+        
+        return jsonify({
+            "nombre":cancion.nombre,
+            "artista":cancion.Artista_correo,
+            "audio": cancion.audio,
+            "fotoPortada": cancion.album.fotoPortada
             }), 200
-
-    except Exception as e:
-        return jsonify({"error": f"Error al encontrar la información en la base de datos: {e}"}), 500
-
 
 @files_bp.route('/get-tags', methods=['GET'])
 def get_tags():
