@@ -1,6 +1,6 @@
 from datetime import datetime
 from datetime import date
-from sqlalchemy import Table, Column, ForeignKey, CheckConstraint, String
+from sqlalchemy import Table, Column, ForeignKey, CheckConstraint, String, UniqueConstraint
 from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase
 
 class Base(DeclarativeBase):
@@ -121,7 +121,7 @@ class EsParteDePlaylist(Base):
 
     Cancion_id: Mapped[str] = mapped_column(ForeignKey("Cancion.id", ondelete="CASCADE"), primary_key=True)
     Playlist_id: Mapped[str] = mapped_column(ForeignKey("Playlist.id", ondelete="CASCADE"), primary_key=True)
-    puesto: Mapped[int] = mapped_column(unique=True, nullable=False)
+    fecha: Mapped[datetime] = mapped_column(nullable=False)
 
     cancion: Mapped["Cancion"] = relationship(back_populates="esParteDePlaylist")
     playlist: Mapped["Playlist"] = relationship(back_populates="esParteDePlaylist")
@@ -402,7 +402,12 @@ class Cancion(Base):
     fechaPublicacion: Mapped[date] = mapped_column(nullable=False)
     reproducciones: Mapped[int] = mapped_column(nullable=False)
     Album_id:  Mapped[int] = mapped_column(ForeignKey('Album.id', ondelete="CASCADE"), nullable=False)
-    puesto: Mapped[int] = mapped_column(unique=True, nullable=False)
+    puesto: Mapped[int] = mapped_column(nullable=False)
+
+    # Puestos unicos en un album
+    __table_args__ = (
+        UniqueConstraint("Album_id", "puesto", name="uq_puestoAlbum"),
+    )
 
     # Relacion "CreaCancion" con Artista (1 a N)
     artista: Mapped["Artista"] = relationship(uselist=False, back_populates="canciones")
