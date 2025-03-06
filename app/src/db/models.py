@@ -338,7 +338,7 @@ class Coleccion(Base):
         cascade="all, delete")
     
     # Relacion "EstaEscuchandoColeccion" con Oyente (1 a N)
-    estaEscuchandoColeccion: Mapped["EstaEscuchandoColeccion"] = relationship(uselist=False, back_populates="cancion",
+    estaEscuchandoColeccion: Mapped["EstaEscuchandoColeccion"] = relationship(uselist=False, back_populates="coleccion",
         cascade="all, delete-orphan")
 
 class Album(Coleccion):
