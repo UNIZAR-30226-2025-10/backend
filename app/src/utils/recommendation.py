@@ -1,4 +1,3 @@
-from db.db import get_db
 from db.models import *
 from sqlalchemy import select
 
@@ -70,4 +69,12 @@ def obtener_recomendaciones(usuario, db):
     # Ordenar por puntuacion de mayor a menor y tomar las 30 mejores
     canciones_recomendadas.sort(key=lambda x: x[1], reverse=True)
 
-    return [cancion.to_dict() for cancion, _ in canciones_recomendadas[:30]]
+    canciones_dict = {
+        cancion.id: {
+            "fotoPortada": cancion.album.fotoPortada,
+            "nombre": cancion.nombre
+        }
+        for cancion, _ in canciones_recomendadas[:30]
+    }
+
+    return canciones_dict
