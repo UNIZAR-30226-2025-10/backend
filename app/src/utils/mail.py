@@ -1,16 +1,12 @@
 from flask import Flask
 from flask_mail import Mail, Message
 import os
-from dotenv import load_dotenv
 
 # Crear una instancia sin asociarla aun
 mail = Mail()
 
 """Inicializa la configuración de Flask-Mail en la app."""
 def init_mail(app):
-    # Cargar las variables de ".env" como variables de entorno
-    load_dotenv(os.path.join(os.path.dirname(__file__), "/backend/.env"))
-
     # Configurar correo para enviar codigo de restablecimiento de contraseña
     app.config['MAIL_SERVER'] = 'smtp.gmail.com'
     app.config['MAIL_PORT'] = 587

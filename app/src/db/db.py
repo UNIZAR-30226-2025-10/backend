@@ -3,10 +3,6 @@ from sqlalchemy.engine.url import URL
 from sqlalchemy import create_engine
 from contextlib import contextmanager
 import os
-from dotenv import load_dotenv
-
-# Cargar las variables de "".env" como variables de entorno
-load_dotenv(os.path.join(os.path.dirname(__file__), "/backend/.env"))
 
 TURSO_URL = os.environ.get("TURSO_URL")
 TURSO_TOKEN = os.environ.get("TURSO_TOKEN")

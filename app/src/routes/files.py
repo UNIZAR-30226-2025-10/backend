@@ -16,9 +16,6 @@ files_bp = Blueprint('files', __name__)
 ## CONF ##
 ##########
 
-# Carga las variables de entorno desde el archivo .env
-load_dotenv()
-
 # Configura Cloudinary con las variables de entorno
 cloudinary.config(
   cloud_name = os.getenv('CLOUDINARY_NAME'),
@@ -37,8 +34,8 @@ cloudinary.config(
 @tokenVersion_required()
 @roles_required("oyente","artista")
 def get_cancion():
-    cancion = request.args.get("id")
-    if not cancion:
+    id = request.args.get("id")
+    if not id:
         return jsonify({"error": "Falta la cancion."}), 400
     
     with get_db() as db:
