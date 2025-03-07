@@ -10,4 +10,4 @@ Flask-Mail==0.9.1
 flask-swagger-ui==4.11.1
 flask_cors==3.0.10
 cloudinary==1.30.0
-
+gunicorn==20.1.0
