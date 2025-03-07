@@ -1,0 +1,61 @@
+post:
+  summary: Elimina una cuenta de la app
+  description: Permite a un usuario eliminar su cuenta proporcionando su contraseña actual.
+  tags:
+    - Autenticación
+  security:
+    - bearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - contrasenya
+          properties:
+            contrasenya:
+              type: string
+              format: password
+              example: "password123"
+  responses:
+    200:
+      description: Cuenta eliminada con éxito
+      content:
+        application/json:
+          schema:
+            type: string
+            example: ""
+    400:
+      description: Datos no válidos o faltantes en la petición
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Faltan campos en la petición."
+    401:
+      description: Contraseña incorrecta
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Contraseña incorrecta."
+    500:
+      description: Error interno del servidor
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Ha ocurrido un error inesperado."
+              details:
+                type: string
+                example: "Error de base de datos"

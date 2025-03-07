@@ -1,0 +1,75 @@
+post:
+  summary: Crea una cuenta de artista pendiente de validación
+  description: Permite a un usuario registrarse como artista en la aplicación, quedando pendiente de validación.
+  tags:
+    - Autenticación
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            correo:
+              type: string
+              format: email
+              description: Correo electrónico del usuario.
+            nombreUsuario:
+              type: string
+              description: Nombre de usuario del artista.
+            contrasenya:
+              type: string
+              format: password
+              description: Contraseña del usuario.
+            nombreArtistico:
+              type: string
+              description: Nombre artístico del usuario.
+          required:
+            - correo
+            - nombreUsuario
+            - contrasenya
+            - nombreArtistico
+  responses:
+    201:
+      description: Registro exitoso. La cuenta queda pendiente de validación.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+                description: Token de acceso generado para autenticación.
+              tipo:
+                type: string
+                description: Tipo de usuario (pendiente de validación).
+    400:
+      description: Datos incorrectos o faltantes en la solicitud.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Faltan campos en la petición."
+    409:
+      description: Conflicto. El correo o nombre de usuario ya están en uso.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "El correo ya está en uso."
+    500:
+      description: Error inesperado en el servidor.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Ha ocurrido un error inesperado."
