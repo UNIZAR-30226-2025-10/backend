@@ -1,0 +1,20 @@
+get:
+  summary: Obtener historial de colecciones
+  description: Devuelve una lista de álbumes y playlists que el usuario ha reproducido.
+  security:
+    - BearerAuth: []
+  tags:
+      - Historial
+  responses:
+    200:
+      description: Lista de colecciones en el historial.
+      content:
+        application/json:
+          example:
+            historial_colecciones:
+              "456":
+                nombreColeccion: "Mi Playlist"
+                fotoPortada: "url_playlist.jpg"
+                autor: "Usuario1"
+    401:
+      description: Usuario no autenticado o no autorizado.

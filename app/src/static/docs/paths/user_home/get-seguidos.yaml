@@ -1,0 +1,19 @@
+get:
+  summary: Obtener lista de seguidos
+  description: Devuelve una lista con los usuarios que sigue el usuario autenticado.
+  security:
+    - BearerAuth: []
+  tags:
+      - Social
+  responses:
+    200:
+      description: Lista de usuarios seguidos.
+      content:
+        application/json:
+          example:
+            seguidos:
+              "usuario@email.com":
+                fotoPerfil: "url_foto.jpg"
+                nombre: "Nombre Usuario"
+    401:
+      description: Usuario no autenticado o no autorizado.

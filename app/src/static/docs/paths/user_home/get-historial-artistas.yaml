@@ -1,0 +1,19 @@
+get:
+  summary: Obtener historial de artistas
+  description: Devuelve una lista con los artistas que el usuario ha escuchado.
+  security:
+    - BearerAuth: []
+  tags:
+      - Historial
+  responses:
+    200:
+      description: Lista de artistas escuchados.
+      content:
+        application/json:
+          example:
+            historial_artistas:
+              "artista@email.com":
+                nombreArtista: "Artista1"
+                fotoPerfil: "url_foto.jpg"
+    401:
+      description: Usuario no autenticado o no autorizado.

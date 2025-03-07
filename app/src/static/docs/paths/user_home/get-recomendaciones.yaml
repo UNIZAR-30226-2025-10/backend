@@ -1,0 +1,21 @@
+get:
+  summary: Obtener recomendaciones de canciones
+  description: Devuelve una lista con canciones recomendadas para el usuario basado en su historial.
+  security:
+    - BearerAuth: []
+  tags:
+    - Recomendaciones
+  responses:
+    200:
+      description: Lista de canciones recomendadas.
+      content:
+        application/json:
+          example:
+            canciones_recomendadas:
+              "101":
+                fotoPortada: "url_album.jpg"
+                nombre: "Canción Recomendada"
+    400:
+      description: Usuario no encontrado.
+    401:
+      description: Usuario no autenticado o no autorizado.

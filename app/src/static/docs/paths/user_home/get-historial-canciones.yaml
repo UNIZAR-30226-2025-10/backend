@@ -1,0 +1,20 @@
+get:
+  summary: Obtener historial de canciones
+  description: Devuelve una lista con el historial de canciones reproducidas por el usuario.
+  security:
+    - BearerAuth: []
+  tags:
+      - Historial
+  responses:
+    200:
+      description: Lista de canciones en el historial.
+      content:
+        application/json:
+          example:
+            historial_canciones:
+              "123":
+                nombreArtista: "Artista1"
+                nombreCancion: "Canción1"
+                fotoPortada: "url_imagen.jpg"
+    401:
+      description: Usuario no autenticado o no autorizado.
