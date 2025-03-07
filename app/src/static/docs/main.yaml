@@ -5,7 +5,7 @@ info:
   description: API de la aplicacion de reproduccion de musica Noizz
 
 servers:
-  - url: http://localhost:5000
+  - url: http://api-noizz.onrender.com
     description: Servidor local
 
 paths:
