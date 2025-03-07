@@ -1,0 +1,72 @@
+post:
+  summary: Valida o rechaza una cuenta de artista pendiente
+  description: |
+    Permite a un administrador validar o invalidar una cuenta de artista pendiente.  
+    - Si es válida, genera un código de verificación y la cuenta se activa.  
+    - Si no es válida, la cuenta es eliminada.  
+    En ambos casos, se envía un correo notificando la decisión.
+  tags:
+    - Administración
+  security:
+    - bearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - correo
+            - valido
+          properties:
+            correo:
+              type: string
+              format: email
+              example: "artista@email.com"
+            valido:
+              type: boolean
+              example: true
+  responses:
+    200:
+      description: Acción realizada correctamente
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              okay:
+                type: string
+                example: "Todo ha ido bien."
+    400:
+      description: Datos inválidos o faltantes
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Faltan campos en la petición."
+    401:
+      description: No autorizado. Se requiere autenticación de administrador
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "No tienes permisos para realizar esta acción."
+    500:
+      description: Error interno del servidor
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Ha ocurrido un error inesperado."
+              details:
+                type: string
+                example: "Error de base de datos"

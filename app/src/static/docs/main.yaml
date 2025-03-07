@@ -1,0 +1,38 @@
+openapi: 3.0.0
+info:
+  title: API de Noizz
+  version: 1.0.0
+  description: API de la aplicacion de reproduccion de musica Noizz
+
+servers:
+  - url: http://localhost:5000
+    description: Servidor local
+
+paths:
+  /login:
+    $ref: "/static/docs/paths/auth/login.yaml"
+  /logout:
+    $ref: "/static/docs/paths/auth/logout.yaml"
+  /register-oyente:
+    $ref: "/static/docs/paths/auth/register-oyente.yaml"
+  /register-artista:
+    $ref: "/static/docs/paths/auth/register-artista.yaml"
+  /get-pendientes:
+    $ref: "/static/docs/paths/admin/get-pendientes.yaml"
+  /check-artista:
+    $ref: "/static/docs/paths/admin/check-artista.yaml"
+  /verify-artista:
+    $ref: "/static/docs/paths/auth/verify-artista.yaml"
+  /delete-account:
+    $ref: "/static/docs/paths/auth/delete-account.yaml"
+  /forgot-password:
+    $ref: "/static/docs/paths/auth/forgot-password.yaml"
+  /verify-codigo:
+    $ref: "/static/docs/paths/auth/verify-codigo.yaml"
+  /reset-password:
+    $ref: "/static/docs/paths/auth/reset-password.yaml"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: "/static/docs/components/token.yaml#/components/securitySchemes/bearerAuth"

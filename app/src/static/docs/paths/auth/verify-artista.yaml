@@ -1,0 +1,62 @@
+post:
+  summary: Verifica código de validación de artista
+  description: Verifica el código de validación de un usuario pendiente y lo convierte en artista válido.
+  tags:
+    - Autenticación
+  security:
+    - bearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            codigo:
+              type: string
+              description: Código de validación recibido por el usuario.
+          required:
+            - codigo
+  responses:
+    201:
+      description: Verificación exitosa y conversión en artista.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+                description: Token de acceso generado para autenticación.
+              artista_valido:
+                type: object
+                properties:
+                  fotoPerfil:
+                    type: string
+                    description: URL de la foto de perfil del artista.
+                  volumen:
+                    type: number
+                    description: Nivel de volumen del artista.
+              tipo:
+                type: string
+                description: Tipo de usuario (artista).
+    400:
+      description: Datos incorrectos o faltantes en la solicitud.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Correo no existe."
+    500:
+      description: Error inesperado en el servidor.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Ha ocurrido un error inesperado."

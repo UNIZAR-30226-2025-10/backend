@@ -1,0 +1,56 @@
+post:
+  summary: Verifica la validez del código para restablecer la contraseña
+  description: Comprueba si el código de restablecimiento de contraseña es válido y genera un token temporal.
+  tags:
+    - Autenticación
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - correo
+            - codigo
+          properties:
+            correo:
+              type: string
+              format: email
+              example: "usuario@email.com"
+            codigo:
+              type: string
+              example: "123456"
+  responses:
+    200:
+      description: Código válido, se genera un token temporal
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              token_temporal:
+                type: string
+                example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    400:
+      description: Datos inválidos o código incorrecto
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Código no válido."
+    500:
+      description: Error interno del servidor
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Ha ocurrido un error inesperado."
+              details:
+                type: string
+                example: "Error de base de datos"

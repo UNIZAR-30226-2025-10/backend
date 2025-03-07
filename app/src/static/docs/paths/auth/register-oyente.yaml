@@ -1,0 +1,80 @@
+post:
+  summary: Crea una cuenta de oyente
+  description: Permite a un usuario registrarse como oyente en la aplicación.
+  tags:
+    - Autenticación
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            correo:
+              type: string
+              format: email
+              description: Correo electrónico del usuario.
+            nombreUsuario:
+              type: string
+              description: Nombre de usuario del oyente.
+            contrasenya:
+              type: string
+              format: password
+              description: Contraseña del usuario.
+          required:
+            - correo
+            - nombreUsuario
+            - contrasenya
+  responses:
+    201:
+      description: Registro exitoso.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+                description: Token de acceso generado para autenticación.
+              oyente:
+                type: object
+                properties:
+                  fotoPerfil:
+                    type: string
+                    description: URL de la foto de perfil del oyente.
+                  volumen:
+                    type: number
+                    description: Nivel de volumen del oyente.
+              tipo:
+                type: string
+                description: Tipo de usuario (oyente).
+    400:
+      description: Datos incorrectos o faltantes en la solicitud.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Faltan campos."
+    409:
+      description: Conflicto. El correo o nombre de usuario ya están en uso.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "El correo ya está en uso."
+    500:
+      description: Error inesperado en el servidor.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Ha ocurrido un error inesperado."

@@ -1,0 +1,69 @@
+post:
+  summary: Inicia sesión en la aplicación
+  description: Permite a un usuario iniciar sesión proporcionando un correo o nombre de usuario junto con su contraseña.
+  tags:
+    - Autenticación
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            correo:
+              type: string
+              format: email
+              description: Correo electrónico del usuario (opcional si se proporciona nombreUsuario).
+            nombreUsuario:
+              type: string
+              description: Nombre de usuario del usuario (opcional si se proporciona correo).
+            contrasenya:
+              type: string
+              format: password
+              description: Contraseña del usuario.
+          required:
+            - contrasenya
+  responses:
+    200:
+      description: Inicio de sesión exitoso.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+                description: Token de acceso generado para autenticación.
+              usuario:
+                type: object
+                nullable: true
+                properties:
+                  fotoPerfil:
+                    type: string
+                    description: URL de la foto de perfil del usuario.
+                  volumen:
+                    type: number
+                    description: Nivel de volumen del usuario.
+              tipo:
+                type: string
+                description: Tipo de usuario (oyente, artista, pendiente, valido o admin).
+    400:
+      description: Datos incorrectos o faltantes en la solicitud.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Falta la contraseña."
+    401:
+      description: Credenciales incorrectas.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Contraseña incorrecta."
