@@ -23,7 +23,7 @@ def get_historial_canciones():
         # Construir el diccionario con las canciones escuchadas
         historial = {
             h.cancion.id: {
-                "nombreArtista" : h.cancion.Artista_correo,
+                "nombreArtista" : h.cancion.artista.nombreArtistico,
                 "nombreCancion": h.cancion.nombre,
                 "fotoPortada": h.cancion.album.fotoPortada
             }
