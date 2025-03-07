@@ -2,23 +2,28 @@ from db.models import *
 from sqlalchemy import select
 
 """ Analiza el historial para encontrar artistas, generos, albumes y playlists mas reproducidos. """
-def extraer_caracteristicas(historial_canciones, historial_playlists, db):
+def extraer_caracteristicas(historial_canciones, historial_colecciones, db):
     artistas = {}
     generos = {}
     albumes = {}
     playlists = {}
 
     # Obtener info de las canciones
-    for nombre, artista in historial_canciones:
-        cancion = db.get(Cancion, (nombre, artista))
+    for historial in historial_canciones:
+        cancion = historial.cancion
         if cancion:
-            artistas[cancion.artista] = artistas.get(cancion.artista, 0) + 1
-            generos[cancion.genero] = generos.get(cancion.genero, 0) + 1
-            albumes[cancion.album] = albumes.get(cancion.album, 0) + 1
+            artistas[cancion.artista.correo] = artistas.get(cancion.artista.correo, 0) + 1
+            for genero in cancion.generosMusicales:
+                generos[genero.nombre] = generos.get(genero.nombre, 0) + 1
+            albumes[cancion.album.id] = albumes.get(cancion.album.id, 0) + 1
 
-    # Obtener playlists reproducidas
-    for nombre, creador in historial_playlists:
-        playlists[nombre] = playlists.get(nombre, 0) + 1
+    # Obtener colecciones reproducidas (álbumes y playlists)
+    for historial in historial_colecciones:
+        coleccion = historial.coleccion
+        if coleccion.tipo == 'playlist':
+            playlists[coleccion.id] = playlists.get(coleccion.id, 0) + 1
+        elif coleccion.tipo == 'album':
+            albumes[coleccion.id] = albumes.get(coleccion.id, 0) + 1
 
     return {
         "artistas": artistas,
@@ -27,46 +32,46 @@ def extraer_caracteristicas(historial_canciones, historial_playlists, db):
         "playlists": playlists
     }
 
-
 """ Calcula una puntuacion de recomendacion basada en similitud con el historial. """
 def calcular_puntuacion(cancion, caracteristicas):
     puntuacion = 0
     
-    if cancion.artista in caracteristicas["artistas"]:
-        puntuacion += caracteristicas["artistas"][cancion.artista] * 3  # Artista tiene mas peso
+    if cancion.artista.correo in caracteristicas["artistas"]:
+        puntuacion += caracteristicas["artistas"][cancion.artista.correo] * 3  # Artista tiene más peso
     
-    if cancion.genero in caracteristicas["generos"]:
-        puntuacion += caracteristicas["generos"][cancion.genero] * 2  # Genero es importante
+    for genero in cancion.generosMusicales:
+        if genero.nombre in caracteristicas["generos"]:
+            puntuacion += caracteristicas["generos"][genero.nombre] * 2  # Género es importante
     
-    if cancion.album in caracteristicas["albumes"]:
-        puntuacion += caracteristicas["albumes"][cancion.album] * 1.5  # Album tiene peso medio
+    if cancion.album.id in caracteristicas["albumes"]:
+        puntuacion += caracteristicas["albumes"][cancion.album.id] * 1.5  # Álbum tiene peso medio
     
-    for playlist in cancion.playlists:
-        if playlist in caracteristicas["playlists"]:
-            puntuacion += caracteristicas["playlists"][playlist]  # Playlists tienen peso bajo
+    for playlist in cancion.esParteDePlaylist:
+        if playlist.playlist.id in caracteristicas["playlists"]:
+            puntuacion += caracteristicas["playlists"][playlist.playlist.id]  # Playlists tienen peso bajo
     
     return puntuacion
 
+""" Devuelve 30 canciones recomendadas para el usuario basado en su historial. """
 def obtener_recomendaciones(usuario, db):
-    """ Devuelve 30 canciones recomendadas para el usuario basado en su historial. """
     # Obtener historial del usuario
     historial_canciones = usuario.historialCancion
-    historial_playlists = usuario.historialPlaylist
+    historial_colecciones = usuario.historialColeccion
 
-    # Extraer caracteristicas de sus gustos
-    caracteristicas = extraer_caracteristicas(historial_canciones, historial_playlists, db)
+    # Extraer características de sus gustos
+    caracteristicas = extraer_caracteristicas(historial_canciones, historial_colecciones, db)
 
     # Obtener todas las canciones disponibles en la plataforma
     canciones_disponibles = db.execute(select(Cancion)).scalars().all()
 
-    # Calcular puntuaciones para cada cancion candidata
+    # Calcular puntuaciones para cada canción candidata
     canciones_recomendadas = [
         (cancion, calcular_puntuacion(cancion, caracteristicas)) 
         for cancion in canciones_disponibles
-        if (cancion.nombre, cancion.Artista_correo) not in historial_canciones  # Evitar repetir canciones ya escuchadas
+        if all(historial.cancion.id != cancion.id for historial in historial_canciones)  # Evitar repetir canciones ya escuchadas
     ]
 
-    # Ordenar por puntuacion de mayor a menor y tomar las 30 mejores
+    # Ordenar por puntuación de mayor a menor y tomar las 30 mejores
     canciones_recomendadas.sort(key=lambda x: x[1], reverse=True)
 
     canciones_dict = {

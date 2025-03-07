@@ -47,15 +47,42 @@ def get_historial_colecciones():
 
         historial = {
             h.coleccion.id: {
-                "nombreCancion": h.coleccion.nombre,
+                "nombreColeccion": h.coleccion.nombre,
                 "fotoPortada": h.coleccion.fotoPortada,
-                "autor": h.coleccion.oyente.nombreUsuario if isinstance(h.coleccion, Playlist) 
-                else h.coleccion.artista.nombreUsuario
+                "autor": (
+                    h.coleccion.oyente.nombreUsuario if isinstance(h.coleccion, Playlist)
+                    else h.coleccion.artista.nombreArtistico if isinstance(h.coleccion, Album)
+                    else "Desconocido"
+                )
             }
             for h in oyente_entry.historialColeccion
         }
     
     return jsonify({"historial_colecciones": dict(list(historial.items())[:30])}), 200
+
+"""Devuelve una lista con el historial de artistas del usuario"""
+@user_home_bp.route('/get-historial-artistas', methods=['GET'])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente", "artista")
+def get_historial_artistas():
+    correo = get_jwt_identity()
+
+    with get_db() as db:
+        oyente_entry = db.get(Oyente, correo)
+        if not oyente_entry:
+            return jsonify({"error": "Correo no existe."}), 401
+
+        # Construir el diccionario con los artistas escuchados
+        artistas = {
+            h.cancion.artista.correo: {
+                "nombreArtista" : h.cancion.artista.nombreArtistico,
+                "fotoPerfil": h.cancion.artista.fotoPerfil
+            }
+            for h in oyente_entry.historialCancion
+        }
+    
+    return jsonify({"historial_artistas": dict(list(artistas.items())[:30])}), 200
 
 """Devuelve una lista con los seguidos del usuario"""
 @user_home_bp.route('/get-seguidos', methods=['GET'])
@@ -108,13 +135,22 @@ def get_mis_playlists():
                 "fotoPortada": s.fotoPortada,
                 "nombre": s.nombre
             }
-            for s in oyente_entry.participantes
+            for s in oyente_entry.participante
         }
 
-        # Ordena ambos diccionarios por orden alfabetico en uno solo
-        playlists = sorted(mis_playlists + participando_playlists, key=lambda x: x["nombre"])
+        # Unimos ambos diccionarios
+        playlists = {
+            **mis_playlists,
+            **participando_playlists
+        }
+
+        # Ordenamos el diccionario por el campo "nombre"
+        playlists_ordenadas = sorted(playlists.items(), key=lambda x: x[1]["nombre"])
+
+        # Convertimos la lista ordenada en un diccionario solo con el id como clave
+        playlists_dict = {k: v for k, v in playlists_ordenadas}
         
-    return jsonify({"playlists": dict(list(playlists[:30]))}), 200
+    return jsonify({"playlists": dict(list(playlists_dict.items())[:30])}), 200
 
 
 """Devuelve una lista con las canciones recomendadas para el usuario"""
@@ -132,4 +168,4 @@ def get_recomendaciones():
         
         canciones_recomendadas = obtener_recomendaciones(oyente_entry, db)
 
-    return jsonify({"canciones_recomendadas": dict(list(canciones_recomendadas))}), 200
+    return jsonify({"canciones_recomendadas": canciones_recomendadas}), 200
