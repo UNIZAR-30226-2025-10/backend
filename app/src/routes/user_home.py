@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from db.db import get_db
 from db.models import *
@@ -21,16 +21,17 @@ def get_historial_canciones():
             return jsonify({"error": "Correo no existe."}), 401
 
         # Construir el diccionario con las canciones escuchadas
-        historial = {
-            h.cancion.id: {
-                "nombreArtista" : h.cancion.artista.nombreArtistico,
-                "nombreCancion": h.cancion.nombre,
+        historial = [
+            {
+                "id": h.cancion.id,
+                "nombreArtisticoArtista" : h.cancion.artista.nombreArtistico,
+                "nombre": h.cancion.nombre,
                 "fotoPortada": h.cancion.album.fotoPortada
             }
-            for h in oyente_entry.historialCancion
-        }
+            for h in oyente_entry.historialCancion[:30]
+        ]
     
-    return jsonify({"historial_canciones": dict(list(historial.items())[:30])}), 200
+    return jsonify({"historial_canciones": historial}), 200
 
 """Devuelve una lista con el historial de albumes y playlists del usuario"""
 @user_home_bp.route('/get-historial-colecciones', methods=['GET'])
@@ -45,9 +46,10 @@ def get_historial_colecciones():
         if not oyente_entry:
             return jsonify({"error": "Correo no existe."}), 401
 
-        historial = {
-            h.coleccion.id: {
-                "nombreColeccion": h.coleccion.nombre,
+        historial = [
+            {
+                "id": h.coleccion.id,
+                "nombre": h.coleccion.nombre,
                 "fotoPortada": h.coleccion.fotoPortada,
                 "autor": (
                     h.coleccion.oyente.nombreUsuario if isinstance(h.coleccion, Playlist)
@@ -55,10 +57,10 @@ def get_historial_colecciones():
                     else "Desconocido"
                 )
             }
-            for h in oyente_entry.historialColeccion
-        }
+            for h in oyente_entry.historialColeccion[:30]
+        ]
     
-    return jsonify({"historial_colecciones": dict(list(historial.items())[:30])}), 200
+    return jsonify({"historial_colecciones": historial}), 200
 
 """Devuelve una lista con el historial de artistas del usuario"""
 @user_home_bp.route('/get-historial-artistas', methods=['GET'])
@@ -74,15 +76,16 @@ def get_historial_artistas():
             return jsonify({"error": "Correo no existe."}), 401
 
         # Construir el diccionario con los artistas escuchados
-        artistas = {
-            h.cancion.artista.correo: {
-                "nombreArtista" : h.cancion.artista.nombreArtistico,
+        artistas = [
+            {
+                "nombreoUsuario": h.cancion.artista.nombreUsuario,
+                "nombreArtistico" : h.cancion.artista.nombreArtistico,
                 "fotoPerfil": h.cancion.artista.fotoPerfil
             }
-            for h in oyente_entry.historialCancion
-        }
+            for h in oyente_entry.historialCancion[:30]
+        ]
     
-    return jsonify({"historial_artistas": dict(list(artistas.items())[:30])}), 200
+    return jsonify({"historial_artistas": artistas}), 200
 
 """Devuelve una lista con los seguidos del usuario"""
 @user_home_bp.route('/get-seguidos', methods=['GET'])
@@ -97,15 +100,15 @@ def get_seguidos():
         if not oyente_entry:
             return jsonify({"error": "Correo no existe."}), 401
 
-        seguidos = {
-            s.correo: {
-                "fotoPerfil": s.fotoPerfil,
-                "nombre": s.nombreUsuario
+        seguidos = [
+            {
+                "nombreUsuario": s.nombreUsuario,
+                "fotoPerfil": s.fotoPerfil
             }
-            for s in oyente_entry.seguidos
-        }
+            for s in oyente_entry.seguidos[:30]
+        ]
 
-    return jsonify({"seguidos": dict(list(seguidos.items())[:30])}), 200
+    return jsonify({"seguidos": seguidos}), 200
 
 """Devuelve una lista con las playlists del usuario"""
 @user_home_bp.route('/get-mis-playlists', methods=['GET'])
@@ -121,36 +124,32 @@ def get_mis_playlists():
             return jsonify({"error": "Correo no existe."}), 401
 
         # Accede directamente a la relacion con playlists creadas
-        mis_playlists = {
-            s.id: {
+        mis_playlists = [
+            {
+                "id": s.id,
                 "fotoPortada": s.fotoPortada,
                 "nombre": s.nombre
             }
-            for s in oyente_entry.playlists
-        }
+            for s in oyente_entry.playlists[:30]
+        ]
 
         # Accede directamente a la relacion con playlists en las que se participa
-        participando_playlists = {
-            s.id: {
+        participando_playlists = [
+            {
+                "id": s.id,
                 "fotoPortada": s.fotoPortada,
                 "nombre": s.nombre
             }
-            for s in oyente_entry.participante
-        }
+            for s in oyente_entry.participante[:30]
+        ]
 
         # Unimos ambos diccionarios
-        playlists = {
-            **mis_playlists,
-            **participando_playlists
-        }
+        playlists = mis_playlists + participando_playlists
 
         # Ordenamos el diccionario por el campo "nombre"
-        playlists_ordenadas = sorted(playlists.items(), key=lambda x: x[1]["nombre"])
-
-        # Convertimos la lista ordenada en un diccionario solo con el id como clave
-        playlists_dict = {k: v for k, v in playlists_ordenadas}
+        playlists_ordenadas = sorted(playlists, key=lambda x: x["nombre"])
         
-    return jsonify({"playlists": dict(list(playlists_dict.items())[:30])}), 200
+    return jsonify({"playlists": playlists_ordenadas[:30]}), 200
 
 
 """Devuelve una lista con las canciones recomendadas para el usuario"""
@@ -169,3 +168,30 @@ def get_recomendaciones():
         canciones_recomendadas = obtener_recomendaciones(oyente_entry, db)
 
     return jsonify({"canciones_recomendadas": canciones_recomendadas}), 200
+
+"""Envia a la BD el volumen cada vez que se modifica"""
+@user_home_bp.route('/change-volumen', methods=['PATCH'])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente", "artista")
+def change_volumen():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Datos incorrectos."}), 400
+    
+    correo = get_jwt_identity()
+    volumen = data.get('volumen')
+    if volumen is None or not (0 <= volumen <= 100):
+        return jsonify({"error": "El volumen debe estar entre 0 y 100."}), 400
+
+    with get_db() as db:
+        # Obtener directamente al Oyente desde la tabla 'Oyente'
+        oyente_entry = db.get(Oyente, correo)
+        if not oyente_entry:
+            return jsonify({"error": "El usuario no es un oyente."}), 404
+
+        # Actualizar el volumen
+        oyente_entry.volumen = volumen
+        db.commit()
+
+    return jsonify({"message": "Volumen actualizado exitosamente."}), 200
