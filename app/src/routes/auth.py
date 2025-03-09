@@ -6,7 +6,8 @@ from utils.hash import hash, verify
 from utils.code import new_code
 from utils.mail import send_mail
 from utils.decorators import roles_required, tokenVersion_required
-from datetime import timedelta
+from datetime import timedelta, datetime
+import pytz
 
 auth_bp = Blueprint('auth', __name__) 
 
@@ -82,7 +83,10 @@ def register_oyente():
         oyente = Oyente(correo=correo, nombreUsuario=nombreUsuario,
                             contrasenya=contrasenyaHash, fotoPerfil="DEFAULT",
                             volumen=50, tokenVersion=1)
+        fav_playlist = Playlist(nombre="Favoritos", fotoPortada="DEFAULT", Oyente_correo=correo,
+                                privacidad=False, fecha=datetime.now(pytz.timezone('Europe/Madrid')))
         db.add(oyente) 
+        db.add(fav_playlist) 
         try:
             db.commit()              
         except Exception as e:
@@ -117,11 +121,11 @@ def register_artista():
         # Comprobar correo no existe
         correo_entry = db.get(Usuario, correo)
         if correo_entry:
-            return jsonify({"error": f"El correo {correo_entry.correo} ya está en uso."}), 400
+            return jsonify({"error": f"El correo {correo_entry.correo} ya está en uso."}), 409
         # Comprobar nombreUsuario no existe
         nombreUsuario_entry = db.query(Usuario).filter(Usuario.nombreUsuario == nombreUsuario).first()
         if nombreUsuario_entry:
-            return jsonify({"error": f"El nombre de usuario {nombreUsuario_entry.nombreUsuario} ya está en uso."}), 400
+            return jsonify({"error": f"El nombre de usuario {nombreUsuario_entry.nombreUsuario} ya está en uso."}), 409
 
         # Insertar usuario pendiente de validacion
         contrasenyaHash = hash(contrasenya)           
@@ -139,7 +143,7 @@ def register_artista():
                                                           "tipo": "pendiente"},
                                        expires_delta=timedelta(hours=1))
 
-    return jsonify({"token": access_token, "tipo": "pendiente"}), 200
+    return jsonify({"token": access_token, "tipo": "pendiente"}), 201
 
 
 """Verifica el codigo de validacion de una cuenta de artista y la crea en la app"""
@@ -172,12 +176,15 @@ def verify_artista():
         new_artist = Artista(correo=valid_user.correo, nombreUsuario=valid_user.nombreUsuario,
                              contrasenya=valid_user.contrasenya, fotoPerfil="DEFAULT",
                              volumen=50, nombreArtistico=valid_user.nombreArtistico, 
-                             biografia=None, tokenVersion=valid_user.tokenVersion)  # Se puede dejar vacía por ahora
+                             biografia=None, tokenVersion=valid_user.tokenVersion) 
+        fav_playlist = Playlist(nombre="Favoritos", fotoPortada="DEFAULT", Oyente_correo=valid_user.correo,
+                                privacidad=False, fecha=datetime.now(pytz.timezone('Europe/Madrid')))
 
         # Eliminar el usuario de Valido
         db.delete(valid_user)
         db.flush()
         db.add(new_artist)
+        db.add(fav_playlist)
 
         try:
             db.commit()
@@ -192,7 +199,7 @@ def verify_artista():
     return jsonify({"token": access_token, 
                     "artista_valido": {"fotoPerfil": new_artist.fotoPerfil,
                                        "volumen": new_artist.volumen}, 
-                    "tipo": "artista"}), 200
+                    "tipo": "artista"}), 201
 
 
 """Envia un correo con un codigo para restablecer la contraseña en caso de olvido"""
@@ -236,7 +243,7 @@ def forgot_password():
     send_mail(correo, "Recuperacion de contraseña",
               f"Tu código de recuperación de contraseña es: {codigo}. Vuelve a la aplicación e introdúcelo.")
 
-    return jsonify({"okay": "Todo ha ido bien."}), 200
+    return jsonify(""), 200
 
 
 """Verifica la validez del codigo para restablecer la contraseña en caso de olvido"""
@@ -308,7 +315,7 @@ def reset_password():
             db.rollback()
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
 
-    return jsonify({"message": "Contraseña cambiada con éxito."}), 200
+    return jsonify(""), 200
 
 
 """Elimina una cuenta de la app"""
@@ -338,7 +345,7 @@ def delete_account():
             db.rollback()
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
         
-    return jsonify({"message": "Cuenta eliminada con éxito."}), 200
+    return jsonify(""), 200
 
 
 """Cierra sesion en la app"""
@@ -357,4 +364,4 @@ def logout():
             db.rollback()
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
 
-    return jsonify({"message": "Sesion cerrada con éxito."}), 200
+    return jsonify(""), 200

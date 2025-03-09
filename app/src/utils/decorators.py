@@ -29,6 +29,10 @@ def tokenVersion_required():
             with get_db() as db:
                 usuario = db.get(Usuario, correo)
             
+            # Comprobar correo
+            if not usuario:
+                return jsonify({"error": "Correo no existe."}), 401
+
             # Comprobar tokenVersion valida
             if usuario.tokenVersion != tokenVersion:
                 return jsonify({"error": "Token inválido."}), 401

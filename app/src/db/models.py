@@ -1,7 +1,7 @@
 from datetime import datetime
-from datetime import date
 from sqlalchemy import Table, Column, ForeignKey, CheckConstraint, String, UniqueConstraint
 from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase
+from sqlalchemy.types import JSON
 
 class Base(DeclarativeBase):
     pass
@@ -62,7 +62,7 @@ class HistorialColeccion(Base):
 
     Oyente_correo: Mapped[str] = mapped_column(ForeignKey("Oyente.correo", ondelete="CASCADE"), primary_key=True)
     Coleccion_id: Mapped[str] = mapped_column(ForeignKey("Coleccion.id", ondelete="CASCADE"), primary_key=True)
-    fechaHora: Mapped[datetime] = mapped_column(nullable=False)
+    fecha: Mapped[datetime] = mapped_column(nullable=False)
 
     # Relaciones con Usuario y Playlist
     oyente: Mapped["Oyente"] = relationship(back_populates="historialColeccion")
@@ -74,7 +74,7 @@ class HistorialCancion(Base):
 
     Oyente_correo: Mapped[str] = mapped_column(ForeignKey("Oyente.correo", ondelete="CASCADE"), primary_key=True)
     Cancion_id: Mapped[str] = mapped_column(ForeignKey("Cancion.id", ondelete="CASCADE"), primary_key=True)
-    fechaHora: Mapped[datetime] = mapped_column(nullable=False)
+    fecha: Mapped[datetime] = mapped_column(nullable=False)
 
     oyente: Mapped["Oyente"] = relationship(back_populates="historialCancion")
     cancion: Mapped["Cancion"] = relationship(back_populates="historialCancion")
@@ -87,12 +87,10 @@ class EstaEscuchandoCancion(Base):
     Cancion_id: Mapped[int] = mapped_column(ForeignKey("Cancion.id", ondelete="CASCADE"), nullable=False)
     progreso: Mapped[int] = mapped_column(nullable=False)
     reproduciendo: Mapped[bool] = mapped_column(nullable=False)
-    modo: Mapped[str] = mapped_column(nullable=False)
 
     # Restricciones a nivel de BD
     __table_args__ = (
-        CheckConstraint('progreso > 0', name='chk_progreso'),
-        CheckConstraint("reproduciendo IN ('aleatorio', 'enBucle', 'enOrden')", name='chk_modo'),
+        CheckConstraint('progreso >= 0', name='chk_progreso'),
     )
 
     oyente: Mapped["Oyente"] = relationship(back_populates="estaEscuchandoCancion")
@@ -104,9 +102,18 @@ class EstaEscuchandoColeccion(Base):
 
     Oyente_correo: Mapped[str] = mapped_column(ForeignKey("Oyente.correo", ondelete="CASCADE"), primary_key=True)
     Coleccion_id: Mapped[int] = mapped_column(ForeignKey("Coleccion.id", ondelete="CASCADE"), nullable=False)
+    modo: Mapped[str] = mapped_column(nullable=False)
+    index: Mapped[int] = mapped_column(nullable=False)
+    orden: Mapped[list[int]] = mapped_column(JSON, nullable=False)  # Almacenamos como JSON
+
+    # Restricciones a nivel de BD
+    __table_args__ = (
+        CheckConstraint("modo IN ('aleatorio', 'enBucle', 'enOrden')", name='chk_modo'),
+    )
 
     oyente: Mapped["Oyente"] = relationship(back_populates="estaEscuchandoColeccion")
     coleccion: Mapped["Coleccion"] = relationship(back_populates="estaEscuchandoColeccion")
+    
 
 # Tabla intermedia para "Like"
 like_table = Table(
@@ -301,6 +308,7 @@ class Coleccion(Base):
     nombre: Mapped[str] = mapped_column(nullable=False)
     fotoPortada: Mapped[str] = mapped_column(nullable=False)
     tipo: Mapped[str] = mapped_column(nullable=False)
+    fecha: Mapped[datetime] = mapped_column(nullable=False)
 
     # Parametros de herencia
     __mapper_args__ = {
@@ -326,8 +334,7 @@ class Album(Coleccion):
 
     id: Mapped[int] = mapped_column(ForeignKey('Coleccion.id', ondelete="CASCADE"), primary_key=True)
     Artista_correo: Mapped[str] = mapped_column(ForeignKey('Artista.correo', ondelete="CASCADE"), nullable=False)
-    fechaPublicacion: Mapped[date] = mapped_column(nullable=False)
-
+    
     __mapper_args__ = {
         'polymorphic_identity': 'album',
     }
@@ -349,8 +356,7 @@ class Playlist(Coleccion):
     id: Mapped[int] = mapped_column(ForeignKey('Coleccion.id', ondelete="CASCADE"), primary_key=True)
     Oyente_correo: Mapped[str] = mapped_column(ForeignKey('Oyente.correo', ondelete="CASCADE"), nullable=False)
     privacidad: Mapped[bool] = mapped_column(nullable=False)
-    fechaCreacion: Mapped[date] = mapped_column(nullable=False)
-
+    
     __mapper_args__ = {
         'polymorphic_identity': 'playlist',
     }
@@ -379,7 +385,7 @@ class Cancion(Base):
     nombre: Mapped[str] = mapped_column(nullable=False)
     duracion: Mapped[int] = mapped_column(nullable=False)   # Duracion en segundos
     audio: Mapped[str] = mapped_column(nullable=False)
-    fechaPublicacion: Mapped[date] = mapped_column(nullable=False)
+    fecha: Mapped[datetime] = mapped_column(nullable=False)
     reproducciones: Mapped[int] = mapped_column(nullable=False)
     Album_id:  Mapped[int] = mapped_column(ForeignKey('Album.id', ondelete="CASCADE"), nullable=False)
     puesto: Mapped[int] = mapped_column(nullable=False)
@@ -438,7 +444,7 @@ class Noizzy(Base):
     
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)  # Id necesario por conflictos herencia y clave foranea compuesta
     Oyente_correo: Mapped[str] = mapped_column(ForeignKey('Oyente.correo', ondelete="CASCADE"), nullable=False)
-    fechaHora: Mapped[datetime] = mapped_column(nullable=False)
+    fecha: Mapped[datetime] = mapped_column(nullable=False)
     texto: Mapped[str] = mapped_column(nullable=False)
     tipo: Mapped[str] = mapped_column(nullable=False)
     Cancion_id: Mapped[str] = mapped_column(ForeignKey('Cancion.id'), nullable=True)

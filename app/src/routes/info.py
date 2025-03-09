@@ -66,7 +66,7 @@ def get_datos_album():
                 "fotoPortada": album.fotoPortada,
                 "nombre": cancion.nombre,
                 "duracion": cancion.duracion,
-                "fechaPublicacion": cancion.fechaPublicacion.isoformat(),
+                "fechaPublicacion": cancion.fecha.date().isoformat(),
                 "puesto": cancion.puesto
             }
             for cancion in album.canciones
@@ -76,7 +76,7 @@ def get_datos_album():
             "nombre": album.nombre,
             "fotoPortada": album.fotoPortada,
             "nombreArtisticoArtista": album.artista.nombreArtistico, 
-            "fechaPublicacion": album.fechaPublicacion.isoformat(),
+            "fechaPublicacion": album.fecha.date().isoformat(),
             "duracion": sum(cancion.duracion for cancion in album.canciones),
             "canciones": canciones
             }), 200

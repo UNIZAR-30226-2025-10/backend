@@ -32,17 +32,17 @@ paths:
   /reset-password:
     $ref: "/static/docs/paths/auth/reset-password.yaml"
   /get-historial-artistas:
-    $ref: "/static/docs/paths/user_home/get-historial-artistas.yaml"
+    $ref: "/static/docs/paths/home/get-historial-artistas.yaml"
   /get-historial-canciones:
-    $ref: "/static/docs/paths/user_home/get-historial-canciones.yaml"
+    $ref: "/static/docs/paths/home/get-historial-canciones.yaml"
   /get-historial-colecciones:
-    $ref: "/static/docs/paths/user_home/get-historial-colecciones.yaml"
+    $ref: "/static/docs/paths/home/get-historial-colecciones.yaml"
   /get-mis-playlists:
-    $ref: "/static/docs/paths/user_home/get-mis-playlists.yaml"
+    $ref: "/static/docs/paths/home/get-mis-playlists.yaml"
   /get-recomendaciones:
-    $ref: "/static/docs/paths/user_home/get-recomendaciones.yaml"
+    $ref: "/static/docs/paths/home/get-recomendaciones.yaml"
   /get-seguidos:
-    $ref: "/static/docs/paths/user_home/get-seguidos.yaml"
+    $ref: "/static/docs/paths/home/get-seguidos.yaml"
 
 components:
   securitySchemes:
