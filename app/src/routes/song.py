@@ -50,6 +50,7 @@ def get_cancion():
 
         else: 
             cancion_dict = None
+            coleccion_dict = None
         
     return jsonify({"cancion": cancion_dict, "coleccion": coleccion_dict}), 200
 
@@ -112,6 +113,38 @@ def change_progreso():
             return jsonify({"error": "Progreso no valido."}), 400 
 
         estaEscuchandoCancion_entry.progreso = progreso       
+        try:
+            db.commit()              
+        except Exception as e:
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+    
+    return jsonify(""), 200
+
+
+"""Cambia el modo de reproduccion de la cancion actual"""
+@song_bp.route("/change-modo", methods=["PATCH"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente","artista")
+def change_modo():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Datos incorrectos."}), 400
+
+    correo = get_jwt_identity()
+    modo = data.get("modo")
+    if not modo:
+        return jsonify({"error": "Falta el modo de la cancion."}), 400 
+    
+    if modo not in ["aleatorio", "enBucle", "enOrden"]:
+        return jsonify({"error": "Modo incorrecto."}), 400 
+
+    with get_db() as db:
+        estaEscuchandoColeccion_entry = db.get(EstaEscuchandoColeccion, correo)
+        if not estaEscuchandoColeccion_entry:
+            return jsonify({"error": "El usuario no esta reproduciendo ninguna cancion en una coleccion."}), 404 
+
+        estaEscuchandoColeccion_entry.modo = modo    
         try:
             db.commit()              
         except Exception as e:

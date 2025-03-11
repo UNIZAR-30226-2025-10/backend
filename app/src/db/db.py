@@ -1,8 +1,9 @@
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.engine.url import URL
-from sqlalchemy import create_engine
-from contextlib import contextmanager
 import os
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.pool import NullPool
+from sqlalchemy.engine.url import URL
+from contextlib import contextmanager
 
 TURSO_URL = os.environ.get("TURSO_URL")
 TURSO_TOKEN = os.environ.get("TURSO_TOKEN")
@@ -19,16 +20,18 @@ db_url = URL.create(
 )
 
 # Crear el motor de la base de datos
-engine = create_engine(db_url, connect_args={"check_same_thread": False}, echo=True)
+engine = create_engine(db_url, poolclass=NullPool, connect_args={"check_same_thread": False}, echo=True)
 
 # Crear una sesión reutilizable
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
+scoped_session_instance = scoped_session(SessionLocal)
 
 '''Obtiene una sesion para conectarse a la BD'''
 @contextmanager
 def get_db():
-    db = SessionLocal()
+    db = scoped_session_instance()
     try:
         yield db  # Devuelve la sesión para que la use el endpoint
     finally:
         db.close()  # Asegura que la sesión se cierre correctamente
+        scoped_session_instance.remove()

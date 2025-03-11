@@ -72,11 +72,15 @@ def obtener_recomendaciones(usuario, db):
     ]
 
     # Calcular puntuaciones de forma concurrente
-    def calcular(cancion):
-        return cancion, calcular_puntuacion(cancion, caracteristicas)
+    #def calcular(cancion):
+    #    return cancion, calcular_puntuacion(cancion, caracteristicas)
 
-    with ThreadPoolExecutor() as executor:
-        canciones_recomendadas = list(executor.map(calcular, canciones_candidatas))
+    #with ThreadPoolExecutor() as executor:
+    #    canciones_recomendadas = list(executor.map(calcular, canciones_candidatas))
+
+    canciones_recomendadas = [
+        (cancion, calcular_puntuacion(cancion, caracteristicas)) for cancion in canciones_candidatas
+    ]
 
     # Ordenar por puntuación de mayor a menor y tomar las 30 mejores
     canciones_recomendadas.sort(key=lambda x: x[1], reverse=True)
