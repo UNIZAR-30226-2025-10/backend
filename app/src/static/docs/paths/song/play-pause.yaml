@@ -1,0 +1,23 @@
+patch:
+  summary: Cambiar el estado de la canción actual
+  description: Permite pausar o reanudar la reproducción de la canción actual y actualizar el progreso si se pausa.
+  security:
+    - BearerAuth: []
+  tags:
+    - Canción
+  requestBody:
+    required: true
+    content:
+      application/json:
+        example:
+          reproduciendo: false
+          progreso: 120
+  responses:
+    200:
+      description: Estado de la canción actualizado correctamente.
+    400:
+      description: Datos incorrectos o faltantes en la petición.
+    404:
+      description: El usuario no está reproduciendo ninguna canción.
+    500:
+      description: Ha ocurrido un error inesperado.

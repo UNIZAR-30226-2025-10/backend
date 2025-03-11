@@ -1,0 +1,29 @@
+put:
+  summary: Reproducir una canción en una colección
+  description: Inicia la reproducción de una canción específica dentro de una colección, considerando el modo y el orden de la colección. Si ya hay una canción o colección en reproducción, las actualiza.
+  security:
+    - BearerAuth: []
+  tags:
+    - Canción
+  requestBody:
+    required: true
+    content:
+      application/json:
+        example:
+          coleccion: 456
+          modo: "enBucle"
+          orden: [123, 456, 789]
+          index: 2
+  responses:
+    200:
+      description: Canción de la colección iniciada correctamente.
+      content:
+        application/json:
+          example:
+            audio: "url_audio.mp3"
+            nombreUsuarioArtista: "UsuarioArtista"
+            fav: true
+    400:
+      description: Datos incorrectos, falta algún campo, o modo no válido.
+    500:
+      description: Ha ocurrido un error inesperado.

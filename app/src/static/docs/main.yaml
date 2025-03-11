@@ -43,6 +43,20 @@ paths:
     $ref: "/static/docs/paths/home/get-recomendaciones.yaml"
   /get-seguidos:
     $ref: "/static/docs/paths/home/get-seguidos.yaml"
+  /add-reproduccion:
+    $ref: "/static/docs/paths/song/add-reproduccion.yaml"
+  /change-fav:
+    $ref: "/static/docs/paths/song/change-fav.yaml"
+  /change-progreso:
+    $ref: "/static/docs/paths/song/change-progreso.yaml"
+  /get-cancion-actual:
+    $ref: "/static/docs/paths/song/get-cancion-actual.yaml"
+  /play-pause:
+    $ref: "/static/docs/paths/song/play-pause.yaml"
+  /put-cancion-sola:
+    $ref: "/static/docs/paths/song/put-cancion-sola.yaml"
+  /put-cancion-coleccion:
+    $ref: "/static/docs/paths/song/put-cancion-coleccion.yaml"
 
 components:
   securitySchemes:

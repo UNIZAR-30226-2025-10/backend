@@ -84,7 +84,7 @@ def get_historial_artistas():
         # Construir el diccionario con los artistas escuchados
         artistas = [
             {
-                "nombreoUsuario": h.cancion.artista.nombreUsuario,
+                "nombreUsuario": h.cancion.artista.nombreUsuario,
                 "nombreArtistico" : h.cancion.artista.nombreArtistico,
                 "fotoPerfil": h.cancion.artista.fotoPerfil
             }

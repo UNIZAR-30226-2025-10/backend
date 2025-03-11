@@ -1,0 +1,22 @@
+patch:
+  summary: Actualizar el progreso de la canción actual
+  description: Permite actualizar el tiempo de reproducción de la canción que el usuario está escuchando.
+  security:
+    - BearerAuth: []
+  tags:
+    - Canción
+  requestBody:
+    required: true
+    content:
+      application/json:
+        example:
+          progreso: 90
+  responses:
+    200:
+      description: Progreso de la canción actualizado correctamente.
+    400:
+      description: Datos incorrectos, falta el progreso o el valor no es válido.
+    404:
+      description: El usuario no está reproduciendo ninguna canción.
+    500:
+      description: Ha ocurrido un error inesperado.

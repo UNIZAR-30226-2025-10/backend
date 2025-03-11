@@ -1,55 +1,23 @@
-patch:
-  summary: Inserta o borra una canción de la lista de Favoritos del usuario
-  description: Permite agregar o eliminar una canción de la playlist "Favoritos" del usuario autenticado.
-  tags:
-    - Canciones
+put:
+  summary: Agregar o eliminar una canción de Favoritos
+  description: Permite insertar o borrar una canción de la lista de Favoritos del usuario.
   security:
     - BearerAuth: []
+  tags:
+    - Canción
   requestBody:
     required: true
     content:
       application/json:
-        schema:
-          type: object
-          properties:
-            id:
-              type: integer
-              description: ID de la canción
-            fav:
-              type: boolean
-              description: true para agregar, false para eliminar de Favoritos
-          required:
-            - id
-            - fav
+        example:
+          id: 123
+          fav: true
   responses:
-    "200":
-      description: Operación exitosa
-    "400":
-      description: Datos incorrectos o falta de campos en la petición
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-    "404":
-      description: No existe la playlist Favoritos
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-    "500":
-      description: Error inesperado en el servidor
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-              details:
-                type: string
+    200:
+      description: Estado de favoritos actualizado correctamente.
+    400:
+      description: Datos incorrectos o faltan campos en la petición.
+    404:
+      description: No existe la playlist de Favoritos.
+    500:
+      description: Ha ocurrido un error inesperado.

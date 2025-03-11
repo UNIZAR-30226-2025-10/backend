@@ -4,7 +4,7 @@ get:
   security:
     - BearerAuth: []
   tags:
-      - Historial
+      - Home
   responses:
     200:
       description: Lista de artistas escuchados.
@@ -12,8 +12,8 @@ get:
         application/json:
           example:
             historial_artistas:
-              "artista@email.com":
-                nombreArtista: "Artista1"
+                nombreUsuario: "Artista1"
+                nombreArtistico: "Artista1"
                 fotoPerfil: "url_foto.jpg"
     401:
       description: Usuario no autenticado o no autorizado.

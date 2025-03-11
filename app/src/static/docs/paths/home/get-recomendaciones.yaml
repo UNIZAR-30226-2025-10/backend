@@ -4,7 +4,7 @@ get:
   security:
     - BearerAuth: []
   tags:
-    - Recomendaciones
+    - Home
   responses:
     200:
       description: Lista de canciones recomendadas.
@@ -12,7 +12,7 @@ get:
         application/json:
           example:
             canciones_recomendadas:
-              "101":
+                id: "101"
                 fotoPortada: "url_album.jpg"
                 nombre: "Canción Recomendada"
     400:

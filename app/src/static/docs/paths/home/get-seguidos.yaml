@@ -4,7 +4,7 @@ get:
   security:
     - BearerAuth: []
   tags:
-      - Social
+      - Home
   responses:
     200:
       description: Lista de usuarios seguidos.
@@ -12,8 +12,7 @@ get:
         application/json:
           example:
             seguidos:
-              "usuario@email.com":
+                nombreUsuario: "Nombre Usuario"
                 fotoPerfil: "url_foto.jpg"
-                nombre: "Nombre Usuario"
     401:
       description: Usuario no autenticado o no autorizado.

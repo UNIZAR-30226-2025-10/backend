@@ -4,7 +4,7 @@ get:
   security:
     - BearerAuth: []
   tags:
-      - Historial
+      - Home
   responses:
     200:
       description: Lista de colecciones en el historial.
@@ -12,8 +12,8 @@ get:
         application/json:
           example:
             historial_colecciones:
-              "456":
-                nombreColeccion: "Mi Playlist"
+                id: "456"
+                nombre: "Mi Playlist"
                 fotoPortada: "url_playlist.jpg"
                 autor: "Usuario1"
     401:

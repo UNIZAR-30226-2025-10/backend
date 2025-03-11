@@ -1,0 +1,31 @@
+get:
+  summary: Obtener la canción actual
+  description: Devuelve la canción que el usuario está escuchando actualmente, junto con información de la colección si aplica.
+  security:
+    - BearerAuth: []
+  tags:
+    - Canción
+  responses:
+    200:
+      description: Información de la canción actual y la colección si existe.
+      content:
+        application/json:
+          example:
+            cancion:
+              id: 123
+              audio: "url_audio.mp3"
+              nombre: "Nombre de la Canción"
+              nombreArtisticoArtista: "Artista"
+              nombreUsuarioArtista: "UsuarioArtista"
+              progreso: 120
+              fav: true
+              fotoPortada: "url_portada.jpg"
+            coleccion:
+              id: 456
+              orden: [123, 124, 125]
+              index: 1
+              modo: "aleatorio"
+    400:
+      description: Usuario no encontrado.
+    401:
+      description: Usuario no autenticado o no autorizado.

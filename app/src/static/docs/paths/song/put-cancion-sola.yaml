@@ -1,0 +1,26 @@
+put:
+  summary: Reproducir una canción sola
+  description: Inicia la reproducción de una canción específica, eliminando cualquier colección en curso.
+  security:
+    - BearerAuth: []
+  tags:
+    - Canción
+  requestBody:
+    required: true
+    content:
+      application/json:
+        example:
+          id: 123
+  responses:
+    200:
+      description: Canción iniciada correctamente.
+      content:
+        application/json:
+          example:
+            audio: "url_audio.mp3"
+            nombreUsuarioArtista: "UsuarioArtista"
+            fav: true
+    400:
+      description: Datos incorrectos o faltan campos en la petición.
+    500:
+      description: Ha ocurrido un error inesperado.

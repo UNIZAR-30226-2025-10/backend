@@ -1,0 +1,14 @@
+put:
+  summary: Incrementar el número de reproducciones de una canción
+  description: Aumenta el contador de reproducciones de la canción que el usuario está escuchando y actualiza su historial.
+  security:
+    - BearerAuth: []
+  tags:
+    - Canción
+  responses:
+    200:
+      description: Reproducción registrada correctamente.
+    404:
+      description: El usuario no está reproduciendo ninguna canción.
+    500:
+      description: Ha ocurrido un error inesperado.

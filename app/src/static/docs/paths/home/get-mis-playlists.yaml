@@ -4,7 +4,7 @@ get:
   security:
     - BearerAuth: []
   tags:
-      - Playlists
+      - Home
   responses:
     200:
       description: Lista de playlists del usuario.
@@ -12,7 +12,7 @@ get:
         application/json:
           example:
             playlists:
-              "789":
+                id: "789"
                 fotoPortada: "url_playlist.jpg"
                 nombre: "Mi Playlist"
     401:
