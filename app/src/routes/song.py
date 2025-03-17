@@ -7,6 +7,7 @@ from utils.decorators import roles_required, tokenVersion_required
 from utils.fav import fav
 from datetime import datetime
 import pytz
+from app import socketio
 
 
 song_bp = Blueprint('song', __name__)
@@ -69,7 +70,7 @@ def play_pause():
     reproduciendo = data.get("reproduciendo")
     progreso = data.get("progreso")
 
-    if reproduciendo is None or (not reproduciendo and not progreso):
+    if reproduciendo is None or (not reproduciendo and progreso is None):
         return jsonify({"error": "Faltan campos en la peticion."}), 400 
     
     with get_db() as db:
@@ -86,6 +87,9 @@ def play_pause():
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
     
+    # Emitir el evento de socket con el nuevo estado de la cancion
+    socketio.emit("play-pause", {"reproduciendo": reproduciendo, "progreso": progreso if not reproduciendo else None}, room=correo)
+
     return jsonify(""), 200
 
 
@@ -101,7 +105,7 @@ def change_progreso():
 
     correo = get_jwt_identity()
     progreso = data.get("progreso")
-    if not progreso:
+    if progreso is None:
         return jsonify({"error": "Falta el progreso de la cancion."}), 400 
     
     with get_db() as db:
@@ -118,6 +122,9 @@ def change_progreso():
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
     
+    # Emitir el evento de socket con el nuevo progreso
+    socketio.emit("change-progreso", {"progreso": progreso}, room=correo)
+
     return jsonify(""), 200
 
 
@@ -150,6 +157,9 @@ def change_modo():
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
     
+    # Emitir el evento de socket con el nuevo modo
+    socketio.emit("change-modo", {"modo": modo}, room=correo)
+
     return jsonify(""), 200
 
 
@@ -282,10 +292,21 @@ def put_cancion_sola():
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
 
+        cancion = estaEscuchandoCancion_entry.cancion
+        # Emitir evento de socket con la nueva cancion actual
+        socketio.emit("put-cancion-sola", {"cancion": {
+                                                "id": cancion_id,
+                                                "audio": cancion.audio,
+                                                "nombre": cancion.nombre,
+                                                "nombreArtisticoArtista": cancion.artista.nombreArtistico,
+                                                "nombreUsuarioArtista": cancion.artista.nombreUsuario,
+                                                "progreso": 0,
+                                                "fav": fav(cancion.id, correo, db),
+                                                "fotoPortada": cancion.album.fotoPortada}}, room=correo)
+        
         return jsonify({ "audio": estaEscuchandoCancion_entry.cancion.audio,
                 "nombreUsuarioArtista": estaEscuchandoCancion_entry.cancion.artista.nombreUsuario,
                 "fav": fav(cancion_id, correo, db)}), 200
-
 
 """Reproduce una cancion en una coleccion"""
 @song_bp.route("/put-cancion-coleccion", methods=["PUT"])
@@ -351,6 +372,24 @@ def put_cancion_coleccion():
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
 
-        return jsonify({ "audio": estaEscuchandoCancion_entry.cancion.audio,
+        cancion = estaEscuchandoCancion_entry.cancion
+        coleccion = estaEscuchandoColeccion_entry.coleccion
+        # Emitir evento de socket con la nueva cancion actual
+        socketio.emit("put-cancion-sola", {"cancion": {
+                                                "id": cancion_id,
+                                                "audio": cancion.audio,
+                                                "nombre": cancion.nombre,
+                                                "nombreArtisticoArtista": cancion.artista.nombreArtistico,
+                                                "nombreUsuarioArtista": cancion.artista.nombreUsuario,
+                                                "progreso": 0,
+                                                "fav": fav(cancion.id, correo, db),
+                                                "fotoPortada": cancion.album.fotoPortada},
+                                           "coleccion": {
+                                                "id": coleccion.id,
+                                                "orden": coleccion.orden,
+                                                "index": coleccion.index,                      
+                                                "modo": estaEscuchandoColeccion_entry.modo}}, room=correo)
+
+        return jsonify({"audio": estaEscuchandoCancion_entry.cancion.audio,
                 "nombreUsuarioArtista": estaEscuchandoCancion_entry.cancion.artista.nombreUsuario,
                 "fav": fav(cancion_id, correo, db)}), 200

@@ -19,7 +19,8 @@ admin_bp = Blueprint('admin', __name__)
 def get_pendientes():
     with get_db() as db:
         pendientes_result = db.execute(select(Pendiente)).scalars().all()
-        pendientes = [p.to_dict() for p in pendientes_result]
+        pendientes = [{"correo": p.correo, "nombreArtistico": p.nombreArtistico} 
+                      for p in pendientes_result]
     
     return jsonify({"pendientes": pendientes}), 200
 
@@ -82,4 +83,4 @@ def check_artista():
             
     # Enviar correo notificando decision
     send_mail(correo, "Registro de artista en Noizz", mensaje)
-    return jsonify({"okay": "Todo ha ido bien."}), 200
+    return jsonify(""), 200

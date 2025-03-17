@@ -12,3 +12,4 @@ flask_cors==3.0.10
 cloudinary==1.30.0
 gunicorn==20.1.0
 pytz==2023.3
+Flask-SocketIO==5.3.6
