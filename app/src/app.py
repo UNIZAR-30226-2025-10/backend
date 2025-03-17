@@ -4,6 +4,10 @@ from utils.mail import init_mail
 from routes import register_routes
 from flask_cors import CORS
 import os
+from dotenv import load_dotenv
+
+# Cargar variables desde .env
+load_dotenv()
 
 # Instanciar app Flask
 app = Flask(__name__)
