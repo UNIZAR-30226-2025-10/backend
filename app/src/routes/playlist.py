@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from db.models import Playlist, Oyente, Cancion, EsParteDePlaylist, Usuario, participante_table
+from db.models import Playlist, Oyente, Cancion, EsParteDePlaylist, Usuario, participante_table, invitado_table
 from db.db import get_db
-from sqlalchemy import select, exists, delete
+from sqlalchemy import select, exists, delete, insert
 from utils.decorators import roles_required, tokenVersion_required
 from utils.fav import fav
 from datetime import datetime
@@ -18,14 +18,9 @@ playlist_bp = Blueprint('playlist', __name__)
 @roles_required("oyente","artista")
 def get_datos_playlist():
     id = request.args.get("id")
-    orden = request.args.get("orden")
-
     if not id:
         return jsonify({"error": "Falta el ID de la playlist."}), 400
     correo = get_jwt_identity()
-
-    if not orden:
-        orden = "fecha"
 
     with get_db() as db:
         playlist_entry = db.get(Playlist, id)
@@ -36,16 +31,7 @@ def get_datos_playlist():
         creador_entry = db.get(Oyente, playlist_entry.Oyente_correo)
         participantes = [p.nombreUsuario for p in playlist_entry.participantes]
 
-        canciones_entry = [(ep.cancion, ep.fecha) for ep in playlist_entry.esParteDePlaylist]
-
-        if orden == "fecha":
-            canciones_entry = sorted(canciones_entry, key=lambda x: x[1])
-        elif orden == "nombre":
-            canciones_entry = sorted(canciones_entry, key=lambda x: x[0].nombre.lower())
-        elif orden == "reproducciones":
-            canciones_entry = sorted(canciones_entry, key=lambda x: x[0].reproducciones, reverse=True)
-
-        canciones_entry = [c[0] for c in canciones_entry]
+        canciones_entry = [ep.cancion for ep in playlist_entry.esParteDePlaylist]
 
         duracion_total = sum(c.duracion for c in canciones_entry)
 
@@ -78,7 +64,7 @@ def get_datos_playlist():
 @roles_required("oyente","artista")
 def change_privacidad():
     data = request.get_json()
-    if not data or "id" not in data or "privacidad" not in data:
+    if not data or "id" not in data or "privacidad" is None:
         return jsonify({"error": "Faltan datos requeridos."}), 400
 
     id = data.get("id")
@@ -119,7 +105,7 @@ def add_to_playlist():
             return jsonify({"error": "La playlist no existe."}), 404
         
         participantes = [p.correo for p in playlist_entry.participantes]
-        if playlist_entry.Oyente_correo != correo or correo not in participantes:
+        if playlist_entry.Oyente_correo != correo and correo not in participantes:
             return jsonify({"error": "No tienes permiso para modificar esta playlist."}), 403
 
         cancion_entry = db.get(Cancion, cancion)
@@ -163,7 +149,7 @@ def delete_from_playlist():
             return jsonify({"error": "La cancion no pertenece a la playlist."}), 404
         
         participantes = [p.correo for p in playlist_entry.participantes]
-        if playlist_entry.Oyente_correo != correo or correo not in participantes:
+        if playlist_entry.Oyente_correo != correo and correo not in participantes:
             return jsonify({"error": "No tienes permiso para modificar esta playlist."}), 403
 
         db.delete(esParteDePlaylist_entry)
@@ -203,7 +189,7 @@ def invite_to_playlist():
         if usuario_entry in playlist_entry.participantes or usuario_entry in playlist_entry.invitados:
             return jsonify({"error": "El usuario ya ha sido invitado a participar en la playlist."}), 409
         
-        playlist.invitados.append(usuario_entry)
+        playlist_entry.invitados.append(usuario_entry)
         try:
             db.commit()              
         except Exception as e:
@@ -281,10 +267,158 @@ def expel_from_playlist():
         if usuario_entry not in playlist_entry.participantes:
             return jsonify({"error": "El usuario no participa en la playlist."}), 404
         
-        playlist.participantes.remove(usuario_entry)
+        playlist_entry.participantes.remove(usuario_entry)
         try:
             db.commit()              
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
     
     return jsonify(""), 204
+
+"""Cambia los datos de una playlist del usuario logueado"""
+@playlist_bp.route("/change-playlist", methods=["PUT"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente","artista")
+def change_playlist():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Datos incorrectos."}), 400
+
+    correo = get_jwt_identity()
+    playlist_id = data.get("id")
+    nueva_foto = data.get("nuevaFoto")
+    nuevo_nombre = data.get("nuevoNombre")
+
+    if not playlist_id or not nueva_foto or not nuevo_nombre:
+        return jsonify({"error": "Faltan campos en la peticion."}), 400 
+
+    with get_db() as db:
+        playlist = db.get(Playlist, playlist_id)
+
+        if not playlist:
+            return jsonify({"error": "Playlist no encontrada."}), 404
+
+        if playlist.Oyente_correo != correo:
+            return jsonify({"error": "No tienes permiso para modificar esta playlist."}), 403
+
+        playlist.nombre = nuevo_nombre
+        playlist.fotoPortada = nueva_foto
+
+        try:
+            db.commit()              
+        except Exception as e:
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+    
+    return jsonify(""), 200
+
+"""Elimina una playlist del usuario logueado"""
+@playlist_bp.route("/delete-playlist", methods=["DELETE"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente","artista")
+def delete_playlist():
+    data = request.get_json()
+    if not data or "id" not in data:
+        return jsonify({"error": "Faltan datos requeridos."}), 400
+
+    correo = get_jwt_identity()
+    playlist_id = data.get("id")
+
+    with get_db() as db:
+        playlist_entry = db.get(Playlist, playlist_id)
+        if not playlist_entry:
+            return jsonify({"error": "La playlist no existe."}), 404
+        
+        if correo != playlist_entry.Oyente_correo:
+            return jsonify({"error": "La playlist solo puede ser eliminada por el creador."}), 403
+
+        db.delete(playlist_entry)
+        try:
+            db.commit()              
+        except Exception as e:
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+    
+    return jsonify(""), 204
+
+"""Crea una nueva playlist, vacía y sin participantes, para el usuario logueado"""
+@playlist_bp.route("/create-playlist", methods=["POST"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente","artista")
+def create_playlist():
+    data = request.get_json()
+    if not data or "nombre" not in data or "fotoPortada" not in data:
+        return jsonify({"error": "Faltan datos requeridos."}), 400
+
+    correo = get_jwt_identity()
+    nombre = data.get("nombre")
+    fotoPortada = data.get("fotoPortada")
+
+    with get_db() as db:
+        new_entry = Playlist(nombre=nombre, fotoPortada=fotoPortada, tipo="playlist", fecha=datetime.now(pytz.timezone('Europe/Madrid')),
+                              Oyente_correo=correo, privacidad=False)
+        db.add(new_entry)
+        try:
+            db.commit()
+            db.refresh(new_entry)
+
+        except Exception as e:
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+    
+    return jsonify({"id": new_entry.id}), 201
+
+"""Elimina una invitación del usuario logueado para participar en una playlist"""
+@playlist_bp.route("/delete-invitacion", methods=["DELETE"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente","artista")
+def delete_invitacion():
+    data = request.get_json()
+    if not data or "id" not in data:
+        return jsonify({"error": "Faltan datos requeridos."}), 400
+
+    correo = get_jwt_identity()
+    playlist_id = data.get("id")
+
+    with get_db() as db:
+        invitado_entry = db.query(invitado_table).filter_by(Oyente_correo=correo, Playlist_id=playlist_id).first()
+        if not invitado_entry:
+            return jsonify({"error": "El usuario no ha sido invitado a colaborar en la playlist."}), 404
+
+        db.execute(invitado_table.delete().where(
+                (invitado_table.c.Oyente_correo == correo) & (invitado_table.c.Playlist_id == playlist_id)))
+        try:
+            db.commit()              
+        except Exception as e:
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+    
+    return jsonify(""), 204
+
+"""Acepta una invitación del usuario logueado para participar en una playlist, haciendo que sea colaborador"""
+@playlist_bp.route("/accept-invitacion", methods=["POST"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente","artista")
+def accept_invitacion():
+    data = request.get_json()
+    if not data or "id" not in data:
+        return jsonify({"error": "Faltan datos requeridos."}), 400
+
+    correo = get_jwt_identity()
+    playlist_id = data.get("id")
+
+    with get_db() as db:
+        invitado_entry = db.query(invitado_table).filter_by(Oyente_correo=correo, Playlist_id=playlist_id).first()
+        if not invitado_entry:
+            return jsonify({"error": "El usuario no ha sido invitado a colaborar en la playlist."}), 404
+
+        db.execute(invitado_table.delete().where(
+                (invitado_table.c.Oyente_correo == correo) & (invitado_table.c.Playlist_id == playlist_id)))
+        db.execute(insert(participante_table).values(Oyente_correo=correo, Playlist_id=playlist_id))
+        try:
+            db.commit()              
+        except Exception as e:
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+    
+    return jsonify(""), 201
