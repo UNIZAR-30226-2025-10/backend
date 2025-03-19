@@ -1,0 +1,39 @@
+patch:
+  summary: Modificar el volumen del oyente
+  description: Actualiza el nivel de volumen del usuario autenticado en la base de datos.
+  security:
+    - BearerAuth: []
+  tags:
+    - Oyente
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            volumen:
+              type: integer
+              description: Nivel de volumen entre 0 y 100.
+              example: 50
+  responses:
+    200:
+      description: Volumen actualizado correctamente.
+      content:
+        application/json:
+          example:
+            message: "Volumen actualizado exitosamente."
+    400:
+      description: Datos incorrectos o volumen fuera de rango.
+      content:
+        application/json:
+          example:
+            error: "El volumen debe estar entre 0 y 100."
+    401:
+      description: Usuario no autenticado o no autorizado.
+    404:
+      description: El usuario no es un oyente.
+      content:
+        application/json:
+          example:
+            error: "El usuario no es un oyente."

@@ -272,13 +272,7 @@ class Oyente(Usuario):
     # Relacion "Lee" con Noizzy (N a M)
     leidos: Mapped[list["Noizzy"]] = relationship(secondary=lee_table, back_populates="lectores", 
         passive_deletes=True)
-    
-    # Convertir a diccionario para devolver en formato JSON
-    def to_dict(self):
-        return {
-            "fotoPerfil": self.fotoPerfil,
-            "volumen": self.volumen
-        }
+ 
 
 class Artista(Oyente):
     __tablename__ = 'Artista'

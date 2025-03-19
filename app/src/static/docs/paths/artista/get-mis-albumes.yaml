@@ -1,0 +1,26 @@
+get:
+  summary: Obtener los álbumes de un artista
+  description: Devuelve una lista con los álbumes creados por el artista autenticado.
+  security:
+    - BearerAuth: []
+  tags:
+    - Artista
+  responses:
+    200:
+      description: Lista de álbumes obtenida exitosamente.
+      content:
+        application/json:
+          example:
+            albumes:
+              - id: 1
+                nombre: "Álbum 1"
+                fotoPortada: "url_portada1.jpg"
+              - id: 2
+                nombre: "Álbum 2"
+                fotoPortada: "url_portada2.jpg"
+    401:
+      description: El usuario no es un artista o no está autenticado.
+      content:
+        application/json:
+          example:
+            error: "El artista no existe."

@@ -1,0 +1,18 @@
+get:
+  summary: Obtener datos del oyente autenticado
+  description: Devuelve la información del oyente autenticado, incluyendo su nombre de usuario, número de seguidores y número de seguidos.
+  security:
+    - BearerAuth: []
+  tags:
+    - Oyente
+  responses:
+    200:
+      description: Datos del oyente obtenidos exitosamente.
+      content:
+        application/json:
+          example:
+            nombreUsuario: "cepedaLover"
+            numSeguidos: 10
+            numSeguidores: 30
+    401:
+      description: Usuario no autenticado o no autorizado.

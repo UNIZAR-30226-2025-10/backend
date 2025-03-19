@@ -4,7 +4,7 @@ get:
   security:
     - BearerAuth: []
   tags:
-      - Home
+      - Oyente
   responses:
     200:
       description: Lista de artistas escuchados.
