@@ -1,0 +1,36 @@
+post:
+  summary: Añadir una canción a una playlist
+  description: Permite a un usuario añadir una canción a una playlist si tiene los permisos adecuados.
+  security:
+    - bearerAuth: []
+  tags:
+    - Playlist
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            cancion:
+              type: string
+              description: ID de la canción a añadir
+            playlist:
+              type: string
+              description: ID de la playlist
+        example:
+          cancion: "cancion1"
+          playlist: "85"
+  responses:
+    "201":
+      description: La canción fue añadida exitosamente a la playlist.
+    "400":
+      description: Faltan datos requeridos.
+    "403":
+      description: No tienes permiso para modificar esta playlist.
+    "404":
+      description: La playlist o la canción no existen.
+    "409":
+      description: La canción ya está en la playlist.
+    "500":
+      description: Ha ocurrido un error inesperado.

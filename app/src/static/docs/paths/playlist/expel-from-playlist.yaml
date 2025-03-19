@@ -1,0 +1,34 @@
+delete:
+  summary: Eliminar a un usuario como participante de una playlist
+  description: Permite a un usuario eliminar a otro usuario como participante de una playlist, si tiene los permisos adecuados (el creador de la playlist).
+  security:
+    - bearerAuth: []
+  tags:
+    - Playlist
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            nombreUsuario:
+              type: string
+              description: Nombre de usuario del participante a expulsar
+            playlist:
+              type: string
+              description: ID de la playlist de la cual el usuario será expulsado
+        example:
+          nombreUsuario: "usuario123"
+          playlist: "85"
+  responses:
+    "204":
+      description: El usuario fue expulsado exitosamente de la playlist.
+    "400":
+      description: Faltan datos requeridos.
+    "403":
+      description: No tienes permiso para modificar esta playlist (solo el creador puede expulsar a participantes).
+    "404":
+      description: La playlist no existe, el usuario no existe o el usuario no participa en la playlist.
+    "500":
+      description: Ha ocurrido un error inesperado.

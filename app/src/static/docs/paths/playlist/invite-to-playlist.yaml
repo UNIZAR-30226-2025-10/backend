@@ -1,0 +1,36 @@
+post:
+  summary: Añadir un usuario como invitado a una playlist
+  description: Permite a un usuario añadir a otro usuario (que no sea ni creador ni participante) como invitado a una playlist, si tiene los permisos adecuados.
+  security:
+    - bearerAuth: []
+  tags:
+    - Playlist
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            nombreUsuario:
+              type: string
+              description: Nombre de usuario del invitado
+            playlist:
+              type: string
+              description: ID de la playlist
+        example:
+          nombreUsuario: "usuario123"
+          playlist: "85"
+  responses:
+    "201":
+      description: El usuario fue invitado exitosamente a la playlist como invitado.
+    "400":
+      description: Faltan datos requeridos.
+    "403":
+      description: No tienes permiso para modificar esta playlist.
+    "404":
+      description: La playlist o el usuario no existen.
+    "409":
+      description: El usuario ya ha sido invitado o es parte de la playlist.
+    "500":
+      description: Ha ocurrido un error inesperado.

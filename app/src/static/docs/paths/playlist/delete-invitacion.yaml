@@ -1,0 +1,28 @@
+delete:
+  summary: Eliminar una invitación para participar en una playlist
+  description: Permite al usuario eliminar una invitación que ha recibido para participar en una playlist, si tiene los permisos adecuados.
+  security:
+    - bearerAuth: []
+  tags:
+    - Playlist
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+              description: ID de la playlist de la cual el usuario desea eliminar su invitación
+        example:
+          id: "85"
+  responses:
+    "204":
+      description: La invitación fue eliminada exitosamente.
+    "400":
+      description: Faltan datos requeridos.
+    "404":
+      description: El usuario no ha sido invitado a colaborar en la playlist.
+    "500":
+      description: Ha ocurrido un error inesperado.

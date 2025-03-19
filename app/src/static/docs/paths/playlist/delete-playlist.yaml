@@ -1,0 +1,30 @@
+delete:
+  summary: Eliminar una playlist del usuario logueado
+  description: Permite a un usuario eliminar una playlist que ha creado, si tiene los permisos adecuados.
+  security:
+    - bearerAuth: []
+  tags:
+    - Playlist
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+              description: ID de la playlist a eliminar
+        example:
+          id: "85"
+  responses:
+    "204":
+      description: La playlist fue eliminada exitosamente.
+    "400":
+      description: Faltan datos requeridos.
+    "403":
+      description: No tienes permiso para eliminar esta playlist (solo el creador puede eliminarla).
+    "404":
+      description: La playlist no existe.
+    "500":
+      description: Ha ocurrido un error inesperado.

@@ -55,7 +55,7 @@ def get_datos_playlist():
             ],
         }
 
-    return jsonify(respuesta), 201
+    return jsonify(respuesta), 200
 
 """Cambia la privacidad de una playlist del usuario logueado"""
 @playlist_bp.route("/change-privacidad", methods=["PATCH"])
@@ -197,7 +197,6 @@ def invite_to_playlist():
     
     return jsonify(""), 201
 
-    
 """Elimina al usuario logueado de participante de una playlist"""
 @playlist_bp.route("/leave-playlist", methods=["DELETE"])
 @jwt_required()
@@ -236,7 +235,6 @@ def leave_playlist():
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
     
     return jsonify(""), 204
-
 
 """Elimina a un usuario de participante de una playlist del usuario logueado"""
 @playlist_bp.route("/expel-from-playlist", methods=["DELETE"])

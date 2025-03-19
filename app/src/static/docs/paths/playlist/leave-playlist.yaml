@@ -1,0 +1,28 @@
+delete:
+  summary: Eliminar al usuario logueado como participante de una playlist
+  description: Permite a un usuario eliminarse a sí mismo como participante de una playlist si tiene los permisos adecuados.
+  security:
+    - bearerAuth: []
+  tags:
+    - Playlist
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            playlist:
+              type: string
+              description: ID de la playlist de la cual el usuario quiere salir
+        example:
+          playlist: "85"
+  responses:
+    "204":
+      description: El usuario fue eliminado exitosamente como participante de la playlist.
+    "400":
+      description: Faltan datos requeridos.
+    "404":
+      description: La playlist no existe o el usuario no participa en la playlist.
+    "500":
+      description: Ha ocurrido un error inesperado.

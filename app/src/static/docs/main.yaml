@@ -57,6 +57,30 @@ paths:
     $ref: "/static/docs/paths/song/put-cancion-sola.yaml"
   /put-cancion-coleccion:
     $ref: "/static/docs/paths/song/put-cancion-coleccion.yaml"
+  /accept-invitacion:
+    $ref: "/static/docs/paths/playlist/accept-invitacion.yaml"
+  /add-to-playlist:
+    $ref: "/static/docs/paths/playlist/add-to-playlist.yaml"
+  /change-playlist:
+    $ref: "/static/docs/paths/playlist/change-playlist.yaml"
+  /change-privacidad:
+    $ref: "/static/docs/paths/playlist/change-privacidad.yaml"
+  /create-playlist:
+    $ref: "/static/docs/paths/playlist/create-playlist.yaml"
+  /delete-from-playlist:
+    $ref: "/static/docs/paths/playlist/delete-from-playlist.yaml"
+  /delete-invitacion:
+    $ref: "/static/docs/paths/playlist/delete-invitacion.yaml"
+  /delete-playlist:
+    $ref: "/static/docs/paths/playlist/delete-playlist.yaml"
+  /expel-from-playlist:
+    $ref: "/static/docs/paths/playlist/expel-from-playlist.yaml"
+  /get-datos-playlist:
+    $ref: "/static/docs/paths/playlist/get-datos-playlist.yaml"
+  /invite-to-playlist:
+    $ref: "/static/docs/paths/playlist/invite-to-playlist.yaml"
+  /leave-playlist:
+    $ref: "/static/docs/paths/playlist/leave-playlist.yaml"
 
 components:
   securitySchemes:
