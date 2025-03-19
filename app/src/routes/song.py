@@ -7,7 +7,7 @@ from utils.decorators import roles_required, tokenVersion_required
 from utils.fav import fav
 from datetime import datetime
 import pytz
-from app import socketio
+from .websocket import socketio
 
 
 song_bp = Blueprint('song', __name__)
@@ -88,7 +88,7 @@ def play_pause():
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
     
     # Emitir el evento de socket con el nuevo estado de la cancion
-    socketio.emit("play-pause", {"reproduciendo": reproduciendo, "progreso": progreso if not reproduciendo else None}, room=correo)
+    socketio.emit("play-pause-ws", {"reproduciendo": reproduciendo, "progreso": progreso if not reproduciendo else None}, room=correo)
 
     return jsonify(""), 200
 
