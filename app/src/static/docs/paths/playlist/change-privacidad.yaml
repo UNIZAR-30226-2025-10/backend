@@ -1,0 +1,23 @@
+patch:
+      summary: Cambiar privacidad de una playlist
+      description: Modifica la privacidad de una playlist del usuario autenticado.
+      security:
+        - bearerAuth: []
+      tags:
+        - Playlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              id: "12345"
+              privacidad: true
+      responses:
+        "200":
+          description: Privacidad de la playlist cambiada exitosamente.
+        "400":
+          description: Faltan datos requeridos.
+        "403":
+          description: No tienes permiso para modificar esta playlist.
+        "404":
+          description: La playlist no existe.

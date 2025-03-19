@@ -1,0 +1,38 @@
+put:
+  summary: Cambiar los datos de una playlist
+  description: Permite a un usuario cambiar el nombre y la foto de portada de una playlist si tiene los permisos adecuados (el creador de la playlist).
+  security:
+    - bearerAuth: []
+  tags:
+    - Playlist
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+              description: ID de la playlist a modificar
+            nuevaFoto:
+              type: string
+              description: URL de la nueva foto de portada
+            nuevoNombre:
+              type: string
+              description: El nuevo nombre para la playlist
+        example:
+          id: "85"
+          nuevaFoto: "https://example.com/nueva_foto.jpg"
+          nuevoNombre: "Mi nueva playlist"
+  responses:
+    "200":
+      description: Los datos de la playlist fueron modificados exitosamente.
+    "400":
+      description: Datos incorrectos o faltan campos en la solicitud.
+    "403":
+      description: No tienes permiso para modificar esta playlist (solo el creador puede modificarla).
+    "404":
+      description: La playlist no fue encontrada.
+    "500":
+      description: Ha ocurrido un error inesperado.

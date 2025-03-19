@@ -1,0 +1,40 @@
+post:
+  summary: Crear una nueva playlist vacía
+  description: Permite a un usuario crear una nueva playlist vacía sin participantes ni canciones, asociada a su cuenta.
+  security:
+    - bearerAuth: []
+  tags:
+    - Playlist
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            nombre:
+              type: string
+              description: Nombre de la nueva playlist
+            fotoPortada:
+              type: string
+              description: URL de la foto de portada de la playlist
+        example:
+          nombre: "Mi Playlist Nueva"
+          fotoPortada: "https://example.com/foto_portada.jpg"
+  responses:
+    "201":
+      description: Playlist creada exitosamente.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+                description: ID de la nueva playlist creada
+            example:
+              id: "123"
+    "400":
+      description: Faltan datos requeridos (nombre o foto de portada).
+    "500":
+      description: Ha ocurrido un error inesperado.

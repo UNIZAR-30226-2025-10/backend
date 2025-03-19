@@ -1,0 +1,28 @@
+post:
+  summary: Aceptar una invitación para participar en una playlist
+  description: Permite al usuario aceptar una invitación para colaborar en una playlist, convirtiéndose en un colaborador de la misma.
+  security:
+    - bearerAuth: []
+  tags:
+    - Playlist
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+              description: ID de la playlist a la cual el usuario desea unirse como colaborador
+        example:
+          id: "85"
+  responses:
+    "201":
+      description: El usuario ha sido agregado como colaborador a la playlist.
+    "400":
+      description: Faltan datos requeridos.
+    "404":
+      description: El usuario no ha sido invitado a colaborar en la playlist.
+    "500":
+      description: Ha ocurrido un error inesperado.
