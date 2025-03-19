@@ -64,7 +64,7 @@ def get_datos_playlist():
 @roles_required("oyente","artista")
 def change_privacidad():
     data = request.get_json()
-    if not data or "id" not in data or "privacidad" is None:
+    if not data or "id" not in data or "privacidad" not in data:
         return jsonify({"error": "Faltan datos requeridos."}), 400
 
     id = data.get("id")

@@ -123,7 +123,7 @@ def change_progreso():
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
     
     # Emitir el evento de socket con el nuevo progreso
-    socketio.emit("change-progreso", {"progreso": progreso}, room=correo)
+    socketio.emit("change-progreso-ws", {"progreso": progreso}, room=correo)
 
     return jsonify(""), 200
 
@@ -158,7 +158,7 @@ def change_modo():
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
     
     # Emitir el evento de socket con el nuevo modo
-    socketio.emit("change-modo", {"modo": modo}, room=correo)
+    socketio.emit("change-modo-ws", {"modo": modo}, room=correo)
 
     return jsonify(""), 200
 
@@ -294,7 +294,7 @@ def put_cancion_sola():
 
         cancion = estaEscuchandoCancion_entry.cancion
         # Emitir evento de socket con la nueva cancion actual
-        socketio.emit("put-cancion-sola", {"cancion": {
+        socketio.emit("put-cancion-sola-ws", {"cancion": {
                                                 "id": cancion_id,
                                                 "audio": cancion.audio,
                                                 "nombre": cancion.nombre,
@@ -375,7 +375,7 @@ def put_cancion_coleccion():
         cancion = estaEscuchandoCancion_entry.cancion
         coleccion = estaEscuchandoColeccion_entry.coleccion
         # Emitir evento de socket con la nueva cancion actual
-        socketio.emit("put-cancion-sola", {"cancion": {
+        socketio.emit("put-cancion-sola-ws", {"cancion": {
                                                 "id": cancion_id,
                                                 "audio": cancion.audio,
                                                 "nombre": cancion.nombre,
