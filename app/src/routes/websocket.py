@@ -2,7 +2,7 @@ from flask import request
 from flask_socketio import SocketIO, join_room, leave_room, rooms
 from flask_jwt_extended import decode_token
 
-socketio = SocketIO(cors_allowed_origins="*", async_mode="gevent")
+socketio = SocketIO(cors_allowed_origins="*", async_mode="threading")
 
 """Valida el token JWT y une el socket de un usuario a su room"""
 @socketio.on("connect")
