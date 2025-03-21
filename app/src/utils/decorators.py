@@ -1,6 +1,7 @@
 from functools import wraps
-from flask import jsonify
+from flask import jsonify, request, g
 from flask_jwt_extended import get_jwt, get_jwt_identity
+from flask_socketio import rooms
 from db.db import get_db
 from db.models import Usuario
 
@@ -36,6 +37,24 @@ def tokenVersion_required():
             # Comprobar tokenVersion valida
             if usuario.tokenVersion != tokenVersion:
                 return jsonify({"error": "Token inválido."}), 401
+
+            return fn(*args, **kwargs)
+        return decorated_function
+    return wrapper
+
+"""Comprueba la validez del sid"""
+def sid_required():
+    def wrapper(fn):
+        @wraps(fn)
+        def decorated_function(*args, **kwargs):
+            sid = request.headers.get("sid")
+            if not sid:
+                return {"error": "Falta SID."}, 400 
+
+            correo = get_jwt_identity()  
+            # Verificar si el SID está en la sala del usuario
+            if correo not in rooms(sid, namespace="/"):
+                return {"error": "SID no valido."}, 403 
 
             return fn(*args, **kwargs)
         return decorated_function

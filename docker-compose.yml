@@ -13,4 +13,4 @@ services:
       - .env
     ports:
       - "5000:5000"
-    command: sh -c "apk add --no-cache python3-dev sqlite nano && pip3 install --upgrade pip && pip3 --no-cache-dir install -r /backend/app/src/requirements.txt && gunicorn -k gthread -w 1 --threads 6 --timeout 0 -b 0.0.0.0:5000 app:app --log-level=debug"
+    command: sh -c "apk add --no-cache python3-dev sqlite nano && pip3 install --upgrade pip && pip3 --no-cache-dir install -r /backend/app/src/requirements.txt && gunicorn -k gthread -w 1 --threads 10 --timeout 0 -b 0.0.0.0:5000 app:app --log-level=debug"
