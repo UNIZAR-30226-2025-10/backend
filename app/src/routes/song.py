@@ -421,7 +421,7 @@ def create_cancion():
     if not data:
         return jsonify({"error": "Datos incorrectos."}), 400
     
-    artista = data.get("artista")
+    artista = get_jwt_identity()
     nombre = data.get("nombre")
     duracion = data.get("duracion")
     audio_url = data.get("audio_url")

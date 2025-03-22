@@ -213,38 +213,3 @@ def change_volumen():
         db.commit()
 
     return jsonify({"message": "Volumen actualizado exitosamente."}), 200
-
-"""Devuelve informacion de un album"""
-@oyente_bp.route("/get-datos-album", methods=["GET"])
-@jwt_required()
-@tokenVersion_required()
-@roles_required("oyente", "artista")
-def get_datos_album():
-    id = request.args.get("id")
-    if not id:
-        return jsonify({"error": "Falta el id del álbum."}), 400
-
-    with get_db() as db:     
-        album = db.get(Album, id)
-        if not album:
-            return jsonify({"error": "El álbum no existe."}), 401
-        canciones = [
-            {
-                "id": cancion.id,
-                "fotoPortada": album.fotoPortada,
-                "nombre": cancion.nombre,
-                "duracion": cancion.duracion,
-                "fechaPublicacion": cancion.fecha.date().isoformat(),
-                "puesto": cancion.puesto
-            }
-            for cancion in album.canciones
-        ]
-
-        return jsonify({
-            "nombre": album.nombre,
-            "fotoPortada": album.fotoPortada,
-            "nombreArtisticoArtista": album.artista.nombreArtistico, 
-            "fechaPublicacion": album.fecha.date().isoformat(),
-            "duracion": sum(cancion.duracion for cancion in album.canciones),
-            "canciones": canciones
-            }), 200
