@@ -1,0 +1,38 @@
+delete:
+  summary: Borra una canción del artista logueado
+  description: Permite a un artista logueado borrar una canción de su cuenta.
+  security:
+    - bearerAuth: []
+  tags:
+    - Canción
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            id:
+              type: integer
+              description: ID de la canción a borrar
+        example:
+          id: 35
+  responses:
+    "200":
+      description: Canción borrada exitosamente.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Mensaje de éxito
+            example:
+              message: "Canción borrada exitosamente."
+    "400":
+      description: Faltan datos requeridos o datos incorrectos.
+    "404":
+      description: La canción no existe.
+    "500":
+      description: Ha ocurrido un error inesperado.

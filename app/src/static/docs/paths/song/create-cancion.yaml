@@ -1,0 +1,60 @@
+post:
+  summary: Añade una canción del artista logueado
+  description: Permite a un artista logueado añadir una nueva canción a su cuenta.
+  security:
+    - bearerAuth: []
+  tags:
+    - Canción
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            nombre:
+              type: string
+              description: Nombre de la canción
+            etiquetas:
+              type: array
+              items:
+                type: string
+              description: Etiquetas de la canción (mínimo 1, máximo 3)
+            artistas:
+              type: array
+              items:
+                type: string
+              description: Nombre de usuario del artista
+            audio:
+              type: string
+              description: URL del audio en Cloudinary
+            duracion:
+              type: integer
+              description: Duración de la canción en segundos
+            album:
+              type: integer
+              description: ID del álbum al que pertenece la canción
+        example:
+          nombre: "hola"
+          etiquetas: ["pop", "soft", "chill"]
+          artistas: ["nombreUsuario"]
+          audio: "https://res.cloudinary.com/dftnw6kjf/video/upload/v1616161616/sample.mp3"
+          duracion: 180
+          album: 1
+  responses:
+    "201":
+      description: Canción añadida exitosamente.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Mensaje de éxito
+            example:
+              message: "Canción subida exitosamente."
+    "400":
+      description: Faltan datos requeridos o datos incorrectos.
+    "500":
+      description: Ha ocurrido un error inesperado.

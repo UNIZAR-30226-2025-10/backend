@@ -1,16 +1,25 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import select
-from db.models import EstaEscuchandoCancion, EstaEscuchandoColeccion, Playlist, EsParteDePlaylist, HistorialCancion, HistorialColeccion
+from db.models import EstaEscuchandoCancion, EstaEscuchandoColeccion, Playlist, EsParteDePlaylist, HistorialCancion, HistorialColeccion, Cancion, GeneroMusical
 from db.db import get_db
 from utils.decorators import roles_required, tokenVersion_required, sid_required
 from utils.fav import fav
 from datetime import datetime
-import pytz
 from .websocket import socketio
+import pytz
+import os
+import cloudinary.uploader
 
 
 song_bp = Blueprint('song', __name__)
+
+cloudinary.config(
+  cloud_name = os.getenv('CLOUDINARY_NAME'),
+  api_key = os.getenv('CLOUDINARY_KEY'),
+  api_secret = os.getenv('CLOUDINARY_SECRET'),
+  secure = True
+)
 
 
 """Devuelve la cancion actual"""
@@ -401,3 +410,110 @@ def put_cancion_coleccion():
         return jsonify({"audio": estaEscuchandoCancion_entry.cancion.audio,
                 "nombreUsuarioArtista": estaEscuchandoCancion_entry.cancion.artista.nombreUsuario,
                 "fav": fav(cancion_id, correo, db)}), 200
+    
+"""Sube una nueva cancion"""
+@song_bp.route("/create-cancion", methods=["POST"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista")
+def create_cancion():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Datos incorrectos."}), 400
+    
+    artista = data.get("artista")
+    nombre = data.get("nombre")
+    duracion = data.get("duracion")
+    audio_url = data.get("audio_url")
+    album_id = data.get("album_id")
+    tags = data.get("tags")
+
+    if not nombre or not artista or not album_id or not duracion or not audio_url or not tags:
+        return jsonify({
+        "error": "Faltan datos de la canción.",
+        "nombre": nombre,
+        "artista": artista,
+        "album_id": album_id,
+        "duracion": duracion,
+        "audio_url": audio_url,
+        "tags": tags
+    }), 400
+
+    if not tags or len(tags) < 1 or len(tags) > 3:
+        return jsonify({"error": "Debe haber entre 1 y 3 tags."}), 400
+    
+    # Funcion auxiliar para obtener el último puesto de un album
+    def obtener_ultimo_puesto(session, album_id, artista_correo):
+        # Obtener todas las canciones del álbum del artista
+        canciones = session.query(Cancion).filter_by(Album_id=album_id, Artista_correo=artista_correo).all()
+        
+        if not canciones:
+            return 0  # Si no hay canciones, devolver 0
+
+        ultimo_puesto = max(cancion.puesto for cancion in canciones)
+        return ultimo_puesto
+
+    try:
+
+        # Guardar la información de la canción en la base de datos
+        with get_db() as db:
+            nueva_cancion = Cancion(
+                Artista_correo=artista,
+                nombre=nombre,
+                duracion=duracion,
+                audio=audio_url,
+                fecha=datetime.now(pytz.timezone('Europe/Madrid')),
+                reproducciones=0,
+                Album_id=album_id,
+                puesto=obtener_ultimo_puesto(db, album_id, artista) + 1
+            )
+
+            db.add(nueva_cancion)
+
+            # Añadir los tags
+            for tag in tags:
+                genero = db.get(GeneroMusical, tag)
+                nueva_cancion.generosMusicales.append(genero)
+
+            db.commit()
+
+        return jsonify({"message": "Canción subida exitosamente."}), 201
+
+    except Exception as e:
+        return jsonify({"error": f"Error al subir la canción: {e}"}), 500   
+
+"""Borra una canción dado su ID"""
+@song_bp.route("/delete-cancion", methods=["DELETE"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista")
+def delete_cancion():
+    id = request.args.get("id")
+    if not id:
+        return jsonify({"error": "Falta el ID de la canción."}), 400
+
+    try:
+        with get_db() as db:
+            # Obtener la canción
+            cancion = db.get(Cancion, id)
+            if not cancion:
+                return jsonify({"error": "La canción no existe."}), 404
+
+            audio_url = cancion.audio
+            public_id = audio_url.split('/')[-1].split('.')[0]
+
+            # Borrar la canción de la base de datos
+            db.delete(cancion)
+
+            try:
+                cloudinary.uploader.destroy(public_id, resource_type="video")
+            except Exception as e:
+                return f"Error al eliminar la canción de Cloudinary: {e}"
+
+            db.commit()
+
+        return jsonify({"message": "Canción borrada exitosamente."}), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Error al borrar la canción: {e}"}), 500
+
