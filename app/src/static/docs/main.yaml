@@ -32,35 +32,27 @@ paths:
   /reset-password:
     $ref: "/static/docs/paths/auth/reset-password.yaml"
   /get-historial-artistas:
-    $ref: "/static/docs/paths/oyente/get-historial-artistas.yaml"
+    $ref: "/static/docs/paths/home/get-historial-artistas.yaml"
   /get-historial-canciones:
-    $ref: "/static/docs/paths/oyente/get-historial-canciones.yaml"
+    $ref: "/static/docs/paths/home/get-historial-canciones.yaml"
   /get-historial-colecciones:
-    $ref: "/static/docs/paths/oyente/get-historial-colecciones.yaml"
+    $ref: "/static/docs/paths/home/get-historial-colecciones.yaml"
   /get-mis-playlists:
-    $ref: "/static/docs/paths/oyente/get-mis-playlists.yaml"
-  /get-mis-datos-oyente:
-    $ref: "/static/docs/paths/oyente/get-mis-datos-oyente.yaml"
-  /get-datos-album:
-    $ref: "/static/docs/paths/oyente/get-datos-album.yaml"
-  /change-volumen:
-    $ref: "/static/docs/paths/oyente/change-volumen.yaml"
+    $ref: "/static/docs/paths/home/get-mis-playlists.yaml"
   /get-recomendaciones:
-    $ref: "/static/docs/paths/oyente/get-recomendaciones.yaml"
+    $ref: "/static/docs/paths/home/get-recomendaciones.yaml"
   /get-seguidos:
-    $ref: "/static/docs/paths/oyente/get-seguidos.yaml"
-  /get-seguidos:
-    $ref: "/static/docs/paths/oyente/get-seguidos.yaml"
-  /get-mis-albumes:
-    $ref: "/static/docs/paths/artista/get-mis-albumes.yaml"
-  /get-mis-datos-artista:
-    $ref: "/static/docs/paths/artista/get-mis-datos-artista.yaml"
+    $ref: "/static/docs/paths/home/get-seguidos.yaml"
   /add-reproduccion:
     $ref: "/static/docs/paths/song/add-reproduccion.yaml"
+  /create-cancion:
+    $ref: "/static/docs/paths/song/create-cancion.yaml"
   /change-fav:
     $ref: "/static/docs/paths/song/change-fav.yaml"
   /change-progreso:
     $ref: "/static/docs/paths/song/change-progreso.yaml"
+  /delete-cancion:
+    $ref: "/static/docs/paths/song/delete-cancion.yaml"
   /get-cancion-actual:
     $ref: "/static/docs/paths/song/get-cancion-actual.yaml"
   /play-pause:

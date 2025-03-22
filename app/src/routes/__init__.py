@@ -8,6 +8,7 @@ from .artista import artista_bp
 from .song import song_bp
 from .playlist import playlist_bp
 from .oyente import oyente_bp
+from .album import album_bp
 
 """Registra las rutas de la API en la app"""
 def register_routes(app):
@@ -21,3 +22,4 @@ def register_routes(app):
     app.register_blueprint(song_bp)
     app.register_blueprint(playlist_bp)
     app.register_blueprint(oyente_bp)
+    app.register_blueprint(album_bp)
