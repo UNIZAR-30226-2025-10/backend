@@ -17,6 +17,7 @@ cloudinary.config(
 )
 
 
+
 """Devuelve informacion de un album"""
 @album_bp.route("/get-datos-album", methods=["GET"])
 @jwt_required()
@@ -52,6 +53,7 @@ def get_datos_album():
             "canciones": canciones
             }), 200
     
+
 """Crea un album del artista logueado con mínimo 1 canción"""
 @album_bp.route("/create-album", methods=["POST"])
 @jwt_required()
@@ -106,6 +108,7 @@ def create_album():
 
     return jsonify({"message": "Álbum creado exitosamente."}), 201
 
+
 """Elimina un álbum por ID"""
 @album_bp.route("/delete-album", methods=["DELETE"])
 @jwt_required()
@@ -149,3 +152,49 @@ def delete_album():
         db.commit()
 
     return jsonify({"message": "Álbum eliminado exitosamente."}), 200
+
+
+"""Actualiza el nombre y foto de un album"""
+@album_bp.route("/change-album", methods=["PATCH"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista")
+def change_album():
+    data = request.get_json()
+    album_id = request.args.get("id")
+
+    if not album_id:
+        return jsonify({"error": "Falta el id del álbum."}), 400
+
+    nombre = data.get("nombre")
+    foto_portada = data.get("fotoPortada")
+
+    if not nombre and not foto_portada:
+        return jsonify({"error": "Faltan datos para actualizar el álbum."}), 400
+
+    with get_db() as db:
+        album = db.get(Album, album_id)
+        if not album:
+            return jsonify({"error": "El álbum no existe."}), 401
+
+        # Verificar que el artista logueado es el dueño del álbum
+        correo_artista = get_jwt_identity()
+        if album.Artista_correo != correo_artista:
+            return jsonify({"error": "No tienes permiso para actualizar este álbum."}), 403
+
+        if nombre:
+            album.nombre = nombre
+        if foto_portada:
+            fotoPortadaAntigua = album.fotoPortada
+            public_id = fotoPortadaAntigua.split('/')[-1].split('.')[0]
+
+            try:
+                cloudinary.uploader.destroy(public_id, resource_type="image")
+            except Exception as e:
+                return f"Error al eliminar el album de Cloudinary: {e}"
+            
+            album.fotoPortada = foto_portada
+
+        db.commit()
+
+    return jsonify({"message": "Álbum actualizado exitosamente."}), 200
