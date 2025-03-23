@@ -1,0 +1,34 @@
+get:
+  summary: Obtener los noizzys de un usuario
+  description: Devuelve los noizzys de un usuario, sino se especifica uno, de los del usuario logueado.
+  security:
+    - BearerAuth: []
+  tags:
+    - Álbum
+  parameters:
+    - in: query
+      name: id
+      schema:
+        type: integer
+      required: false
+      description: ID del usuario para obtener los noizzys.
+  responses:
+    200:
+      description: Información del álbum y las canciones.
+      content:
+        application/json:
+          example:
+            album:
+              nombre: "lola indigo"
+              fotoPortada: "<link-cloudinary>"
+              fechaPublicacion: "24/12/2024"
+              duracion: 30000
+            canciones:
+              - nombre: "dragon"
+                reproducciones: 100000
+                duracion: 5652
+                meGusta: true
+    400:
+      description: Usuario no encontrado.
+    401:
+      description: Usuario no autenticado o no autorizado.

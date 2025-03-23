@@ -31,6 +31,8 @@ paths:
     $ref: "/static/docs/paths/auth/verify-codigo.yaml"
   /reset-password:
     $ref: "/static/docs/paths/auth/reset-password.yaml"
+  /get-datos-album:
+    $ref: "/static/docs/paths/album/get-datos-album.yaml"
   /get-historial-artistas:
     $ref: "/static/docs/paths/home/get-historial-artistas.yaml"
   /get-historial-canciones:
