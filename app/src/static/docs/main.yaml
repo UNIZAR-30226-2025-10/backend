@@ -35,20 +35,26 @@ paths:
     $ref: "/static/docs/paths/album/get-datos-album.yaml"
   /delete-album:
     $ref: "/static/docs/paths/album/delete-album.yaml"
+  /change-album:
+    $ref: "/static/docs/paths/album/change-album.yaml"
   /create-album:
     $ref: "/static/docs/paths/album/create-album.yaml"
+  /change-contrasenya:
+    $ref: "/static/docs/paths/oyente/change-contrasenya.yaml"
   /get-historial-artistas:
-    $ref: "/static/docs/paths/home/get-historial-artistas.yaml"
+    $ref: "/static/docs/paths/oyente/get-historial-artistas.yaml"
+  /change-datos-oyente:
+    $ref: "/static/docs/paths/oyente/change-datos-oyente.yaml"
   /get-historial-canciones:
-    $ref: "/static/docs/paths/home/get-historial-canciones.yaml"
+    $ref: "/static/docs/paths/oyente/get-historial-canciones.yaml"
   /get-historial-colecciones:
-    $ref: "/static/docs/paths/home/get-historial-colecciones.yaml"
+    $ref: "/static/docs/paths/oyente/get-historial-colecciones.yaml"
   /get-mis-playlists:
-    $ref: "/static/docs/paths/home/get-mis-playlists.yaml"
+    $ref: "/static/docs/paths/oyente/get-mis-playlists.yaml"
   /get-recomendaciones:
-    $ref: "/static/docs/paths/home/get-recomendaciones.yaml"
+    $ref: "/static/docs/paths/oyente/get-recomendaciones.yaml"
   /get-seguidos:
-    $ref: "/static/docs/paths/home/get-seguidos.yaml"
+    $ref: "/static/docs/paths/oyente/get-seguidos.yaml"
   /add-reproduccion:
     $ref: "/static/docs/paths/song/add-reproduccion.yaml"
   /create-cancion:

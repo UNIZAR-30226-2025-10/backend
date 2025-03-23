@@ -1,0 +1,42 @@
+put:
+  summary: Actualiza los datos de un oyente
+  description: Permite a un oyente logueado actualizar su foto de perfil y nombre de usuario.
+  security:
+    - bearerAuth: []
+  tags:
+    - Oyente
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            fotoPerfil:
+              type: string
+              description: URL de la foto de perfil en Cloudinary
+            nombreUsuario:
+              type: string
+              description: Nuevo nombre de usuario
+        example:
+          fotoPerfil: "<link-cloudinary>"
+          nombreUsuario: "Martarata2004"
+  responses:
+    "200":
+      description: Datos del oyente actualizados exitosamente.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Mensaje de éxito
+            example:
+              message: "Datos del oyente actualizados exitosamente."
+    "400":
+      description: Faltan datos para actualizar el oyente o el nombre de usuario ya está en uso.
+    "404":
+      description: El oyente no existe.
+    "500":
+      description: Ha ocurrido un error inesperado.
