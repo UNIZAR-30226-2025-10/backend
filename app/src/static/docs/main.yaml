@@ -33,6 +33,8 @@ paths:
     $ref: "/static/docs/paths/auth/reset-password.yaml"
   /get-datos-album:
     $ref: "/static/docs/paths/album/get-datos-album.yaml"
+  /delete-album:
+    $ref: "/static/docs/paths/album/delete-album.yaml"
   /create-album:
     $ref: "/static/docs/paths/album/create-album.yaml"
   /get-historial-artistas:

@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from db.db import get_db
 from db.models import *
 from utils.decorators import roles_required, tokenVersion_required
+from utils.hash import hash, verify
 from utils.recommendation import obtener_recomendaciones
 import cloudinary.uploader
 import os
@@ -279,3 +280,36 @@ def change_datos_oyente():
         db.commit()
 
     return jsonify({"message": "Datos del oyente actualizados exitosamente."}), 200
+
+
+"""Actualiza la contraseña de un usuario"""
+@oyente_bp.route('/change-contrasenya', methods=['PUT'])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente", "artista")
+def change_contrasenya():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Datos incorrectos."}), 400
+
+    correo = get_jwt_identity()
+    contrasenya_actual = data.get('contrasenya')
+    nueva_contrasenya = data.get('nueva')
+
+    if not contrasenya_actual or not nueva_contrasenya:
+        return jsonify({"error": "Faltan datos para actualizar la contraseña."}), 400
+
+    with get_db() as db:
+        usuario = db.get(Usuario, correo)
+        if not usuario:
+            return jsonify({"error": "El usuario no existe."}), 404
+
+        # Verificar la contraseña actual
+        if not verify(contrasenya_actual, usuario.contrasenya):
+            return jsonify({"error": "La contraseña actual es incorrecta."}), 401
+
+        # Actualizar la contraseña
+        usuario.contrasenya = hash(nueva_contrasenya)
+        db.commit()
+
+    return jsonify({"message": "Contraseña actualizada exitosamente."}), 200
