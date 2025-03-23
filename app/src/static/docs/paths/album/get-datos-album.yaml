@@ -1,20 +1,20 @@
 get:
-  summary: Obtener los noizzys de un usuario
-  description: Devuelve los noizzys de un usuario, sino se especifica uno, de los del usuario logueado.
+  summary: Obtener datos del álbum
+  description: Devuelve la información de un álbum y sus canciones.
   security:
     - BearerAuth: []
   tags:
     - Álbum
   parameters:
-    - in: query
-      name: id
+    - name: id
+      in: query
+      required: true
+      description: ID del álbum
       schema:
         type: integer
-      required: false
-      description: ID del usuario para obtener los noizzys.
   responses:
     200:
-      description: Información del álbum y las canciones.
+      description: Información del álbum y sus canciones.
       content:
         application/json:
           example:
@@ -29,6 +29,6 @@ get:
                 duracion: 5652
                 meGusta: true
     400:
-      description: Usuario no encontrado.
+      description: Falta el id del álbum.
     401:
-      description: Usuario no autenticado o no autorizado.
+      description: El álbum no existe.

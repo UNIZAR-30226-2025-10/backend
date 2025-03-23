@@ -1,0 +1,51 @@
+post:
+  summary: Crea un álbum del artista logueado con mínimo 1 canción
+  description: Crea un nuevo álbum para el artista logueado, con al menos una canción.
+  security:
+    - BearerAuth: []
+  tags:
+    - Álbum
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            album:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                fotoPortada:
+                  type: string
+            canciones:
+              type: array
+              items:
+                type: object
+                properties:
+                  nombre:
+                    type: string
+                  etiquetas:
+                    type: array
+                    items:
+                      type: string
+                    minItems: 1
+                    maxItems: 3
+                  audio:
+                    type: string
+        example:
+          album:
+            nombre: "La reina"
+            fotoPortada: "<link-cloudinary>"
+          canciones:
+            - nombre: "El tonto"
+              etiquetas: ["pop", "rock", "indie"]
+              audio: "<link-cloudinary>"
+  responses:
+    201:
+      description: Álbum creado exitosamente.
+    400:
+      description: Faltan datos del álbum o la canción, o el álbum debe tener al menos una canción.
+    401:
+      description: El artista no existe.
