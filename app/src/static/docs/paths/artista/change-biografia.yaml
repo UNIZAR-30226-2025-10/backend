@@ -1,10 +1,10 @@
 put:
-  summary: Actualiza los datos de un oyente
-  description: Permite a un oyente logueado actualizar su foto de perfil y nombre de usuario.
+  summary: Actualiza la biografía de un artista
+  description: Permite a un artista logueado actualizar su biografía.
   security:
     - bearerAuth: []
   tags:
-    - Oyente
+    - Artista
   requestBody:
     required: true
     content:
@@ -12,18 +12,14 @@ put:
         schema:
           type: object
           properties:
-            fotoPerfil:
+            biografia:
               type: string
-              description: URL de la foto de perfil en Cloudinary
-            nombreUsuario:
-              type: string
-              description: Nuevo nombre de usuario
+              description: Nueva biografía del artista
         example:
-          fotoPerfil: "<link-cloudinary>"
-          nombreUsuario: "Martarata2004"
+          biografia: "nueva biografía"
   responses:
     "200":
-      description: Datos del oyente actualizados exitosamente.
+      description: Biografía actualizada exitosamente.
       content:
         application/json:
           schema:
@@ -33,9 +29,9 @@ put:
                 type: string
                 description: Mensaje de éxito
             example:
-              message: "Datos del oyente actualizados exitosamente."
+              message: "Biografía actualizada exitosamente."
     "400":
-      description: Faltan datos para actualizar el oyente o el nombre de usuario ya está en uso.
+      description: Faltan datos para actualizar la biografía o datos incorrectos.
       content:
         application/json:
           schema:
@@ -43,9 +39,9 @@ put:
             properties:
               error:
                 type: string
-                example: "Faltan datos para actualizar el oyente o el nombre de usuario ya está en uso."
+                example: "Faltan datos para actualizar la biografía."
     "404":
-      description: El oyente no existe.
+      description: El artista no existe.
       content:
         application/json:
           schema:
@@ -53,7 +49,7 @@ put:
             properties:
               error:
                 type: string
-                example: "El oyente no existe."
+                example: "El artista no existe."
     "500":
       description: Ha ocurrido un error inesperado.
       content:

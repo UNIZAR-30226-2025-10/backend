@@ -32,9 +32,44 @@ delete:
               message: "Álbum eliminado exitosamente."
     "400":
       description: Falta el id del álbum.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Falta el id del álbum."
     "401":
       description: El álbum no existe.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "El álbum no existe."
     "403":
       description: No tienes permiso para eliminar este álbum.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "No tienes permiso para eliminar este álbum."
     "500":
       description: Ha ocurrido un error inesperado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Ha ocurrido un error inesperado."
+              details:
+                type: string
+                example: "Error de base de datos"

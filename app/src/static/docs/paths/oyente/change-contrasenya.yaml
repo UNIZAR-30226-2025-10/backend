@@ -36,9 +36,44 @@ put:
               message: "Contraseña actualizada exitosamente."
     "400":
       description: Faltan datos para actualizar la contraseña o datos incorrectos.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Faltan datos para actualizar la contraseña o datos incorrectos."
     "401":
       description: La contraseña actual es incorrecta.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "La contraseña actual es incorrecta."
     "404":
       description: El usuario no existe.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "El usuario no existe."
     "500":
       description: Ha ocurrido un error inesperado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Ha ocurrido un error inesperado."
+              details:
+                type: string
+                example: "Error de base de datos"

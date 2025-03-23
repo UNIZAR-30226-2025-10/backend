@@ -1,10 +1,10 @@
 put:
-  summary: Actualiza los datos de un oyente
-  description: Permite a un oyente logueado actualizar su foto de perfil y nombre de usuario.
+  summary: Actualiza los datos de un artista
+  description: Permite a un artista logueado actualizar su foto de perfil, nombre de usuario y nombre artístico.
   security:
     - bearerAuth: []
   tags:
-    - Oyente
+    - Artista
   requestBody:
     required: true
     content:
@@ -18,12 +18,16 @@ put:
             nombreUsuario:
               type: string
               description: Nuevo nombre de usuario
+            nombreArtistico:
+              type: string
+              description: Nuevo nombre artístico
         example:
           fotoPerfil: "<link-cloudinary>"
           nombreUsuario: "Martarata2004"
+          nombreArtistico: "Marta Rata"
   responses:
     "200":
-      description: Datos del oyente actualizados exitosamente.
+      description: Datos del artista actualizados exitosamente.
       content:
         application/json:
           schema:
@@ -33,9 +37,9 @@ put:
                 type: string
                 description: Mensaje de éxito
             example:
-              message: "Datos del oyente actualizados exitosamente."
+              message: "Datos del artista actualizados exitosamente."
     "400":
-      description: Faltan datos para actualizar el oyente o el nombre de usuario ya está en uso.
+      description: Faltan datos para actualizar el artista o el nombre de usuario ya está en uso.
       content:
         application/json:
           schema:
@@ -43,9 +47,9 @@ put:
             properties:
               error:
                 type: string
-                example: "Faltan datos para actualizar el oyente o el nombre de usuario ya está en uso."
+                example: "Faltan datos para actualizar el artista o el nombre de usuario ya está en uso."
     "404":
-      description: El oyente no existe.
+      description: El artista no existe.
       content:
         application/json:
           schema:
@@ -53,7 +57,7 @@ put:
             properties:
               error:
                 type: string
-                example: "El oyente no existe."
+                example: "El artista no existe."
     "500":
       description: Ha ocurrido un error inesperado.
       content:

@@ -111,3 +111,30 @@ def change_datos_artista():
         db.commit()
 
     return jsonify({"message": "Datos del artista actualizados exitosamente."}), 200
+
+
+"""Actualiza la biografía de un artista"""
+@artista_bp.route('/change-biografia', methods=['PUT'])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista")
+def change_biografia():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Datos incorrectos."}), 400
+
+    correo = get_jwt_identity()
+    nueva_biografia = data.get('biografia')
+
+    if not nueva_biografia:
+        return jsonify({"error": "Falta la biografía para actualizar."}), 400
+
+    with get_db() as db:
+        artista_entry = db.get(Artista, correo)
+        if not artista_entry:
+            return jsonify({"error": "El artista no existe."}), 404
+
+        artista_entry.biografia = nueva_biografia
+        db.commit()
+
+    return jsonify({"message": "Biografía actualizada exitosamente."}), 200
