@@ -37,12 +37,15 @@ def get_datos_playlist():
 
         respuesta = {
             "playlist": {
+                "nombrePlaylist": playlist_entry.nombre,
+                "fotoPortada": playlist_entry.fotoPortada,
                 "duracion": duracion_total,
                 "creador": creador_entry.nombreUsuario if creador_entry else None,
                 "colaboradores": participantes,
             },
             "canciones": [
                 {
+                    "id": c.id,
                     "nombre": c.nombre,
                     "nombreArtisticoArtista": c.artista.nombreArtistico,
                     "reproducciones": c.reproducciones,
