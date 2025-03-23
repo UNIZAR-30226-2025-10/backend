@@ -4,8 +4,17 @@ from db.db import get_db
 from db.models import *
 from utils.decorators import roles_required, tokenVersion_required
 import pytz
+import cloudinary.uploader
+import os
 
 album_bp = Blueprint('album', __name__)
+
+cloudinary.config(
+  cloud_name = os.getenv('CLOUDINARY_NAME'),
+  api_key = os.getenv('CLOUDINARY_KEY'),
+  api_secret = os.getenv('CLOUDINARY_SECRET'),
+  secure = True
+)
 
 
 """Devuelve informacion de un album"""
@@ -96,3 +105,47 @@ def create_album():
         db.commit()
 
     return jsonify({"message": "Álbum creado exitosamente."}), 201
+
+"""Elimina un álbum por ID"""
+@album_bp.route("/delete-album", methods=["DELETE"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista")
+def delete_album():
+    id = request.args.get("id")
+    if not id:
+        return jsonify({"error": "Falta el id del álbum."}), 400
+
+    with get_db() as db:
+        album = db.get(Album, id)
+        if not album:
+            return jsonify({"error": "El álbum no existe."}), 401
+
+        # Verificar que el artista logueado es el dueño del álbum
+        correo_artista = get_jwt_identity()
+        if album.Artista_correo != correo_artista:
+            return jsonify({"error": "No tienes permiso para eliminar este álbum."}), 403
+
+        db.delete(album)
+
+        fotoPortada = album.fotoPortada
+        public_id = fotoPortada.split('/')[-1].split('.')[0]
+
+        try:
+            cloudinary.uploader.destroy(public_id, resource_type="image")
+        except Exception as e:
+            return f"Error al eliminar el album de Cloudinary: {e}"
+        
+        for cancion in album.canciones:
+            print(cancion.nombre)
+            audio_url = cancion.audio
+            public_id = audio_url.split('/')[-1].split('.')[0]
+
+            try:
+                cloudinary.uploader.destroy(public_id, resource_type="video")
+            except Exception as e:
+                return f"Error al eliminar la cancion de Cloudinary: {e}"
+            
+        db.commit()
+
+    return jsonify({"message": "Álbum eliminado exitosamente."}), 200
