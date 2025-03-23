@@ -1,0 +1,44 @@
+put:
+  summary: Actualiza la contraseña de un usuario
+  description: Permite a un usuario logueado actualizar su contraseña.
+  security:
+    - bearerAuth: []
+  tags:
+    - Oyente
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            contrasenya:
+              type: string
+              description: Contraseña actual del usuario
+            nueva:
+              type: string
+              description: Nueva contraseña del usuario
+        example:
+          contrasenya: "contraseña_actual"
+          nueva: "contraseña_nueva"
+  responses:
+    "200":
+      description: Contraseña actualizada exitosamente.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Mensaje de éxito
+            example:
+              message: "Contraseña actualizada exitosamente."
+    "400":
+      description: Faltan datos para actualizar la contraseña o datos incorrectos.
+    "401":
+      description: La contraseña actual es incorrecta.
+    "404":
+      description: El usuario no existe.
+    "500":
+      description: Ha ocurrido un error inesperado.
