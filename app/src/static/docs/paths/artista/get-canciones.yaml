@@ -1,0 +1,78 @@
+get:
+  summary: Obtiene las canciones de un artista
+  description: Devuelve una lista con todas las canciones de un artista basado en su nombre de usuario.
+  security:
+    - bearerAuth: []
+  tags:
+    - Artista
+  parameters:
+    - name: nombreUsuario
+      in: query
+      required: true
+      description: Nombre de usuario del artista
+      schema:
+        type: string
+  responses:
+    "200":
+      description: Lista de canciones obtenida exitosamente.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              canciones:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    nombre:
+                      type: string
+                    fotoPortada:
+                      type: string
+                      nullable: true
+          example:
+            canciones:
+              - id: 1
+                nombre: "Canción 1"
+                fotoPortada: "<link_cloudinary>"
+              - id: 2
+                nombre: "Canción 2"
+                fotoPortada: "<link_cloudinary>"
+    "400":
+      description: Falta el parámetro nombreUsuario.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "Falta el nombreUsuario del artista."
+    "404":
+      description: El artista no existe.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "El artista no existe."
+    "500":
+      description: Ha ocurrido un error inesperado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: string
+          example:
+            error: "Ha ocurrido un error inesperado."
+            details: "Error de base de datos"

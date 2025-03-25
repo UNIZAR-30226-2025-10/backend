@@ -78,6 +78,34 @@ def get_mis_datos_artista():
             "fotoPerfil": artista.fotoPerfil
             }), 200
 
+
+"""Devuelve una lista con las canciones de un artista"""
+@artista_bp.route('/get-canciones', methods=['GET'])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista", "oyente")
+def get_canciones():
+    nombre_usuario = request.args.get("nombreUsuario")
+    if not nombre_usuario:
+        return jsonify({"error": "Falta el nombreUsuario del artista."}), 400
+    
+    with get_db() as db:
+        artista = db.query(Artista).filter_by(nombreUsuario=nombre_usuario).first()
+        if not artista:
+            return jsonify({"error": "El artista no existe."}), 404
+
+        canciones = [
+                {
+                    "id": cancion.id,
+                    "nombre": cancion.nombre,
+                    "fotoPortada": cancion.album.fotoPortada if cancion.album else None
+                }
+                for cancion in artista.canciones
+            ]
+    
+    return jsonify({"canciones": canciones}), 200
+
+
 """Devuelve una lista con los álbumes de un artista"""
 @artista_bp.route('/get-albumes', methods=['GET'])
 @jwt_required()
