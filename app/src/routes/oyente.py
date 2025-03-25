@@ -18,6 +18,43 @@ cloudinary.config(
   secure = True
 )
 
+"""Devuelve informacion de un oyente mediante su nombreUsuario"""
+@oyente_bp.route("/get-datos-oyente", methods=["GET"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista", "oyente")
+def get_datos_oyente():
+    nombre_usuario = request.args.get("nombreUsuario")
+    if not nombre_usuario:
+        return jsonify({"error": "Falta el nombreUsuario del artista."}), 400
+    
+    correo_actual = get_jwt_identity()
+    
+    with get_db() as db:
+        oyente = db.query(Oyente).filter_by(nombreUsuario=nombre_usuario).first()
+        if not oyente:
+            return jsonify({"error": "El oyente no existe."}), 404
+        
+        usuario_actual = db.get(Oyente, correo_actual)
+        siguiendo = usuario_actual in oyente.seguidores if usuario_actual else False
+        
+        ultimo_noizzy = db.query(Noizzy).filter_by(Oyente_correo=oyente.correo).order_by(Noizzy.fecha.desc()).first()
+        
+        return jsonify({
+            "oyente": {
+                "nombreUsuario": oyente.nombreUsuario,
+                "numSeguidos": len(oyente.seguidos),
+                "numSeguidores": len(oyente.seguidores),
+                "siguiendo": siguiendo
+            },
+            "ultimoNoizzy": {
+                "texto": ultimo_noizzy.texto if ultimo_noizzy else None,
+                "id": ultimo_noizzy.id if ultimo_noizzy else None,
+                "fecha": ultimo_noizzy.fecha.strftime("%d/%m/%Y %H:%M") if ultimo_noizzy else None,
+                "like": usuario_actual in ultimo_noizzy.likes if ultimo_noizzy and usuario_actual else False
+            } if ultimo_noizzy else None
+        }), 200
+    
 
 """Devuelve informacion de un oyente"""
 @oyente_bp.route("/get-mis-datos-oyente", methods=["GET"])

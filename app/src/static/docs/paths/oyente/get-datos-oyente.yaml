@@ -1,0 +1,93 @@
+get:
+  summary: Obtiene información de un oyente
+  description: Devuelve los datos de un oyente basado en su nombre de usuario, incluyendo a cuántos sigue, sus seguidores y su última publicación (Noizzy).
+  security:
+    - bearerAuth: []
+  tags:
+    - Oyente
+  parameters:
+    - name: nombreUsuario
+      in: query
+      required: true
+      description: Nombre de usuario del oyente
+      schema:
+        type: string
+  responses:
+    "200":
+      description: Datos del oyente obtenidos exitosamente.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              oyente:
+                type: object
+                properties:
+                  nombreUsuario:
+                    type: string
+                  numSeguidos:
+                    type: integer
+                  numSeguidores:
+                    type: integer
+                  siguiendo:
+                    type: boolean
+              ultimoNoizzy:
+                type: object
+                nullable: true
+                properties:
+                  texto:
+                    type: string
+                  id:
+                    type: integer
+                  fecha:
+                    type: string
+                    format: date-time
+                  like:
+                    type: boolean
+          example:
+            oyente:
+              nombreUsuario: "juan123"
+              numSeguidos: 15
+              numSeguidores: 50
+              siguiendo: false
+            ultimoNoizzy:
+              texto: "Me encanta esta nueva canción!"
+              id: 42
+              fecha: "21/03/2025 14:30"
+              like: true
+    "400":
+      description: Falta el parámetro nombreUsuario.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "Falta el nombreUsuario del oyente."
+    "404":
+      description: El oyente no existe.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "El oyente no existe."
+    "500":
+      description: Ha ocurrido un error inesperado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: string
+          example:
+            error: "Ha ocurrido un error inesperado."
+            details: "Error de base de datos"
