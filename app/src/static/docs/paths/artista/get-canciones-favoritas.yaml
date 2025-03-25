@@ -1,0 +1,57 @@
+get:
+  summary: "Devuelve una lista con las canciones favoritas de un artista"
+  description: "Obtiene una lista de canciones de un artista que el usuario autenticado ha marcado como favoritas."
+  tags:
+    - "Artista"
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: nombreUsuario
+      in: query
+      required: true
+      schema:
+        type: string
+      description: "Nombre de usuario del artista del que se desean obtener las canciones favoritas."
+  responses:
+    "200":
+      description: "Lista de canciones favoritas del artista."
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              canciones:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: "ID de la canción."
+                    nombre:
+                      type: string
+                      description: "Nombre de la canción."
+                    fotoPortada:
+                      type: string
+                      nullable: true
+                      description: "URL de la foto de portada del álbum, si existe."
+    "400":
+      description: "Falta el nombre de usuario del artista."
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Falta el nombreUsuario del artista."
+    "404":
+      description: "El artista no existe."
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "El artista no existe."

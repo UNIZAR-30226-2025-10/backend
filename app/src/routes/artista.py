@@ -5,6 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import Blueprint, request, jsonify
 import cloudinary.uploader
 import os
+from utils.fav import fav
 
 artista_bp = Blueprint('info', __name__) 
 
@@ -106,6 +107,36 @@ def get_canciones():
     return jsonify({"canciones": canciones}), 200
 
 
+"""Devuelve una lista con las canciones de un artista"""
+@artista_bp.route('/get-canciones-favoritas', methods=['GET'])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista", "oyente")
+def get_canciones_favoritas():
+    nombre_usuario = request.args.get("nombreUsuario")
+    if not nombre_usuario:
+        return jsonify({"error": "Falta el nombreUsuario del artista."}), 400
+    
+    correo_actual = get_jwt_identity()
+    
+    with get_db() as db:
+        artista = db.query(Artista).filter_by(nombreUsuario=nombre_usuario).first()
+        if not artista:
+            return jsonify({"error": "El artista no existe."}), 404
+
+        canciones = [
+            {
+                "id": cancion.id,
+                "nombre": cancion.nombre,
+                "fotoPortada": cancion.album.fotoPortada if cancion.album else None
+            }
+            for cancion in artista.canciones
+            if fav(cancion.id, correo_actual, db)
+        ]
+    
+    return jsonify({"canciones_favoritas": canciones}), 200
+
+
 """Devuelve una lista con las 5 canciones más populares de un artista"""
 @artista_bp.route('/get-canciones-populares', methods=['GET'])
 @jwt_required()
@@ -138,7 +169,7 @@ def get_canciones_populares():
                 for cancion in canciones_populares
             ]
     
-    return jsonify({"canciones": canciones}), 200
+    return jsonify({"canciones_populares": canciones}), 200
 
 
 """Devuelve una lista con los álbumes de un artista"""
