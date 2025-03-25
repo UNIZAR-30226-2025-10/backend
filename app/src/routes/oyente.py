@@ -285,7 +285,7 @@ def change_datos_oyente():
     foto_perfil = data.get('fotoPerfil')
     nombre_usuario = data.get('nombre')
 
-    if not foto_perfil and not nombre_usuario:
+    if not foto_perfil or not nombre_usuario:
         return jsonify({"error": "Faltan datos para actualizar el oyente."}), 400
 
     with get_db() as db:
@@ -293,7 +293,7 @@ def change_datos_oyente():
         if not oyente_entry:
             return jsonify({"error": "El oyente no existe."}), 404
 
-        if foto_perfil:
+        if foto_perfil != oyente_entry.fotoPerfil:
 
             fotoAntigua = oyente_entry.fotoPerfil
             public_id = fotoAntigua.split('/')[-1].split('.')[0]
@@ -306,7 +306,7 @@ def change_datos_oyente():
             
             oyente_entry.fotoPerfil = foto_perfil
             
-        if nombre_usuario:
+        if nombre_usuario != oyente_entry.nombreUsuario:
             # Verificar si el nombre de usuario ya existe
             existing_user = db.query(Oyente).filter_by(nombreUsuario=nombre_usuario).first()
             if existing_user:
