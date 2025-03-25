@@ -19,7 +19,6 @@ cloudinary.config(
 )
 
 
-
 """Devuelve informacion de un oyente"""
 @oyente_bp.route("/get-mis-datos-oyente", methods=["GET"])
 @jwt_required()

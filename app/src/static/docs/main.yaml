@@ -27,6 +27,8 @@ paths:
     $ref: "/static/docs/paths/artista/change-datos-artista.yaml"
   /change-biografia:
     $ref: "/static/docs/paths/artista/change-biografia.yaml"
+  /get-datos-artista:
+    $ref: "/static/docs/paths/artista/get-datos-artista.yaml"
   /delete-account:
     $ref: "/static/docs/paths/auth/delete-account.yaml"
   /forgot-password:

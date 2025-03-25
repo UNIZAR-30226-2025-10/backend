@@ -1,0 +1,99 @@
+get:
+  summary: Obtiene información de un artista
+  description: Devuelve los datos de un artista basado en su nombre de usuario, incluyendo su biografía, seguidores y su última publicación (Noizzy).
+  security:
+    - bearerAuth: []
+  tags:
+    - Artista
+  parameters:
+    - name: nombreUsuario
+      in: query
+      required: true
+      description: Nombre de usuario del artista
+      schema:
+        type: string
+  responses:
+    "200":
+      description: Datos del artista obtenidos exitosamente.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              artista:
+                type: object
+                properties:
+                  nombreUsuario:
+                    type: string
+                  nombreArtistico:
+                    type: string
+                  biografía:
+                    type: string
+                  numSeguidos:
+                    type: integer
+                  numSeguidores:
+                    type: integer
+                  siguiendo:
+                    type: boolean
+              ultimoNoizzy:
+                type: object
+                nullable: true
+                properties:
+                  texto:
+                    type: string
+                  id:
+                    type: integer
+                  fecha:
+                    type: string
+                    format: date-time
+                  like:
+                    type: boolean
+          example:
+            artista:
+              nombreUsuario: "cepeda"
+              nombreArtistico: "Cepeda"
+              biografía: "Salí de OT"
+              numSeguidos: 10
+              numSeguidores: 30
+              siguiendo: true
+            ultimoNoizzy:
+              texto: "Escucha mi nueva canción"
+              id: 35
+              fecha: "20/03/2025 19:07"
+              like: false
+    "400":
+      description: Falta el parámetro nombreUsuario.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "Falta el nombreUsuario del artista."
+    "404":
+      description: El artista no existe.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "El artista no existe."
+    "500":
+      description: Ha ocurrido un error inesperado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: string
+          example:
+            error: "Ha ocurrido un error inesperado."
+            details: "Error de base de datos"

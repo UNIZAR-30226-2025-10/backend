@@ -1,5 +1,5 @@
 from utils.decorators import roles_required, tokenVersion_required
-from db.models import Oyente, Artista, Album
+from db.models import Oyente, Artista, Album, Noizzy
 from db.db import get_db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import Blueprint, request, jsonify
@@ -15,9 +15,47 @@ cloudinary.config(
   secure = True
 )
 
+"""Devuelve informacion de un artista mediante su nombreUsuario"""
+@artista_bp.route("/get-datos-artista", methods=["GET"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista", "oyente")
+def get_datos_artista():
+    nombre_usuario = request.args.get("nombreUsuario")
+    if not nombre_usuario:
+        return jsonify({"error": "Falta el nombreUsuario del artista."}), 400
+    
+    correo_actual = get_jwt_identity()
+    
+    with get_db() as db:
+        artista = db.query(Artista).filter_by(nombreUsuario=nombre_usuario).first()
+        if not artista:
+            return jsonify({"error": "El artista no existe."}), 404
+        
+        usuario_actual = db.get(Oyente, correo_actual)
+        siguiendo = usuario_actual in artista.seguidores if usuario_actual else False
+        
+        ultimo_noizzy = db.query(Noizzy).filter_by(Oyente_correo=artista.correo).order_by(Noizzy.fecha.desc()).first()
+        
+        return jsonify({
+            "artista": {
+                "nombreUsuario": artista.nombreUsuario,
+                "nombreArtistico": artista.nombreArtistico,
+                "biografía": artista.biografia,
+                "numSeguidos": len(artista.seguidos),
+                "numSeguidores": len(artista.seguidores),
+                "siguiendo": siguiendo
+            },
+            "ultimoNoizzy": {
+                "texto": ultimo_noizzy.texto if ultimo_noizzy else None,
+                "id": ultimo_noizzy.id if ultimo_noizzy else None,
+                "fecha": ultimo_noizzy.fecha.strftime("%d/%m/%Y %H:%M") if ultimo_noizzy else None,
+                "like": usuario_actual in ultimo_noizzy.likes if ultimo_noizzy and usuario_actual else False
+            } if ultimo_noizzy else None
+        }), 200
+    
 
-
-"""Devuelve informacion de un artista"""
+"""Devuelve informacion del artista logueado"""
 @artista_bp.route("/get-mis-datos-artista", methods=["GET"])
 @jwt_required()
 @tokenVersion_required()
