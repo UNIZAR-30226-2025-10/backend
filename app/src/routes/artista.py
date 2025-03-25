@@ -116,8 +116,9 @@ def change_datos_artista():
     foto_perfil = data.get('fotoPerfil')
     nombre_usuario = data.get('nombreUsuario')
     nombre_artistico = data.get('nombreArtistico')
+    biografia = data.get('biografia')
 
-    if not foto_perfil and not nombre_usuario and not nombre_artistico:
+    if not foto_perfil or not nombre_usuario or not nombre_artistico or not biografia:
         return jsonify({"error": "Faltan datos para actualizar el artista."}), 400
 
     with get_db() as db:
@@ -125,7 +126,7 @@ def change_datos_artista():
         if not artista_entry:
             return jsonify({"error": "El artista no existe."}), 404
 
-        if foto_perfil:
+        if foto_perfil != artista_entry.fotoPerfil:
             foto_antigua = artista_entry.fotoPerfil
             public_id = foto_antigua.split('/')[-1].split('.')[0]
 
@@ -136,43 +137,19 @@ def change_datos_artista():
 
             artista_entry.fotoPerfil = foto_perfil
 
-        if nombre_usuario:
+        if nombre_usuario != artista_entry.nombreUsuario:
             # Verificar si el nombre de usuario ya existe
             existing_user = db.query(Oyente).filter_by(nombreUsuario=nombre_usuario).first()
             if existing_user:
                 return jsonify({"error": "El nombre de usuario ya está en uso."}), 400
             artista_entry.nombreUsuario = nombre_usuario
 
-        if nombre_artistico:
+        if nombre_artistico != artista_entry.nombreArtistico:
             artista_entry.nombreArtistico = nombre_artistico
+
+        if biografia != artista_entry.biografia:
+            artista_entry.biografia = biografia
 
         db.commit()
 
     return jsonify({"message": "Datos del artista actualizados exitosamente."}), 200
-
-
-"""Actualiza la biografía de un artista"""
-@artista_bp.route('/change-biografia', methods=['PUT'])
-@jwt_required()
-@tokenVersion_required()
-@roles_required("artista")
-def change_biografia():
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "Datos incorrectos."}), 400
-
-    correo = get_jwt_identity()
-    nueva_biografia = data.get('biografia')
-
-    if not nueva_biografia:
-        return jsonify({"error": "Falta la biografía para actualizar."}), 400
-
-    with get_db() as db:
-        artista_entry = db.get(Artista, correo)
-        if not artista_entry:
-            return jsonify({"error": "El artista no existe."}), 404
-
-        artista_entry.biografia = nueva_biografia
-        db.commit()
-
-    return jsonify({"message": "Biografía actualizada exitosamente."}), 200

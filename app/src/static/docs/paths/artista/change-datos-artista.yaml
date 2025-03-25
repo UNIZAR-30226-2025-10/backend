@@ -21,10 +21,14 @@ put:
             nombreArtistico:
               type: string
               description: Nuevo nombre artístico
+            biografia:
+              type: string
+              description: Nueva biografia
         example:
           fotoPerfil: "<link-cloudinary>"
-          nombreUsuario: "Martarata2004"
-          nombreArtistico: "Marta Rata"
+          nombreUsuario: "user"
+          nombreArtistico: "User Artist"
+          biografia: "Hola, ejemplo de biografia."
   responses:
     "200":
       description: Datos del artista actualizados exitosamente.
