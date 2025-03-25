@@ -20,7 +20,7 @@ put:
               description: Nuevo nombre de usuario
         example:
           fotoPerfil: "<link-cloudinary>"
-          nombreUsuario: "Martarata2004"
+          nombreUsuario: "user123"
   responses:
     "200":
       description: Datos del oyente actualizados exitosamente.
