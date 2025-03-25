@@ -78,8 +78,34 @@ def get_mis_datos_artista():
             "fotoPerfil": artista.fotoPerfil
             }), 200
 
-
 """Devuelve una lista con los álbumes de un artista"""
+@artista_bp.route('/get-albumes', methods=['GET'])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista", "oyente")
+def get_albumes():
+    nombre_usuario = request.args.get("nombreUsuario")
+    if not nombre_usuario:
+        return jsonify({"error": "Falta el nombreUsuario del artista."}), 400
+    
+    with get_db() as db:
+        artista = db.query(Artista).filter_by(nombreUsuario=nombre_usuario).first()
+        if not artista:
+            return jsonify({"error": "El artista no existe."}), 404
+
+        albumes = [
+            {
+                "id" : album.id,
+                "nombre": album.nombre,
+                "fotoPortada": album.fotoPortada
+            }
+            for album in artista.albumes[:30]
+        ]
+    
+    return jsonify({"albumes": albumes}), 200
+
+
+"""Devuelve una lista con los álbumes del artista logueado"""
 @artista_bp.route('/get-mis-albumes', methods=['GET'])
 @jwt_required()
 @tokenVersion_required()
