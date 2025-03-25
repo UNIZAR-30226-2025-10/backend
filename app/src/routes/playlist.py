@@ -423,3 +423,26 @@ def accept_invitacion():
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
     
     return jsonify(""), 201
+
+"""Devuelve los datos de una playlist, en concreto la lista de canciones de la playlist ordenada según el criterio especificado"""
+@playlist_bp.route("/get-invitaciones", methods=["GET"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente","artista")
+def get_invitaciones():
+    correo = get_jwt_identity()
+
+    with get_db() as db:
+        oyente_entry = db.get(Oyente, correo)
+        if not oyente_entry:
+            return jsonify({"error": "Correo no existe."}), 401
+
+        # Accede directamente a la relacion con playlists a las que esta invitado
+        invitaciones = [
+            {
+                "id": p.id,
+                "nombre": p.nombre,
+                "nombreUsuario": p.oyente.nombreUsuario
+            } for p in oyente_entry.invitado]
+    
+    return jsonify({"invitaciones": invitaciones}), 200
