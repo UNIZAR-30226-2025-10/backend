@@ -1,0 +1,57 @@
+get:
+      summary: Devuelve las 5 canciones más populares de un artista
+      description: Obtiene una lista de las 5 canciones con mayor número de reproducciones de un artista específico.
+      tags:
+        - Canciones
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: nombreUsuario
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Nombre de usuario del artista del que se quieren obtener las canciones más populares.
+      responses:
+        "200":
+          description: Lista de las 5 canciones más populares del artista.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  canciones:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          description: ID de la canción.
+                        nombre:
+                          type: string
+                          description: Nombre de la canción.
+                        fotoPortada:
+                          type: string
+                          nullable: true
+                          description: URL de la foto de portada del álbum (si aplica).
+        "400":
+          description: Error de solicitud, falta el parámetro "nombreUsuario".
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Falta el nombreUsuario del artista.
+        "404":
+          description: No se encontró el artista especificado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: El artista no existe.
