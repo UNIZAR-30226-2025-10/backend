@@ -442,7 +442,8 @@ def get_invitaciones():
             {
                 "id": p.id,
                 "nombre": p.nombre,
-                "nombreUsuario": p.oyente.nombreUsuario
+                "nombreUsuario": p.oyente.nombreUsuario,
+                "fotoPortada": p.fotoPortada
             } for p in oyente_entry.invitado]
     
     return jsonify({"invitaciones": invitaciones}), 200
