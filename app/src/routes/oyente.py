@@ -45,7 +45,8 @@ def get_datos_oyente():
                 "nombreUsuario": oyente.nombreUsuario,
                 "numSeguidos": len(oyente.seguidos),
                 "numSeguidores": len(oyente.seguidores),
-                "siguiendo": siguiendo
+                "siguiendo": siguiendo,
+                "fotoPerfil": oyente.fotoPerfil
             },
             "ultimoNoizzy": {
                 "texto": ultimo_noizzy.texto if ultimo_noizzy else None,
@@ -72,7 +73,8 @@ def get_mis_datos_oyente():
         return jsonify({
             "nombreUsuario": oyente.nombreUsuario,
             "numSeguidos": len(oyente.seguidos),  
-            "numSeguidores": len(oyente.seguidores)  
+            "numSeguidores": len(oyente.seguidores),
+            "fotoPerfil": oyente.fotoPerfil  
             }), 200
 
 

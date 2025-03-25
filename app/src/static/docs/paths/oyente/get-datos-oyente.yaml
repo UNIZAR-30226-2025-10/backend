@@ -50,6 +50,7 @@ get:
               numSeguidos: 15
               numSeguidores: 50
               siguiendo: false
+              fotoPerfil: "<link_cloudinary>"
             ultimoNoizzy:
               texto: "Me encanta esta nueva canción!"
               id: 42

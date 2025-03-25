@@ -41,10 +41,11 @@ def get_datos_artista():
             "artista": {
                 "nombreUsuario": artista.nombreUsuario,
                 "nombreArtistico": artista.nombreArtistico,
-                "biografía": artista.biografia,
+                "biografia": artista.biografia,
                 "numSeguidos": len(artista.seguidos),
                 "numSeguidores": len(artista.seguidores),
-                "siguiendo": siguiendo
+                "siguiendo": siguiendo,
+                "fotoPerfil": artista.fotoPerfil
             },
             "ultimoNoizzy": {
                 "texto": ultimo_noizzy.texto if ultimo_noizzy else None,
@@ -73,7 +74,8 @@ def get_mis_datos_artista():
             "nombreArtistico":artista.nombreArtistico,
             "numSeguidos": len(artista.seguidos), 
             "numSeguidores": len(artista.seguidores),
-            "biografia" : artista.biografia
+            "biografia" : artista.biografia,
+            "fotoPerfil": artista.fotoPerfil
             }), 200
 
 

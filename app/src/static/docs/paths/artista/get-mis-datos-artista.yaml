@@ -16,6 +16,7 @@ get:
             numSeguidos: 10
             numSeguidores: 200
             biografia: "Soy un artista apasionado por la música."
+            fotoPerfil: "<link_cloudinary>"
     401:
       description: El usuario no es un artista o no está autenticado.
       content:

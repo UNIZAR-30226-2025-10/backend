@@ -27,7 +27,7 @@ get:
                     type: string
                   nombreArtistico:
                     type: string
-                  biografía:
+                  biografia:
                     type: string
                   numSeguidos:
                     type: integer
@@ -35,6 +35,8 @@ get:
                     type: integer
                   siguiendo:
                     type: boolean
+                  fotoPerfil:
+                    type: string
               ultimoNoizzy:
                 type: object
                 nullable: true
@@ -56,6 +58,7 @@ get:
               numSeguidos: 10
               numSeguidores: 30
               siguiendo: true
+              fotoPerfil: "<link_cloudinary>"
             ultimoNoizzy:
               texto: "Escucha mi nueva canción"
               id: 35
