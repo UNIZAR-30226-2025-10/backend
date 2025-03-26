@@ -38,6 +38,10 @@ def get_datos_playlist():
 
         duracion_total = sum(c.duracion for c in canciones_entry)
 
+        rol = ("creador" if creador_entry.correo == correo 
+            else "participante" if correo in participantes 
+            else "nada")
+
         respuesta = {
             "playlist": {
                 "nombrePlaylist": playlist_entry.nombre,
@@ -60,6 +64,7 @@ def get_datos_playlist():
                 }
                 for c in canciones_entry
             ],
+            "rol": rol
         }
 
     return jsonify(respuesta), 200
