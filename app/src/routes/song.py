@@ -27,7 +27,7 @@ cloudinary.config(
 @jwt_required()
 @tokenVersion_required()
 @roles_required("oyente","artista")
-def get_cancion():
+def get_cancion_actual():
     correo = get_jwt_identity()
     
     with get_db() as db:

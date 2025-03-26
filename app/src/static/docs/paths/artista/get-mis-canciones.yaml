@@ -1,0 +1,58 @@
+get:
+  summary: Devuelve una lista con las canciones del artista logueado
+  description: Permite a un artista obtener la lista de sus canciones con información básica.
+  security:
+    - bearerAuth: []
+  tags:
+    - Canciones
+  responses:
+    "200":
+      description: Lista de canciones del artista obtenida exitosamente.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              canciones:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: ID de la canción
+                    nombre:
+                      type: string
+                      description: Nombre de la canción
+                    fotoPortada:
+                      type: string
+                      nullable: true
+                      description: URL de la foto de portada del álbum (si existe)
+          example:
+            canciones:
+              - id: 1
+                nombre: "Mi primera canción"
+                fotoPortada: "https://cloudinary.com/mi-foto.jpg"
+              - id: 2
+                nombre: "Otra canción"
+                fotoPortada: null
+    "404":
+      description: El artista no existe.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "El artista no existe."
+    "401":
+      description: No autorizado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido o expirado."

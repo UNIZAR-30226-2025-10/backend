@@ -78,6 +78,31 @@ def get_mis_datos_artista():
             "biografia" : artista.biografia,
             "fotoPerfil": artista.fotoPerfil
             }), 200
+    
+
+"""Devuelve una lista con las canciones del artista logueado"""
+@artista_bp.route('/get-mis-canciones', methods=['GET'])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista")
+def get_mis_canciones():
+    correo = get_jwt_identity()
+    
+    with get_db() as db:
+        artista = db.get(Artista, correo)
+        if not artista:
+            return jsonify({"error": "El artista no existe."}), 404
+
+        canciones = [
+                {
+                    "id": cancion.id,
+                    "nombre": cancion.nombre,
+                    "fotoPortada": cancion.album.fotoPortada if cancion.album else None
+                }
+                for cancion in artista.canciones
+            ]
+    
+    return jsonify({"canciones": canciones}), 200
 
 
 """Devuelve una lista con las canciones de un artista"""

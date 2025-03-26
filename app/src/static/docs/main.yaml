@@ -27,6 +27,8 @@ paths:
     $ref: "/static/docs/paths/artista/change-datos-artista.yaml"
   /get-datos-album:
     $ref: "/static/docs/paths/artista/get-datos-album.yaml"
+  /get-mis-canciones:
+    $ref: "/static/docs/paths/artista/get-mis-canciones.yaml"
   /get-canciones:
     $ref: "/static/docs/paths/artista/get-canciones.yaml"
   /get-canciones-populares:
