@@ -5,6 +5,7 @@ from db.models import EstaEscuchandoCancion, EstaEscuchandoColeccion, Playlist, 
 from db.db import get_db
 from utils.decorators import roles_required, tokenVersion_required, sid_required
 from utils.fav import fav
+from utils.estadisticas import estadisticas_song
 from datetime import datetime
 from .websocket import socketio
 import pytz
@@ -534,22 +535,17 @@ def get_estadisticas_cancion():
         if cancion_entry.artista.correo != correo and not cancion_entry.artista in cancion_entry.featuring:
             return jsonify({"error": "El artista no puede consultar las estadisticas de esta cancion."})
         
-        n_playlists = db.query(EsParteDePlaylist).filter_by(Cancion_id=id).count()
-        
-        favs = db.query(EsParteDePlaylist).join(Playlist).filter(
-            EsParteDePlaylist.Cancion_id == id, Playlist.nombre == "Favoritos"
-        ).count()
-
+        n_playlists, favs = estadisticas_song(cancion_entry, db)
         cancion = {
-                "audio": cancion_entry.audio,
-                "nombre": cancion_entry.nombre,
-                "album": cancion_entry.album.nombre,
-                "duracion": cancion_entry.duracion,
-                "fechaPublicacion": cancion_entry.fecha,
-                "reproducciones": cancion_entry.reproducciones,
-                "fotoPortada": cancion_entry.album.fotoPortada,
-                "nPlaylists": n_playlists,
-                "favs": favs
-            }
+            "audio": cancion_entry.audio,
+            "nombre": cancion_entry.nombre,
+            "album": cancion_entry.album.nombre,
+            "duracion": cancion_entry.duracion,
+            "fechaPublicacion": cancion_entry.fecha,
+            "reproducciones": cancion_entry.reproducciones,
+            "fotoPortada": cancion_entry.album.fotoPortada,
+            "nPlaylists": n_playlists,
+            "favs": favs
+        }
         
     return jsonify({"cancion": cancion}), 200
