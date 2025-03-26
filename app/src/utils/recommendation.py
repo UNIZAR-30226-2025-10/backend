@@ -71,13 +71,6 @@ def obtener_recomendaciones(usuario, db):
         if all(historial.Cancion_id != cancion.id for historial in historial_canciones)
     ]
 
-    # Calcular puntuaciones de forma concurrente
-    #def calcular(cancion):
-    #    return cancion, calcular_puntuacion(cancion, caracteristicas)
-
-    #with ThreadPoolExecutor() as executor:
-    #    canciones_recomendadas = list(executor.map(calcular, canciones_candidatas))
-
     canciones_recomendadas = [
         (cancion, calcular_puntuacion(cancion, caracteristicas)) for cancion in canciones_candidatas
     ]

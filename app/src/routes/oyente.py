@@ -116,14 +116,18 @@ def get_historial_artistas():
             return jsonify({"error": "Correo no existe."}), 401
 
         # Construir el diccionario con los artistas escuchados
-        artistas = [
-            {
-                "nombreUsuario": h.cancion.artista.nombreUsuario,
-                "nombreArtistico" : h.cancion.artista.nombreArtistico,
-                "fotoPerfil": h.cancion.artista.fotoPerfil
-            }
-            for h in oyente_entry.historialCancion[:30]
-        ]
+        artistas_unicos = set()
+        artistas = []
+
+        for h in oyente_entry.historialCancion[:30]:
+            clave = (h.cancion.artista.nombreUsuario)
+            if clave not in artistas_unicos:
+                artistas_unicos.add(clave)
+                artistas.append({
+                    "nombreUsuario": h.cancion.artista.nombreUsuario,
+                    "nombreArtistico": h.cancion.artista.nombreArtistico,
+                    "fotoPerfil": h.cancion.artista.fotoPerfil
+                })
     
     return jsonify({"historial_artistas": artistas}), 200
 
@@ -351,3 +355,49 @@ def change_contrasenya():
         db.commit()
 
     return jsonify({"message": "Contraseña actualizada exitosamente."}), 200
+
+
+"""Actualiza la contraseña de un usuario"""
+@oyente_bp.route('/change-follow', methods=['PUT'])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente", "artista")
+def change_follow():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Datos incorrectos."}), 400
+
+    correo = get_jwt_identity()
+    siguiendo = data.get("siguiendo")
+    nombreUsuario = data.get("nombreUsuario")
+    if not nombreUsuario or siguiendo is None:
+        return jsonify({"error": "Faltan campos en la peticion."}), 400
+    
+    with get_db() as db:
+        oyente = db.query(Oyente).filter_by(nombreUsuario=nombreUsuario).first()
+        if not oyente:
+            return jsonify({"error": "El oyente no existe."}), 404
+        
+        usuario_actual = db.get(Oyente, correo)
+        siguiendo_entry = usuario_actual in oyente.seguidores if usuario_actual else False
+        
+        if siguiendo and not siguiendo_entry:
+            # Si no lo sigo y siguiendo == True, seguirlo
+            usuario_actual.seguidos.append(oyente)
+
+        elif not siguiendo and siguiendo_entry:
+            # Si lo sigo y siguiendo == False, dejar de seguirlo
+            usuario_actual.seguidos.remove(oyente)
+
+        elif siguiendo_entry:
+            return jsonify({"error": "Ya sigues a este usuario."}), 409
+
+        else:
+            return jsonify({"error": "No sigues a este usuario."}), 404
+        
+        try:
+            db.commit()              
+        except Exception as e:
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+    
+    return jsonify(""), 200

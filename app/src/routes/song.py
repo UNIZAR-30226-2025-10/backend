@@ -212,6 +212,12 @@ def change_fav():
             # Si esta en favoritos y fav == False, eliminarla
             db.delete(fav_entry)
 
+        elif fav_entry:
+            return jsonify({"error": "La cancion ya esta en favoritos."}), 409
+
+        else:
+            return jsonify({"error": "La cancion no esta en favoritos."}), 404
+
         try:
             db.commit()              
         except Exception as e:
@@ -225,7 +231,7 @@ def change_fav():
 @jwt_required()
 @tokenVersion_required()
 @roles_required("oyente","artista")
-def add_reproduction():
+def add_reproduccion():
     correo = get_jwt_identity()
     
     with get_db() as db:
