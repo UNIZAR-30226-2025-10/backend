@@ -27,6 +27,8 @@ paths:
     $ref: "/static/docs/paths/artista/change-datos-artista.yaml"
   /get-datos-album:
     $ref: "/static/docs/paths/artista/get-datos-album.yaml"
+  /get-mis-canciones:
+    $ref: "/static/docs/paths/artista/get-mis-canciones.yaml"
   /get-canciones:
     $ref: "/static/docs/paths/artista/get-canciones.yaml"
   /get-canciones-populares:
@@ -71,6 +73,8 @@ paths:
     $ref: "/static/docs/paths/oyente/get-seguidos.yaml"
   /add-reproduccion:
     $ref: "/static/docs/paths/song/add-reproduccion.yaml"
+  /get-estadisticas-cancion:
+    $ref: "/static/docs/paths/song/get-estadisticas-cancion.yaml"
   /create-cancion:
     $ref: "/static/docs/paths/song/create-cancion.yaml"
   /change-fav:

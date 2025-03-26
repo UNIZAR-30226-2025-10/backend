@@ -9,6 +9,7 @@ from .song import song_bp
 from .playlist import playlist_bp
 from .oyente import oyente_bp
 from .album import album_bp
+from .cloudinary import cloudinary_bp
 
 """Registra las rutas de la API en la app"""
 def register_routes(app):
@@ -23,3 +24,4 @@ def register_routes(app):
     app.register_blueprint(playlist_bp)
     app.register_blueprint(oyente_bp)
     app.register_blueprint(album_bp)
+    app.register_blueprint(cloudinary_bp)
