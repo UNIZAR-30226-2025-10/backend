@@ -162,12 +162,35 @@ def get_canciones_favoritas():
     return jsonify({"canciones_favoritas": canciones}), 200
 
 
+"""Devuelve cuantas canciones favoritas tiene el user de un artista"""
+@artista_bp.route('/get-numero-canciones-favoritas', methods=['GET'])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista", "oyente")
+def get_numero_canciones_favoritas():
+    nombre_usuario = request.args.get("nombreUsuario")
+    if not nombre_usuario:
+        return jsonify({"error": "Falta el nombreUsuario del artista."}), 400
+    
+    correo_actual = get_jwt_identity()
+    
+    with get_db() as db:
+        artista = db.query(Artista).filter_by(nombreUsuario=nombre_usuario).first()
+        if not artista:
+            return jsonify({"error": "El artista no existe."}), 404
+
+        total_favoritas = sum(1 for cancion in artista.canciones if fav(cancion.id, correo_actual, db))
+    
+    return jsonify({"total_favoritas": total_favoritas}), 200
+
+
 """Devuelve una lista con las 5 canciones más populares de un artista"""
 @artista_bp.route('/get-canciones-populares', methods=['GET'])
 @jwt_required()
 @tokenVersion_required()
 @roles_required("artista", "oyente")
 def get_canciones_populares():
+    correo = get_jwt_identity()
     nombre_usuario = request.args.get("nombreUsuario")
     if not nombre_usuario:
         return jsonify({"error": "Falta el nombreUsuario del artista."}), 400
@@ -189,6 +212,9 @@ def get_canciones_populares():
                 {
                     "id": cancion.id,
                     "nombre": cancion.nombre,
+                    "reproducciones": cancion.reproducciones,
+                    "duracion": cancion.duracion,
+                    "fav": fav(cancion.id, correo, db),
                     "fotoPortada": cancion.album.fotoPortada if cancion.album else None
                 }
                 for cancion in canciones_populares
