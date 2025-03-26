@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from db.db import get_db
 from db.models import *
 from utils.decorators import roles_required, tokenVersion_required
+from utils.estadisticas import estadisticas_song
 import pytz
 import cloudinary.uploader
 import os
@@ -198,3 +199,55 @@ def change_album():
         db.commit()
 
     return jsonify({"message": "Álbum actualizado exitosamente."}), 200
+
+
+"""Devuelve las estadísticas de una canción para su artista"""
+@album_bp.route("/get-estadisticas-album", methods=["GET"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente", "artista")
+def get_estadisticas_album():
+    id = request.args.get("id")
+    if not id:
+        return jsonify({"error": "Falta el id del álbum."}), 400
+
+    with get_db() as db:     
+        album = db.get(Album, id)
+        if not album:
+            return jsonify({"error": "El álbum no existe."}), 404
+        
+        total_reproducciones = 0
+        total_nPlaylists = 0
+        total_favs = 0
+
+        canciones = []
+        for cancion in album.canciones:
+            n_playlists, favs = estadisticas_song(cancion, db) 
+            total_nPlaylists += n_playlists
+            total_favs += favs
+            total_reproducciones += cancion.reproducciones
+
+            canciones.append({
+                "id": cancion.id,
+                "fotoPortada": album.fotoPortada,
+                "nombre": cancion.nombre,
+                "duracion": cancion.duracion,
+                "fechaPublicacion": cancion.fecha.date().isoformat(),
+                "reproducciones": cancion.reproducciones,
+                "puesto": cancion.puesto,
+                "nPlaylists": n_playlists,
+                "favs": favs
+            })
+
+        return jsonify({
+            "nombre": album.nombre,
+            "fotoPortada": album.fotoPortada,
+            "nombreArtisticoArtista": album.artista.nombreArtistico,
+            "fechaPublicacion": album.fecha.date().isoformat(),
+            "duracion": sum(c.duracion for c in album.canciones),
+            "reproducciones": total_reproducciones,
+            "nPlaylists": total_nPlaylists,
+            "favs": total_favs,
+            "canciones": canciones
+        }), 200
+    
