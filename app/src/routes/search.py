@@ -29,12 +29,10 @@ def search():
     with get_db() as db:
         # Buscar canciones
         stmt_canciones = select(Cancion 
-            ).where(or_(
-                Cancion.nombre.ilike(f"%{termino}%"),
-                Cancion.album.ilike(f"%{termino}%")),  
+            ).where(
+                Cancion.nombre.ilike(f"%{termino}%")
             ).order_by(
-                case((Cancion.nombre.ilike(f"{termino}%"), 1), else_=2),  
-                case((Cancion.album.ilike(f"{termino}%"), 1), else_=2), 
+                case((Cancion.nombre.ilike(f"{termino}%"), 1), else_=2),
                 Cancion.reproducciones.desc()
             ).limit(LIMITE)
 
@@ -52,7 +50,7 @@ def search():
                 Playlist.nombre.asc()
             ).limit(LIMITE)
         
-        stmt_artistas = select(Artista.nombreArtistico
+        stmt_artistas = select(Artista
             ).where(or_(
                 Artista.nombreArtistico.ilike(f"%{termino}%"), 
                 Artista.nombreUsuario.ilike(f"%{termino_no_spaces}%"))
@@ -62,7 +60,7 @@ def search():
                 Artista.nombreArtistico.asc(), 
                 Artista.nombreUsuario.asc()
             ).limit(LIMITE)
-        
+ 
         stmt_perfiles = select(Oyente
             ).where(and_(
                 Oyente.nombreUsuario.ilike(f"%{termino_no_spaces}%"), 
@@ -73,27 +71,57 @@ def search():
             ).limit(LIMITE)         
 
         canciones = db.execute(stmt_canciones).scalars().all()
+        canciones_id = {c.id for c in canciones}
         albumes = db.execute(stmt_albumes).scalars().all()
+        albumes_id = {a.id for a in albumes}
         playlists = db.execute(stmt_playlists).scalars().all()
         artistas = db.execute(stmt_artistas).scalars().all()
         perfiles = db.execute(stmt_perfiles).scalars().all()
 
+        canciones_id = {c.id for c in canciones}
+        # Añadir canciones del artista buscado
         i = 0
         while len(canciones) < LIMITE and i < len(artistas):
-            stmt_artistas = select(Cancion).join(Artista, Cancion.Artista_correo == artistas[i].correo
+            stmt_artistas = select(Cancion
+                ).where(and_(
+                    Cancion.Artista_correo == artistas[i].correo,
+                    Cancion.id.notin_(canciones_id))
                 ).order_by(Cancion.reproducciones.desc()
                 ).limit(LIMITE - len(canciones))
             
-            canciones += db.execute(stmt_artistas)
+            nuevas_canciones = db.execute(stmt_artistas).scalars().all()
+            canciones += nuevas_canciones
+            canciones_id.update(c.id for c in nuevas_canciones)
             i += 1
 
+        # Añadir albumes del artista buscado
         i = 0
         while len(albumes) < LIMITE and i < len(artistas):
-            stmt_artistas = select(Album).join(Artista, Album.Artista_correo == artistas[i].correo
+            stmt_artistas = select(Album
+                ).where(and_(
+                    Album.Artista_correo == artistas[i].correo,
+                    Album.id.notin_(albumes_id))
                 ).order_by(Album.nombre.asc()
                 ).limit(LIMITE - len(albumes))
             
-            albumes += db.execute(stmt_artistas)
+            nuevos_albumes = db.execute(stmt_artistas).scalars().all()
+            albumes += nuevos_albumes
+            albumes_id.update(a.id for a in nuevos_albumes)
+            i += 1
+
+        # Añadir canciones del album buscado 
+        i = 0
+        while len(canciones) < LIMITE and i < len(albumes):
+            stmt_albumes = select(Cancion
+                ).where(and_(
+                    Cancion.Album_id == albumes[i].id,
+                    Cancion.id.notin_(canciones_id))
+                ).order_by(Cancion.reproducciones.desc()
+                ).limit(LIMITE - len(canciones))
+            
+            nuevas_canciones = db.execute(stmt_albumes).scalars().all()
+            canciones += nuevas_canciones
+            canciones_id.update(c.id for c in nuevas_canciones)
             i += 1
 
         resultado = {
@@ -178,30 +206,49 @@ def search_for_playlist():
             return jsonify({"error": "La playlist no existe."}), 404
         
         stmt_canciones = select(Cancion 
-            ).where(and_(or_(
+            ).where(and_(
                 Cancion.nombre.ilike(f"%{termino}%"),
-                Cancion.album.ilike(f"%{termino}%")),
-                Cancion.id.not_in(
+                Cancion.id.notin_(
                 select(EsParteDePlaylist.Cancion_id).where(EsParteDePlaylist.Playlist_id == playlist)))   
             ).order_by(
-                case((Cancion.nombre.ilike(f"{termino}%"), 1), else_=2),  
-                case((Cancion.album.ilike(f"{termino}%"), 1), else_=2), 
+                case((Cancion.nombre.ilike(f"{termino}%"), 1), else_=2), 
                 Cancion.reproducciones.desc()
             ).limit(LIMITE)
         
         canciones = db.execute(stmt_canciones).scalars().all()
+        canciones_id = {c.id for c in canciones}
 
+        # Añadir canciones del artista buscado
         if len(canciones) < LIMITE:
             stmt_artistas = select(Cancion).join(Artista, Cancion.Artista_correo == Artista.correo
                 ).where(and_(or_(
                     Artista.nombreArtistico.ilike(f'{termino}%'), 
                     Artista.nombreUsuario.ilike(f'{termino_no_spaces}%')),
-                    Cancion.id.not_in(
-                    select(EsParteDePlaylist.Cancion_id).where(EsParteDePlaylist.Playlist_id == playlist)))
-                ).order_by(Cancion.reproducciones.desc()
+                    Cancion.id.notin_(
+                    select(EsParteDePlaylist.Cancion_id).where(EsParteDePlaylist.Playlist_id == playlist)), 
+                    Cancion.id.notin_(canciones_id))
+                ).order_by(
+                    case((Artista.nombreArtistico.ilike(f"{termino}%"), 1),  
+                    (Artista.nombreUsuario.ilike(f"{termino_no_spaces}%"), 2), else_=3),
+                    Cancion.reproducciones.desc()
                 ).limit(LIMITE - len(canciones))
             
-            canciones += db.execute(stmt_artistas)     
+            canciones += db.execute(stmt_artistas).scalars().all()    
+
+        # Añadir canciones del album buscado
+        if len(canciones) < LIMITE:
+            stmt_albumes = select(Cancion).join(Album, Cancion.Album_id == Album.id
+                ).where(and_(
+                    Album.nombre.ilike(f"%{termino}%"),
+                    Cancion.id.notin_(
+                    select(EsParteDePlaylist.Cancion_id).where(EsParteDePlaylist.Playlist_id == playlist)),
+                    Cancion.id.notin_(canciones_id))
+                ).order_by(
+                    case((Album.nombre.ilike(f"{termino}%"), 1), else_=2),
+                    Cancion.reproducciones.desc()
+                ).limit(LIMITE - len(canciones))
+            
+            canciones += db.execute(stmt_albumes).scalars().all() 
 
         resultados = [{"fotoPortada":c.album.fotoPortada, "id": c.id, "nombre": c.nombre, 
                       "nombreArtisticoArtista":c.artista.nombreArtistico} for c in canciones]
