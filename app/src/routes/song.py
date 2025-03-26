@@ -516,4 +516,40 @@ def delete_cancion():
 
     except Exception as e:
         return jsonify({"error": f"Error al borrar la canción: {e}"}), 500
+    
 
+"""Devuelve las estadísticas de una canción para su artista"""
+@song_bp.route("/get-estadisticas-cancion", methods=["GET"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista")
+def get_estadisticas_cancion():
+    id = request.args.get("id")
+    if not id:
+        return jsonify({"error": "Falta el ID de la cancion."}), 400
+    correo = get_jwt_identity()
+    
+    with get_db() as db:
+        cancion_entry = db.get(Cancion, id)
+        if cancion_entry.artista.correo != correo and not cancion_entry.artista in cancion_entry.featuring:
+            return jsonify({"error": "El artista no puede consultar las estadisticas de esta cancion."})
+        
+        n_playlists = db.query(EsParteDePlaylist).filter_by(Cancion_id=id).count()
+        
+        favs = db.query(EsParteDePlaylist).join(Playlist).filter(
+            EsParteDePlaylist.Cancion_id == id, Playlist.nombre == "Favoritos"
+        ).count()
+
+        cancion = {
+                "audio": cancion_entry.audio,
+                "nombre": cancion_entry.nombre,
+                "album": cancion_entry.album.nombre,
+                "duracion": cancion_entry.duracion,
+                "fechaPublicacion": cancion_entry.fecha,
+                "reproducciones": cancion_entry.reproducciones,
+                "fotoPortada": cancion_entry.album.fotoPortada,
+                "nPlaylists": n_playlists,
+                "favs": favs
+            }
+        
+    return jsonify({"cancion": cancion}), 200

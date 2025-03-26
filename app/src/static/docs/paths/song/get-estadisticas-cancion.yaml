@@ -1,0 +1,94 @@
+get:
+  summary: Devuelve las estadísticas de una canción para su artista
+  description: Permite a un artista autenticado obtener estadísticas de una de sus canciones.
+  security:
+    - bearerAuth: []
+  tags:
+    - Canción
+  parameters:
+    - name: id
+      in: query
+      required: true
+      description: ID de la canción a consultar
+      schema:
+        type: integer
+  responses:
+    "200":
+      description: Estadísticas de la canción obtenidas exitosamente.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              cancion:
+                type: object
+                properties:
+                  audio:
+                    type: string
+                    description: URL del archivo de audio de la canción
+                  nombre:
+                    type: string
+                    description: Nombre de la canción
+                  album:
+                    type: string
+                    description: Nombre del álbum al que pertenece la canción
+                  duracion:
+                    type: integer
+                    description: Duración de la canción en segundos
+                  fechaPublicacion:
+                    type: string
+                    format: date-time
+                    description: Fecha de publicación de la canción
+                  reproducciones:
+                    type: integer
+                    description: Número de veces que se ha reproducido la canción
+                  fotoPortada:
+                    type: string
+                    description: URL de la foto de portada del álbum
+                  nPlaylists:
+                    type: integer
+                    description: Número de playlists que contienen la canción
+                  favs:
+                    type: integer
+                    description: Número de playlists de favoritos que incluyen la canción
+            example:
+              cancion:
+                audio: "https://miapp.com/audios/cancion.mp3"
+                nombre: "Mi Canción"
+                album: "Mi Álbum"
+                duracion: 210
+                fechaPublicacion: "2025-03-20T19:07:00"
+                reproducciones: 15000
+                fotoPortada: "https://miapp.com/imagenes/album.jpg"
+                nPlaylists: 25
+                favs: 10
+    "400":
+      description: Falta el ID de la canción.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Falta el ID de la cancion."
+    "403":
+      description: El artista no tiene permisos para ver las estadísticas de la canción.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "El artista no puede consultar las estadisticas de esta cancion."
+    "500":
+      description: Error inesperado en el servidor.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Ha ocurrido un error inesperado."
