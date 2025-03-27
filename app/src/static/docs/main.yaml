@@ -89,6 +89,8 @@ paths:
     $ref: "/static/docs/paths/song/play-pause.yaml"
   /get-estadisticas-favs:
     $ref: "/static/docs/paths/song/get-estadisticas-favs.yaml"
+  /get-estadisticas-playlists:
+    $ref: "/static/docs/paths/song/get-estadisticas-playlists.yaml"
   /put-cancion-sola:
     $ref: "/static/docs/paths/song/put-cancion-sola.yaml"
   /put-cancion-coleccion:
