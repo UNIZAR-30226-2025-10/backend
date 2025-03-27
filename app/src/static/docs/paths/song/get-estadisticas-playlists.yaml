@@ -1,0 +1,48 @@
+get:
+  summary: "Devuelve la lista de playlists que contienen una canción"
+  description: "Permite a un artista obtener las playlists públicas y la cantidad de playlists privadas en las que aparece una canción suya."
+  tags:
+    - "Estadísticas"
+  security:
+    - BearerAuth: []
+  parameters:
+    - in: query
+      name: id
+      schema:
+        type: string
+      required: true
+      description: "ID de la canción"
+  responses:
+    200:
+      description: "Éxito. Devuelve la cantidad de playlists privadas y la lista de playlists públicas que contienen la canción."
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              n_privadas:
+                type: integer
+                description: "Número de playlists privadas que contienen la canción"
+              playlists_publicas:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: "ID de la playlist pública"
+                    nombre:
+                      type: string
+                      description: "Nombre de la playlist"
+                    fotoPortada:
+                      type: string
+                      description: "URL de la foto de portada de la playlist"
+                    creador:
+                      type: string
+                      description: "Nombre de usuario del creador de la playlist"
+    400:
+      description: "Falta el ID de la canción."
+    403:
+      description: "El artista no puede consultar las estadísticas de esta canción."
+    404:
+      description: "La canción no existe."

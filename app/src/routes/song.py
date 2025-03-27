@@ -573,17 +573,18 @@ def get_estadisticas_favs():
         if cancion_entry.artista.correo != correo and not cancion_entry.artista in cancion_entry.featuring:
             return jsonify({"error": "El artista no puede consultar las estadisticas de esta cancion."})
         
-        oyentes = (
-            db.query(Oyente)
+        stmt = (
+            select(Oyente)
             .join(Playlist, Playlist.Oyente_correo == Oyente.correo)
             .join(EsParteDePlaylist, EsParteDePlaylist.Playlist_id == Playlist.id)
-            .filter(
+            .where(
                 Playlist.nombre == "Favoritos",
                 EsParteDePlaylist.Cancion_id == id
             )
             .distinct()
-            .all()
         )
+
+        oyentes = db.scalars(stmt).all()
 
         oyentes_favs = [
             {
@@ -594,3 +595,57 @@ def get_estadisticas_favs():
         ]
         
     return jsonify({"oyentes_favs": oyentes_favs}), 200
+
+
+"""Devuelve la lista de personas que han dado like a una canción del artista logueado"""
+@song_bp.route("/get-estadisticas-playlists", methods=["GET"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista")
+def get_estadisticas_playlists():
+    id = request.args.get("id")
+    if not id:
+        return jsonify({"error": "Falta el ID de la cancion."}), 400
+    correo = get_jwt_identity()
+    
+    with get_db() as db:
+        cancion_entry = db.get(Cancion, id)
+        if cancion_entry.artista.correo != correo and not cancion_entry.artista in cancion_entry.featuring:
+            return jsonify({"error": "El artista no puede consultar las estadisticas de esta cancion."})
+        
+        stmt = (
+            select(Playlist)
+            .join(EsParteDePlaylist, EsParteDePlaylist.Playlist_id == Playlist.id)
+            .where(
+                EsParteDePlaylist.Cancion_id == id,
+                Playlist.privacidad == False
+            )
+            .distinct()
+        )
+
+        playlists_publicas = db.scalars(stmt).all()
+
+        publicas = [
+            {
+                "id": playlist.id,
+                "nombre": playlist.nombre,
+                "fotoPortada": playlist.fotoPortada,
+                "creador": playlist.oyente.nombreUsuario
+            }
+            for playlist in playlists_publicas
+        ]
+
+        stmt = (
+            select(Playlist)
+            .join(EsParteDePlaylist, EsParteDePlaylist.Playlist_id == Playlist.id)
+            .where(
+                EsParteDePlaylist.Cancion_id == id,
+                Playlist.privacidad == True
+            )
+            .distinct()
+        )
+
+        n_playlists_privadas = len(db.scalars(stmt).all())
+        
+    return jsonify({"n_privadas": n_playlists_privadas,
+                    "playlists_publicas": publicas}), 200

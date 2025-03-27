@@ -1,54 +1,52 @@
-paths:
-  /get-estadisticas-favs:
-    get:
-      summary: Devuelve la lista de personas que han dado like a una canción del artista logueado
-      description: |
-        Esta ruta permite a un artista obtener la lista de oyentes que han agregado una de sus canciones a su lista de reproducción "Favoritos".
-      tags:
-        - Canciones
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: id
-          in: query
-          required: true
-          description: ID de la canción de la que se quieren obtener las estadísticas
+get:
+  summary: Devuelve la lista de personas que han dado like a una canción del artista logueado
+  description: |
+    Esta ruta permite a un artista obtener la lista de oyentes que han agregado una de sus canciones a su lista de reproducción "Favoritos".
+  tags:
+    - Canciones
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: query
+      required: true
+      description: ID de la canción de la que se quieren obtener las estadísticas
+      schema:
+        type: string
+  responses:
+    200:
+      description: Lista de oyentes que han dado like a la canción
+      content:
+        application/json:
           schema:
-            type: string
-      responses:
-        200:
-          description: Lista de oyentes que han dado like a la canción
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  oyentes_favs:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        nombreUsuario:
-                          type: string
-                          description: Nombre del usuario que ha dado like a la canción
-                        fotoPerfil:
-                          type: string
-                          description: URL de la foto de perfil del usuario
-        400:
-          description: Falta el ID de la canción
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-        403:
-          description: El artista no tiene permisos para consultar las estadísticas de esta canción
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
+            type: object
+            properties:
+              oyentes_favs:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    nombreUsuario:
+                      type: string
+                      description: Nombre del usuario que ha dado like a la canción
+                    fotoPerfil:
+                      type: string
+                      description: URL de la foto de perfil del usuario
+    400:
+      description: Falta el ID de la canción
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+    403:
+      description: El artista no tiene permisos para consultar las estadísticas de esta canción
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
