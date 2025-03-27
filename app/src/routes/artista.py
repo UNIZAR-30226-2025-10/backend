@@ -1,9 +1,9 @@
 from utils.decorators import roles_required, tokenVersion_required
-from db.models import Oyente, Artista, Noizzy, Cancion, Playlist, EsParteDePlaylist, Album
+from db.models import Oyente, Artista, Noizzy, Cancion, Playlist, EsParteDePlaylist, Album, featuring_table
 from db.db import get_db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import Blueprint, request, jsonify
-from sqlalchemy import select, or_, case, and_, not_
+from sqlalchemy import select, and_, func
 import cloudinary.uploader
 import os
 from utils.fav import fav
@@ -162,17 +162,27 @@ def get_canciones_favoritas():
                 EsParteDePlaylist.Playlist_id == id_fav))
 
         resultados = db.execute(stmt_canciones).fetchall()
-        canciones = [
-            {
-                "id": resultado[0],
-                "nombre": resultado[1],
-                "fotoPortada": resultado[4],
-                "album": resultado[3],
-                "duracion": resultado[2],
-                "fecha": resultado[5].strftime("%d %m %Y")
-            }
-            for resultado in resultados
-        ]
+
+        canciones = []
+        for resultado in resultados:
+            stmt = (
+                select(Artista.nombreArtistico)
+                .join(featuring_table, Artista.correo == featuring_table.c.Artista_correo)
+                .where(featuring_table.c.Cancion_id == resultado[0])
+            )
+    
+            featuring = [row[0] for row in db.execute(stmt).all()]
+            canciones.append(
+                {
+                    "id": resultado[0],
+                    "nombre": resultado[1],
+                    "fotoPortada": resultado[4],
+                    "album": resultado[3],
+                    "duracion": resultado[2],
+                    "featuring": featuring,
+                    "fecha": resultado[5].strftime("%d %m %Y")
+                }
+            )
     
     return jsonify({"canciones_favoritas": canciones}), 200
 
@@ -193,8 +203,19 @@ def get_numero_canciones_favoritas():
         artista = db.query(Artista).filter_by(nombreUsuario=nombre_usuario).first()
         if not artista:
             return jsonify({"error": "El artista no existe."}), 404
+        
+        stmt = (
+            select(func.count(Cancion.id))
+            .join(EsParteDePlaylist, Cancion.id == EsParteDePlaylist.Cancion_id)
+            .join(Playlist, EsParteDePlaylist.Playlist_id == Playlist.id)
+            .where(
+                Cancion.Artista_correo == artista.correo,
+                Playlist.nombre == "Favoritos",
+                Playlist.Oyente_correo == correo_actual
+            )
+        )
 
-        total_favoritas = sum(1 for cancion in artista.canciones if fav(cancion.id, correo_actual, db))
+        total_favoritas = db.execute(stmt).scalar()
     
     return jsonify({"total_favoritas": total_favoritas}), 200
 
@@ -236,6 +257,7 @@ def get_canciones_populares():
                     "id": cancion.id,
                     "nombre": cancion.nombre,
                     "reproducciones": cancion.reproducciones,
+                    "featuring": [f.nombreArtistico for f in cancion.featuring],
                     "duracion": cancion.duracion,
                     "fav": cancion.id in favoritos_set,
                     "fotoPortada": cancion.album.fotoPortada
