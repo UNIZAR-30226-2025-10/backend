@@ -132,7 +132,8 @@ def get_canciones():
     return jsonify({"canciones": canciones}), 200
 
 
-"""Devuelve una lista con las canciones de un artista"""
+"""Devuelve una lista con las canciones que el usuario logueado tiene favoritos
+   de un artista concreto"""
 @artista_bp.route('/get-canciones-favoritas', methods=['GET'])
 @jwt_required()
 @tokenVersion_required()
@@ -162,7 +163,7 @@ def get_canciones_favoritas():
     return jsonify({"canciones_favoritas": canciones}), 200
 
 
-"""Devuelve cuantas canciones favoritas tiene el user de un artista"""
+"""Devuelve cuantas canciones favoritas tiene el usuario logueado de un artista"""
 @artista_bp.route('/get-numero-canciones-favoritas', methods=['GET'])
 @jwt_required()
 @tokenVersion_required()

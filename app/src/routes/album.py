@@ -40,6 +40,7 @@ def get_datos_album():
                 "nombre": cancion.nombre,
                 "duracion": cancion.duracion,
                 "fechaPublicacion": cancion.fecha.date().isoformat(),
+                "featuring": [f.nombreArtistico for f in cancion.featuring],
                 "puesto": cancion.puesto
             }
             for cancion in album.canciones

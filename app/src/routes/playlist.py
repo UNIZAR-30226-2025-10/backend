@@ -56,6 +56,7 @@ def get_datos_playlist():
                     "id": c.id,
                     "nombre": c.nombre,
                     "nombreArtisticoArtista": c.artista.nombreArtistico,
+                    "featuring": [f.nombreArtistico for f in c.featuring],
                     "reproducciones": c.reproducciones,
                     "duracion": c.duracion,
                     "fav": fav(c.id, correo, db),
@@ -90,6 +91,8 @@ def change_privacidad():
             return jsonify({"error": "La playlist no existe."}), 404
         if playlist.Oyente_correo != correo:
             return jsonify({"error": "No tienes permiso para modificar esta playlist."}), 403
+        if playlist.nombre == "Favoritos":
+            return jsonify({"error": "La playlist 'Favoritos' no se puede modificar."}), 403
 
         # Cambiar privacidad y guardar cambios
         playlist.privacidad = privacidad
@@ -193,6 +196,9 @@ def invite_to_playlist():
         
         if playlist_entry.Oyente_correo != correo:
             return jsonify({"error": "No tienes permiso para modificar esta playlist."}), 403
+        
+        if playlist_entry.nombre == "Favoritos":
+            return jsonify({"error": "La playlist 'Favoritos' no se puede compartir."}), 403
 
         usuario_entry = db.execute(select(Usuario).where(Usuario.nombreUsuario == nombreUsuario)).scalar_one_or_none()
         if not usuario_entry:
@@ -312,6 +318,9 @@ def change_playlist():
         if playlist.Oyente_correo != correo:
             return jsonify({"error": "No tienes permiso para modificar esta playlist."}), 403
 
+        if playlist.nombre == "Favoritos":
+            return jsonify({"error": "La playlist 'Favoritos' no se puede modificar."}), 403
+
         playlist.nombre = nuevo_nombre
         playlist.fotoPortada = nueva_foto
 
@@ -342,6 +351,9 @@ def delete_playlist():
         
         if correo != playlist_entry.Oyente_correo:
             return jsonify({"error": "La playlist solo puede ser eliminada por el creador."}), 403
+        
+        if playlist_entry.nombre == "Favoritos":
+            return jsonify({"error": "La playlist 'Favoritos' no se puede eliminar."}), 403
 
         db.delete(playlist_entry)
         try:
@@ -363,6 +375,8 @@ def create_playlist():
 
     correo = get_jwt_identity()
     nombre = data.get("nombre")
+    if (nombre == "Favoritos"):
+        return jsonify({"error": "El nombre 'Favoritos' no es valido."}), 403
     fotoPortada = data.get("fotoPortada")
 
     with get_db() as db:

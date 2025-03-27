@@ -81,10 +81,11 @@ def obtener_recomendaciones(usuario, db):
     canciones = [
         {
             "id": cancion.id,
+            "nombreArtisticoArtista" : cancion.artista.nombreArtistico,
             "fotoPortada": cancion.album.fotoPortada,
             "nombre": cancion.nombre
         }
-        for cancion, _ in canciones_recomendadas[:30]
+        for cancion, _ in canciones_recomendadas[:20]
     ]
 
     return canciones
