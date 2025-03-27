@@ -1,8 +1,9 @@
 from utils.decorators import roles_required, tokenVersion_required
-from db.models import Oyente, Artista, Noizzy, Cancion
+from db.models import Oyente, Artista, Noizzy, Cancion, Playlist, EsParteDePlaylist, Album
 from db.db import get_db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import Blueprint, request, jsonify
+from sqlalchemy import select, or_, case, and_, not_
 import cloudinary.uploader
 import os
 from utils.fav import fav
@@ -150,14 +151,27 @@ def get_canciones_favoritas():
         if not artista:
             return jsonify({"error": "El artista no existe."}), 404
 
+        id_fav = db.execute(select(Playlist.id).where(and_(Playlist.nombre == "Favoritos", Playlist.Oyente_correo == correo_actual))).scalar()
+
+        stmt_canciones = select(Cancion.id, Cancion.nombre, Cancion.duracion, Album.nombre.label("album"),
+            Album.fotoPortada, EsParteDePlaylist.fecha
+            ).join(EsParteDePlaylist, EsParteDePlaylist.Cancion_id == Cancion.id
+            ).join(Album, Album.id == Cancion.Album_id
+            ).where(and_(
+                Cancion.Artista_correo == artista.correo,
+                EsParteDePlaylist.Playlist_id == id_fav))
+
+        resultados = db.execute(stmt_canciones).fetchall()
         canciones = [
             {
-                "id": cancion.id,
-                "nombre": cancion.nombre,
-                "fotoPortada": cancion.album.fotoPortada if cancion.album else None
+                "id": resultado[0],
+                "nombre": resultado[1],
+                "fotoPortada": resultado[4],
+                "album": resultado[3],
+                "duracion": resultado[2],
+                "fecha": resultado[5].strftime("%d %m %Y")
             }
-            for cancion in artista.canciones
-            if fav(cancion.id, correo_actual, db)
+            for resultado in resultados
         ]
     
     return jsonify({"canciones_favoritas": canciones}), 200
