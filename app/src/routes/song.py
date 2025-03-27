@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import select
-from db.models import EstaEscuchandoCancion, EstaEscuchandoColeccion, Playlist, EsParteDePlaylist, HistorialCancion, HistorialColeccion, Cancion, GeneroMusical
+from db.models import EstaEscuchandoCancion, EstaEscuchandoColeccion, Oyente, Playlist, EsParteDePlaylist, HistorialCancion, HistorialColeccion, Cancion, GeneroMusical
 from db.db import get_db
 from utils.decorators import roles_required, tokenVersion_required, sid_required
 from utils.fav import fav
@@ -555,3 +555,42 @@ def get_estadisticas_cancion():
         }
         
     return jsonify({"cancion": cancion}), 200
+
+
+"""Devuelve la lista de personas que han dado like a una canción del artista logueado"""
+@song_bp.route("/get-estadisticas-favs", methods=["GET"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista")
+def get_estadisticas_favs():
+    id = request.args.get("id")
+    if not id:
+        return jsonify({"error": "Falta el ID de la cancion."}), 400
+    correo = get_jwt_identity()
+    
+    with get_db() as db:
+        cancion_entry = db.get(Cancion, id)
+        if cancion_entry.artista.correo != correo and not cancion_entry.artista in cancion_entry.featuring:
+            return jsonify({"error": "El artista no puede consultar las estadisticas de esta cancion."})
+        
+        oyentes = (
+            db.query(Oyente)
+            .join(Playlist, Playlist.Oyente_correo == Oyente.correo)
+            .join(EsParteDePlaylist, EsParteDePlaylist.Playlist_id == Playlist.id)
+            .filter(
+                Playlist.nombre == "Favoritos",
+                EsParteDePlaylist.Cancion_id == id
+            )
+            .distinct()
+            .all()
+        )
+
+        oyentes_favs = [
+            {
+                "nombreUsuario": oyente.nombreUsuario,
+                "fotoPerfil": oyente.fotoPerfil
+            }
+            for oyente in oyentes
+        ]
+        
+    return jsonify({"oyentes_favs": oyentes_favs}), 200
