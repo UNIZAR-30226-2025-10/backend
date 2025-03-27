@@ -7,6 +7,7 @@ from utils.estadisticas import estadisticas_song
 import pytz
 import cloudinary.uploader
 import os
+from sqlalchemy import select, and_
 
 album_bp = Blueprint('album', __name__)
 
@@ -18,7 +19,6 @@ cloudinary.config(
 )
 
 
-
 """Devuelve informacion de un album"""
 @album_bp.route("/get-datos-album", methods=["GET"])
 @jwt_required()
@@ -26,6 +26,7 @@ cloudinary.config(
 @roles_required("oyente", "artista")
 def get_datos_album():
     id = request.args.get("id")
+    correo = get_jwt_identity()
     if not id:
         return jsonify({"error": "Falta el id del álbum."}), 400
 
@@ -33,6 +34,15 @@ def get_datos_album():
         album = db.get(Album, id)
         if not album:
             return jsonify({"error": "El álbum no existe."}), 401
+        
+        stmt_fav = select(EsParteDePlaylist.Cancion_id).join(Playlist
+            ).where(and_(
+                Playlist.nombre == "Favoritos",
+                Playlist.Oyente_correo == correo
+            )
+        )
+        favoritos_set = {row[0] for row in db.execute(stmt_fav).all()}
+
         canciones = [
             {
                 "id": cancion.id,
@@ -40,6 +50,7 @@ def get_datos_album():
                 "nombre": cancion.nombre,
                 "duracion": cancion.duracion,
                 "fechaPublicacion": cancion.fecha.date().isoformat(),
+                "fav": cancion.id in favoritos_set,
                 "featuring": [f.nombreArtistico for f in cancion.featuring],
                 "puesto": cancion.puesto
             }

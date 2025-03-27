@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from db.models import Playlist, Oyente, Cancion, EsParteDePlaylist, Usuario, participante_table, invitado_table
 from db.db import get_db
-from sqlalchemy import select, exists, delete, insert
+from sqlalchemy import select, exists, delete, insert, and_
 from utils.decorators import roles_required, tokenVersion_required
 from utils.fav import fav
 from datetime import datetime
@@ -38,6 +38,14 @@ def get_datos_playlist():
 
         duracion_total = sum(c.duracion for c in canciones_entry)
 
+        stmt_fav = select(EsParteDePlaylist.Cancion_id).join(Playlist
+            ).where(and_(
+                Playlist.nombre == "Favoritos",
+                Playlist.Oyente_correo == correo
+            )
+        )
+        favoritos_set = {row[0] for row in db.execute(stmt_fav).all()}
+
         rol = ("creador" if creador_entry.correo == correo 
             else "participante" if correo in participantes 
             else "nada")
@@ -59,7 +67,7 @@ def get_datos_playlist():
                     "featuring": [f.nombreArtistico for f in c.featuring],
                     "reproducciones": c.reproducciones,
                     "duracion": c.duracion,
-                    "fav": fav(c.id, correo, db),
+                    "fav": c.id in favoritos_set,
                     "nombreUsuarioArtista": c.artista.nombreUsuario,
                     "fotoPortada": c.album.fotoPortada,
                 }

@@ -223,14 +223,22 @@ def get_canciones_populares():
             .all()
         )
 
+        stmt_fav = select(EsParteDePlaylist.Cancion_id).join(Playlist
+            ).where(and_(
+                Playlist.nombre == "Favoritos",
+                Playlist.Oyente_correo == correo
+            )
+        )
+        favoritos_set = {row[0] for row in db.execute(stmt_fav).all()}
+
         canciones = [
                 {
                     "id": cancion.id,
                     "nombre": cancion.nombre,
                     "reproducciones": cancion.reproducciones,
                     "duracion": cancion.duracion,
-                    "fav": fav(cancion.id, correo, db),
-                    "fotoPortada": cancion.album.fotoPortada if cancion.album else None
+                    "fav": cancion.id in favoritos_set,
+                    "fotoPortada": cancion.album.fotoPortada
                 }
                 for cancion in canciones_populares
             ]
