@@ -274,7 +274,7 @@ def change_volumen():
         oyente_entry.volumen = volumen
         db.commit()
 
-    return jsonify({"message": "Volumen actualizado exitosamente."}), 200
+    return jsonify(""), 200
 
 
 """Actualiza los datos de un oyente"""
@@ -354,7 +354,7 @@ def change_contrasenya():
         usuario.contrasenya = hash(nueva_contrasenya)
         db.commit()
 
-    return jsonify({"message": "Contraseña actualizada exitosamente."}), 200
+    return jsonify(""), 200
 
 
 """Actualiza la contraseña de un usuario"""

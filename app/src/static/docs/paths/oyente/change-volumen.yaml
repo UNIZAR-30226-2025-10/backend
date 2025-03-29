@@ -21,19 +21,46 @@ patch:
       description: Volumen actualizado correctamente.
       content:
         application/json:
-          example:
-            message: "Volumen actualizado exitosamente."
+          schema:
+            type: string
+            example: ""
     400:
-      description: Datos incorrectos o volumen fuera de rango.
+      description: Datos incorrectos o faltantes en la solicitud.
       content:
         application/json:
-          example:
-            error: "El volumen debe estar entre 0 y 100."
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "El volumen debe estar entre 0 y 100."
     401:
-      description: Usuario no autenticado o no autorizado.
-    404:
-      description: El usuario no es un oyente.
+      description: Usuario no autenticado
       content:
         application/json:
-          example:
-            error: "El usuario no es un oyente."
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido"
+    403:
+      description: Usuario autenticado sin permisos para la accion
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
+    404:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "El usuario no es un oyente."

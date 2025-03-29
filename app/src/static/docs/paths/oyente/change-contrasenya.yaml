@@ -1,6 +1,6 @@
 put:
   summary: Actualiza la contraseña de un usuario
-  description: Permite a un usuario logueado actualizar su contraseña.
+  description: Permite a un usuario actualizar su contraseña.
   security:
     - bearerAuth: []
   tags:
@@ -22,20 +22,15 @@ put:
           contrasenya: "contraseña_actual"
           nueva: "contraseña_nueva"
   responses:
-    "200":
-      description: Contraseña actualizada exitosamente.
+    200:
+      description: Contraseña cambiada exitosamente.
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              message:
-                type: string
-                description: Mensaje de éxito
-            example:
-              message: "Contraseña actualizada exitosamente."
-    "400":
-      description: Faltan datos para actualizar la contraseña o datos incorrectos.
+            type: string
+            example: ""
+    400:
+      description: Datos incorrectos o faltantes en la solicitud.
       content:
         application/json:
           schema:
@@ -44,8 +39,8 @@ put:
               error:
                 type: string
                 example: "Faltan datos para actualizar la contraseña o datos incorrectos."
-    "401":
-      description: La contraseña actual es incorrecta.
+    401:
+      description: Usuario no autenticado
       content:
         application/json:
           schema:
@@ -53,9 +48,19 @@ put:
             properties:
               error:
                 type: string
-                example: "La contraseña actual es incorrecta."
-    "404":
-      description: El usuario no existe.
+                example: "Token inválido"
+    403:
+      description: Usuario autenticado sin permisos para la accion
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
+    404:
+      description: Recurso no encontrado
       content:
         application/json:
           schema:
@@ -64,7 +69,7 @@ put:
               error:
                 type: string
                 example: "El usuario no existe."
-    "500":
+    500:
       description: Ha ocurrido un error inesperado.
       content:
         application/json:

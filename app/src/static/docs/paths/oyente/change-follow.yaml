@@ -1,8 +1,8 @@
 put:
-  summary: Actualiza los datos de un oyente
-  description: Permite a un oyente actualizar su foto de perfil y nombre de usuario.
+  summary: Seguir o dejar de seguir a un usuario
+  description: Permite a un usuario seguir o dejar de seguir a otro.
   security:
-    - bearerAuth: []
+    - BearerAuth: []
   tags:
     - Oyente
   requestBody:
@@ -12,18 +12,18 @@ put:
         schema:
           type: object
           properties:
-            fotoPerfil:
-              type: string
-              description: URL de la foto de perfil en Cloudinary
             nombreUsuario:
               type: string
-              description: Nuevo nombre de usuario
+              description: Nombre de usuario del usuario a seguir o dejar de seguir
+            follow:
+              type: boolean
+              description: Seguir = true, Dejar de seguir = false
         example:
-          fotoPerfil: "<link-cloudinary>"
-          nombreUsuario: "user123"
+          id: 123
+          fav: true
   responses:
     200:
-      description: Datos del oyente actualizados exitosamente.
+      description: Estado de seguimiento actualizado correctamente.
       content:
         application/json:
           schema:
@@ -38,7 +38,7 @@ put:
             properties:
               error:
                 type: string
-                example: "Faltan datos para actualizar el oyente o el nombre de usuario ya está en uso."
+                example: "Datos incorrectos."
     401:
       description: Usuario no autenticado
       content:
@@ -68,9 +68,19 @@ put:
             properties:
               error:
                 type: string
-                example: "El oyente no existe."
+                example: "No sigues a este usuario."
+    409:
+      description: Conflicto con el estado actual del recurso.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Ya sigues a este usuario."    
     500:
-      description: Ha ocurrido un error inesperado.
+      description: Error interno del servidor
       content:
         application/json:
           schema:

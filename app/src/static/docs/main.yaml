@@ -63,6 +63,8 @@ paths:
     $ref: "/static/docs/paths/album/get-estadisticas-album.yaml"
   /change-contrasenya:
     $ref: "/static/docs/paths/oyente/change-contrasenya.yaml"
+  /change-follow:
+    $ref: "/static/docs/paths/oyente/change-follow.yaml"
   /get-datos-oyente:
     $ref: "/static/docs/paths/oyente/get-datos-oyente.yaml"
   /get-historial-artistas:

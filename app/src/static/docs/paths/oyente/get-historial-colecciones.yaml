@@ -10,6 +10,22 @@ get:
       description: Lista de colecciones en el historial.
       content:
         application/json:
+          schema:
+            type: object
+            properties:
+              historial_colecciones:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    nombre:
+                      type: string
+                    fotoPortada:
+                      type: string
+                    autor:
+                      type: string
           example:
             historial_colecciones:
                 id: "456"
@@ -17,4 +33,22 @@ get:
                 fotoPortada: "url_playlist.jpg"
                 autor: "Usuario1"
     401:
-      description: Usuario no autenticado o no autorizado.
+      description: Usuario no autenticado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido"
+    403:
+      description: Usuario autenticado sin permisos para la accion
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."

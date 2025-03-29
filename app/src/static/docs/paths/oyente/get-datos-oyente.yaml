@@ -13,7 +13,7 @@ get:
       schema:
         type: string
   responses:
-    "200":
+    200:
       description: Datos del oyente obtenidos exitosamente.
       content:
         application/json:
@@ -56,8 +56,8 @@ get:
               id: 42
               fecha: "21/03/2025 14:30"
               like: true
-    "400":
-      description: Falta el parámetro nombreUsuario.
+    400:
+      description: Datos incorrectos o faltantes en la solicitud.
       content:
         application/json:
           schema:
@@ -67,8 +67,28 @@ get:
                 type: string
           example:
             error: "Falta el nombreUsuario del oyente."
-    "404":
-      description: El oyente no existe.
+    401:
+      description: Usuario no autenticado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido"
+    403:
+      description: Usuario autenticado sin permisos para la accion
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
+    404:
+      description: Recurso no encontrado.
       content:
         application/json:
           schema:
@@ -78,7 +98,7 @@ get:
                 type: string
           example:
             error: "El oyente no existe."
-    "500":
+    500:
       description: Ha ocurrido un error inesperado.
       content:
         application/json:

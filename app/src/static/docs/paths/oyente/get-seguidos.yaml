@@ -10,9 +10,39 @@ get:
       description: Lista de usuarios seguidos.
       content:
         application/json:
+          schema:
+            type: object
+            properties:
+              seguidos:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    nombreUsuario:
+                      type: string
+                    fotoPerfil:
+                      type: string
           example:
             seguidos:
                 nombreUsuario: "Nombre Usuario"
                 fotoPerfil: "url_foto.jpg"
     401:
-      description: Usuario no autenticado o no autorizado.
+      description: Usuario no autenticado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido"
+    403:
+      description: Usuario autenticado sin permisos para la accion
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
