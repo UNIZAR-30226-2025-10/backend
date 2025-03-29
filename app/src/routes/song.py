@@ -604,3 +604,16 @@ def get_estadisticas_playlists():
         
     return jsonify({"n_privadas": n_playlists_privadas,
                     "playlists_publicas": publicas}), 200
+
+
+"""Devuelve una lista con todos los tags (géneros musicales)"""
+@song_bp.route("/get-tags", methods=["GET"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente", "artista")
+def get_tags():
+    with get_db() as db:
+        tags = db.query(GeneroMusical.nombre).all()
+        tags_list = [tag[0] for tag in tags]  # Extraer solo los nombres de los géneros musicales
+
+    return jsonify({"tags": tags_list}), 200
