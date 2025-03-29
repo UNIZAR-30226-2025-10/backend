@@ -302,7 +302,7 @@ def change_datos_oyente():
         if foto_perfil != oyente_entry.fotoPerfil:
 
             fotoAntigua = oyente_entry.fotoPerfil
-            public_id = fotoAntigua.split('/')[-1].split('.')[0]
+            public_id = fotoAntigua.split('/')[-2] + '/' + fotoAntigua.split('/')[-1].split('.')[0]
             print(public_id)
 
             try:

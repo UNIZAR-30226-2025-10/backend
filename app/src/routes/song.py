@@ -507,7 +507,7 @@ def delete_cancion():
                 return jsonify({"error": "La canción no existe."}), 404
 
             audio_url = cancion.audio
-            public_id = audio_url.split('/')[-1].split('.')[0]
+            public_id = audio_url.split('/')[-2] + '/' + audio_url.split('/')[-1].split('.')[0]
 
             # Borrar la canción de la base de datos
             db.delete(cancion)

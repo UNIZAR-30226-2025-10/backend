@@ -145,7 +145,7 @@ def delete_album():
         db.delete(album)
 
         fotoPortada = album.fotoPortada
-        public_id = fotoPortada.split('/')[-1].split('.')[0]
+        public_id = fotoPortada.split('/')[-2] + '/' + fotoPortada.split('/')[-1].split('.')[0]
 
         try:
             cloudinary.uploader.destroy(public_id, resource_type="image")
@@ -155,7 +155,7 @@ def delete_album():
         for cancion in album.canciones:
             print(cancion.nombre)
             audio_url = cancion.audio
-            public_id = audio_url.split('/')[-1].split('.')[0]
+            public_id = audio_url.split('/')[-2] + '/' + audio_url.split('/')[-1].split('.')[0]
 
             try:
                 cloudinary.uploader.destroy(public_id, resource_type="video")
@@ -199,7 +199,7 @@ def change_album():
             album.nombre = nombre
         if foto_portada:
             fotoPortadaAntigua = album.fotoPortada
-            public_id = fotoPortadaAntigua.split('/')[-1].split('.')[0]
+            public_id = fotoPortadaAntigua.split('/')[-2] + '/' + fotoPortadaAntigua.split('/')[-1].split('.')[0]
 
             try:
                 cloudinary.uploader.destroy(public_id, resource_type="image")

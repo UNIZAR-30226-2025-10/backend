@@ -346,7 +346,7 @@ def change_datos_artista():
 
         if foto_perfil != artista_entry.fotoPerfil:
             foto_antigua = artista_entry.fotoPerfil
-            public_id = foto_antigua.split('/')[-1].split('.')[0]
+            public_id = foto_antigua.split('/')[-2] + '/' + foto_antigua.split('/')[-1].split('.')[0]
 
             try:
                 cloudinary.uploader.destroy(public_id, resource_type="image")
