@@ -9,6 +9,12 @@ put:
     required: true
     content:
       application/json:
+        schema:
+          type: object
+          properties:
+            id:
+              type: integer
+              description: ID de la cancion a reproducir
         example:
           id: 123
   responses:
@@ -16,11 +22,60 @@ put:
       description: Canción iniciada correctamente.
       content:
         application/json:
+          schema:
+            type: object
+            properties:
+              audio: 
+                type: string
+              nombreUsuarioArtista:
+                type: string
+              fav:
+                type: boolean
+                description: Si la canción esta en Favoritos = true
           example:
             audio: "url_audio.mp3"
             nombreUsuarioArtista: "UsuarioArtista"
             fav: true
     400:
-      description: Datos incorrectos o faltan campos en la petición.
+      description: Datos no válidos o faltantes en la petición
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Datos incorrectos."
+    401:
+      description: Usuario no autenticado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido"
+    403:
+      description: Usuario autenticado sin permisos para la accion
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
     500:
-      description: Ha ocurrido un error inesperado.
+      description: Error interno del servidor
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Ha ocurrido un error inesperado."
+              details:
+                type: string
+                example: "Error de base de datos"

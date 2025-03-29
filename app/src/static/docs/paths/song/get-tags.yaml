@@ -1,0 +1,41 @@
+get:
+  summary: Obtener invitaciones a una playlist
+  description: Devuelve las invitaciones del usuario a participar en una playlist de otro usuario.
+  security:
+    - bearerAuth: []
+  tags:
+    - Canción
+  responses:
+    200:
+      description: Datos de la playlist obtenidos correctamente
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              tags:
+                type: array
+                items:
+                  type: string
+          example:
+            tags: ["pop", "rock", "soft"]
+    401:
+      description: Usuario no autenticado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido"
+    403:
+      description: Usuario autenticado sin permisos para la accion
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."

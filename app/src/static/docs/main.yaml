@@ -93,8 +93,10 @@ paths:
     $ref: "/static/docs/paths/song/delete-cancion.yaml"
   /get-cancion-actual:
     $ref: "/static/docs/paths/song/get-cancion-actual.yaml"
-  /play-pause:
-    $ref: "/static/docs/paths/song/play-pause.yaml"
+  /change-modo:
+    $ref: "/static/docs/paths/song/change-modo.yaml"
+  /get-tags:
+    $ref: "/static/docs/paths/song/get-tags.yaml"
   /get-estadisticas-favs:
     $ref: "/static/docs/paths/song/get-estadisticas-favs.yaml"
   /get-estadisticas-playlists:
@@ -127,6 +129,8 @@ paths:
     $ref: "/static/docs/paths/playlist/invite-to-playlist.yaml"
   /leave-playlist:
     $ref: "/static/docs/paths/playlist/leave-playlist.yaml"
+  /get-invitaciones:
+    $ref: "/static/docs/paths/playlist/get-invitaciones.yaml"
 
 components:
   securitySchemes:

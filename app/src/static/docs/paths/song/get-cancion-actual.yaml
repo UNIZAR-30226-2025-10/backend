@@ -10,6 +10,44 @@ get:
       description: Información de la canción actual y la colección si existe.
       content:
         application/json:
+          schema:
+            type: object
+            properties:
+              cancion:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  audio:
+                    type: string
+                  nombre:
+                    type: string
+                  nombreArtisticoArtista:
+                    type: string
+                  nombreUsuarioArtista:
+                    type: string
+                  progreso:
+                    type: integer
+                    description: Progreso de la canción en segundos
+                  fav:
+                    type: boolean
+                    description: Si la cancion esta en Favoritos = true
+                  fotoPortada:
+                    type: string
+              coleccion:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  orden: 
+                    type: array
+                    items:
+                      type: integer
+                  index:
+                    type: integer
+                  modo: 
+                    type: string
+                    description: modo in ["aleatorio", "enOrden", "enBucle"]
           example:
             cancion:
               id: 123
@@ -25,7 +63,23 @@ get:
               orden: [123, 124, 125]
               index: 1
               modo: "aleatorio"
-    400:
-      description: Usuario no encontrado.
     401:
-      description: Usuario no autenticado o no autorizado.
+      description: Usuario no autenticado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido"
+    403:
+      description: Usuario autenticado sin permisos para la accion
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."

@@ -1,6 +1,6 @@
 get:
   summary: Devuelve las estadísticas de una canción para su artista
-  description: Permite a un artista autenticado obtener estadísticas de una de sus canciones.
+  description: Permite a un artista obtener estadísticas de una de sus canciones.
   security:
     - bearerAuth: []
   tags:
@@ -13,7 +13,7 @@ get:
       schema:
         type: integer
   responses:
-    "200":
+    200:
       description: Estadísticas de la canción obtenidas exitosamente.
       content:
         application/json:
@@ -62,8 +62,8 @@ get:
                 fotoPortada: "https://miapp.com/imagenes/album.jpg"
                 nPlaylists: 25
                 favs: 10
-    "400":
-      description: Falta el ID de la canción.
+    400:
+      description: Datos incorrectos o faltantes en la solicitud.
       content:
         application/json:
           schema:
@@ -72,8 +72,8 @@ get:
               error:
                 type: string
                 example: "Falta el ID de la cancion."
-    "403":
-      description: El artista no tiene permisos para ver las estadísticas de la canción.
+    401:
+      description: Usuario no autenticado
       content:
         application/json:
           schema:
@@ -81,9 +81,9 @@ get:
             properties:
               error:
                 type: string
-                example: "El artista no puede consultar las estadisticas de esta cancion."
-    "500":
-      description: Error inesperado en el servidor.
+                example: "Token inválido"
+    403:
+      description: Usuario autenticado sin permisos para la accion
       content:
         application/json:
           schema:
@@ -91,4 +91,14 @@ get:
             properties:
               error:
                 type: string
-                example: "Ha ocurrido un error inesperado."
+                example: "Acceso denegado."
+    404:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "La cancion no existe."

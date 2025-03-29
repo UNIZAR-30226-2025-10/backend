@@ -1,9 +1,8 @@
 get:
   summary: Devuelve la lista de personas que han dado like a una canción del artista logueado
-  description: |
-    Esta ruta permite a un artista obtener la lista de oyentes que han agregado una de sus canciones a su lista de reproducción "Favoritos".
+  description: Permite a un artista obtener la lista de oyentes que han agregado una de sus canciones a su lista de reproducción "Favoritos".
   tags:
-    - Canciones
+    - Canción
   security:
     - BearerAuth: []
   parameters:
@@ -15,7 +14,7 @@ get:
         type: string
   responses:
     200:
-      description: Lista de oyentes que han dado like a la canción
+      description: Lista de oyentes que han dado like a la canción obtenida con éxito
       content:
         application/json:
           schema:
@@ -32,8 +31,14 @@ get:
                     fotoPerfil:
                       type: string
                       description: URL de la foto de perfil del usuario
+            example:
+              oyentes_favs:
+                - nombreUsuario: "user1"
+                  fotoPerfil: "https://example.com/perfil1.jpg"
+                - nombreUsuario: "user2"
+                  fotoPerfil: "https://example.com/perfil2.jpg"
     400:
-      description: Falta el ID de la canción
+      description: Datos incorrectos o faltantes en la solicitud.
       content:
         application/json:
           schema:
@@ -41,8 +46,19 @@ get:
             properties:
               error:
                 type: string
+                example: "Falta el ID de la cancion."
+    401:
+      description: Usuario no autenticado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido"
     403:
-      description: El artista no tiene permisos para consultar las estadísticas de esta canción
+      description: Usuario autenticado sin permisos para la accion
       content:
         application/json:
           schema:
@@ -50,3 +66,14 @@ get:
             properties:
               error:
                 type: string
+                example: "Acceso denegado."
+    404:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "La cancion no existe."

@@ -1,8 +1,8 @@
 get:
   summary: "Devuelve la lista de playlists que contienen una canción"
-  description: "Permite a un artista obtener las playlists públicas y la cantidad de playlists privadas en las que aparece una canción suya."
+  description: Permite a un artista obtener las playlists públicas y la cantidad de playlists privadas en las que aparece una de sus canciones.
   tags:
-    - "Estadísticas"
+    - "Canción"
   security:
     - BearerAuth: []
   parameters:
@@ -14,7 +14,7 @@ get:
       description: "ID de la canción"
   responses:
     200:
-      description: "Éxito. Devuelve la cantidad de playlists privadas y la lista de playlists públicas que contienen la canción."
+      description: Cantidad de playlists privadas y lista de playlists públicas que contienen la canción obtenida con éxito.
       content:
         application/json:
           schema:
@@ -40,9 +40,55 @@ get:
                     creador:
                       type: string
                       description: "Nombre de usuario del creador de la playlist"
+            example:
+              n_privadas: 2
+              playlists_publicas:
+                - id: 15
+                  nombre: "Playlist 1"
+                  fotoPortada: "https://example.com/playlist1.jpg"
+                  creador: "user1"
+                - id: 22
+                  nombre: "Playlist 2"
+                  fotoPortada: "https://example.com/playlist2.jpg"
+                  creador: "user2"
     400:
-      description: "Falta el ID de la canción."
+      description: Datos incorrectos o faltantes en la solicitud.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Falta el ID de la cancion."
+    401:
+      description: Usuario no autenticado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido"
     403:
-      description: "El artista no puede consultar las estadísticas de esta canción."
+      description: Usuario autenticado sin permisos para la accion
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
     404:
-      description: "La canción no existe."
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "La cancion no existe."
+

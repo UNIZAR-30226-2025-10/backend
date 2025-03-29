@@ -13,33 +13,135 @@ get:
       schema:
         type: string
   responses:
-    "200":
+    200:
       description: Datos de la playlist obtenidos correctamente
       content:
         application/json:
+          schema:
+            type: object
+            properties:
+              playlist:
+                type: object
+                properties:
+                  nombrePlaylist:
+                    type: string
+                  fotoPortada:
+                    type: string
+                  duracion:
+                    type: integer
+                    description: Suma de la duracion en segundos de cada cancion de la playlist
+                  creador:
+                    type: string
+                    description: Nombre de usuario del creador de la playlist
+                  colaboradores:
+                    type: array
+                    items:
+                      type: string
+                  privacidad:
+                    type: boolean
+                    decription: Privada = true, Publica = false
+              canciones:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    nombre:
+                      type: string
+                    nombreArtisticoArtista:
+                      type: string
+                    featuring:
+                      type: array
+                      items:
+                        type: string
+                    reproducciones:
+                      type: integer
+                    duracion:
+                      type: integer
+                      description: Duración en segundos de la canción
+                    fav:
+                      type: boolean
+                      description: Esta en Favoritos = True
+                    nombreUsuarioArtista:
+                      type: string
+                    fotoPortada:
+                      type: string
+                    fecha: 
+                      type: string
+                      description: "dd mm aaaa"
+              rol:
+                type: string
+                description: rol in [creador, participante, nada]
           example:
             playlist:
+              nombrePlaylist: "Playlist1"
+              fotoPortada: "https://example.com/portada_playlist1.jpg"
               duracion: 3600
               creador: "usuario123"
               colaboradores: ["colaborador1", "colaborador2"]
+              privacidad: true
+
             canciones:
-              - nombre: "Canción 1"
+              - id: 15
+                nombre: "Canción 1"
                 nombreArtisticoArtista: "Artista 1"
+                featuring: []
                 reproducciones: 1500
                 duracion: 210
                 fav: true
                 nombreUsuarioArtista: "artista1"
                 fotoPortada: "https://example.com/portada1.jpg"
-              - nombre: "Canción 2"
+                fecha: "15 03 2025"
+              - id: 51
+                nombre: "Canción 2"
                 nombreArtisticoArtista: "Artista 2"
+                featuring: ["Artista 1"]
                 reproducciones: 3000
                 duracion: 180
                 fav: false
                 nombreUsuarioArtista: "artista2"
                 fotoPortada: "https://example.com/portada2.jpg"
-    "400":
-      description: Falta el ID de la playlist o datos inválidos.
-    "404":
-      description: La playlist no existe.
-    "401":
-      description: Usuario no autenticado o no autorizado.
+                fecha: "09 02 2025"
+            
+            rol: "creador"
+    400:
+      description: Datos incorrectos o faltantes en la solicitud.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Falta el ID de la playlist."
+    401:
+      description: Usuario no autenticado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido"
+    403:
+      description: Usuario autenticado sin permisos para la accion
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
+    404:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "La playlist no existe."

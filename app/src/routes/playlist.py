@@ -111,7 +111,10 @@ def change_privacidad():
 
         # Cambiar privacidad y guardar cambios
         playlist.privacidad = privacidad
-        db.commit()
+        try:
+            db.commit()              
+        except Exception as e:
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
 
     return jsonify(""), 200
 
@@ -434,7 +437,7 @@ def delete_invitacion():
     
     return jsonify(""), 204
 
-"""Acepta una invitación del usuario logueado para participar en una playlist, haciendo que sea colaborador"""
+"""Acepta una invitación del usuario logueado para participar en una playlist, haciendo que sea participante"""
 @playlist_bp.route("/accept-invitacion", methods=["POST"])
 @jwt_required()
 @tokenVersion_required()
@@ -450,7 +453,7 @@ def accept_invitacion():
     with get_db() as db:
         invitado_entry = db.query(invitado_table).filter_by(Oyente_correo=correo, Playlist_id=playlist_id).first()
         if not invitado_entry:
-            return jsonify({"error": "El usuario no ha sido invitado a colaborar en la playlist."}), 404
+            return jsonify({"error": "El usuario no ha sido invitado a participar en la playlist."}), 404
 
         db.execute(invitado_table.delete().where(
                 (invitado_table.c.Oyente_correo == correo) & (invitado_table.c.Playlist_id == playlist_id)))

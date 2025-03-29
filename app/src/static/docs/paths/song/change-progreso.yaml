@@ -9,14 +9,73 @@ patch:
     required: true
     content:
       application/json:
+        schema:
+          type: object
+          properties:
+            progreso:
+              type: integer
+              description: progreso de la canción en segundos
         example:
           progreso: 90
   responses:
     200:
-      description: Progreso de la canción actualizado correctamente.
+      description: Progreso actualizado correctamente.
+      content:
+        application/json:
+          schema:
+            type: string
+            example: ""
     400:
-      description: Datos incorrectos, falta el progreso o el valor no es válido.
+      description: Datos incorrectos o faltantes en la solicitud.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Datos incorrectos."
+    401:
+      description: Usuario no autenticado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido"
+    403:
+      description: Usuario autenticado sin permisos para la accion
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
     404:
-      description: El usuario no está reproduciendo ninguna canción.
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "El usuario no esta reproduciendo ninguna cancion." 
     500:
-      description: Ha ocurrido un error inesperado.
+      description: Error interno del servidor
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Ha ocurrido un error inesperado."
+              details:
+                type: string
+                example: "Error de base de datos"
+

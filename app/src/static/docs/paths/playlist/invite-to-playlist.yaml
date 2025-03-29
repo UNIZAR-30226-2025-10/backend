@@ -1,6 +1,6 @@
 post:
   summary: Añadir un usuario como invitado a una playlist
-  description: Permite a un usuario añadir a otro usuario (que no sea ni creador ni participante) como invitado a una playlist, si tiene los permisos adecuados.
+  description: Permite a un usuario añadir a otro usuario (que no sea ni creador ni participante) como invitado a una playlist, si es su creador.
   security:
     - bearerAuth: []
   tags:
@@ -22,15 +22,74 @@ post:
           nombreUsuario: "usuario123"
           playlist: "85"
   responses:
-    "201":
-      description: El usuario fue invitado exitosamente a la playlist como invitado.
-    "400":
-      description: Faltan datos requeridos.
-    "403":
-      description: No tienes permiso para modificar esta playlist.
-    "404":
-      description: La playlist o el usuario no existen.
-    "409":
-      description: El usuario ya ha sido invitado o es parte de la playlist.
-    "500":
-      description: Ha ocurrido un error inesperado.
+    201:
+      description: Usuario invitado a la playlist exitosamente.
+      content:
+        application/json:
+          schema:
+            type: string
+            example: ""
+    400:
+      description: Datos incorrectos o faltantes en la solicitud.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Faltan datos requeridos."
+    401:
+      description: Usuario no autenticado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido"
+    403:
+      description: Usuario autenticado sin permisos para la accion
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
+    404:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "La playlist no existe."
+    409:
+      description: Conflicto con el estado actual del recurso.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "El usuario ya ha sido invitado a participar en la playlist."
+    500:
+      description: Error interno del servidor
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Ha ocurrido un error inesperado."
+              details:
+                type: string
+                example: "Error de base de datos"
+

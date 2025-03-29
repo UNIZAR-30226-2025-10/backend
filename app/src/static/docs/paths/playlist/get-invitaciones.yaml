@@ -1,0 +1,58 @@
+get:
+  summary: Obtener invitaciones a una playlist
+  description: Devuelve las invitaciones del usuario a participar en una playlist de otro usuario.
+  security:
+    - bearerAuth: []
+  tags:
+    - Playlist
+  responses:
+    200:
+      description: Datos de la playlist obtenidos correctamente
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              invitaciones:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    nombre:
+                      type: string
+                    nombreUsuario:
+                      type: string
+                    fotoPortada:
+                      type: string
+          example:
+            invitaciones:
+              - id: 15
+                nombre: "Playlist 1"
+                nombreUsuario: "user1"
+                fotoPortada: "https://example.com/portada1.jpg"
+              - id: 51
+                nombre: "Playlist 2"
+                nombreUsuario: "user2"
+                fotoPortada: "https://example.com/portada2.jpg"
+    401:
+      description: Usuario no autenticado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido"
+    403:
+      description: Usuario autenticado sin permisos para la accion
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."

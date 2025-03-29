@@ -65,41 +65,6 @@ def get_cancion_actual():
     return jsonify({"cancion": cancion_dict, "coleccion": coleccion_dict}), 200
 
 
-"""Cambia el estado de la cancion actual"""
-@song_bp.route("/play-pause", methods=["PATCH"])
-@jwt_required()
-@tokenVersion_required()
-@roles_required("oyente","artista")
-def play_pause():
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "Datos incorrectos."}), 400
-
-    sid = request.headers.get("sid")
-    correo = get_jwt_identity()
-    reproduciendo = data.get("reproduciendo")
-    progreso = data.get("progreso")
-
-    if reproduciendo is None or (not reproduciendo and progreso is None):
-        return jsonify({"error": "Faltan campos en la peticion."}), 400 
-    
-    with get_db() as db:
-        estaEscuchandoCancion_entry = db.get(EstaEscuchandoCancion, correo)
-        if not estaEscuchandoCancion_entry:
-            return jsonify({"error": "El usuario no esta reproduciendo ninguna cancion."}), 404 
-
-        estaEscuchandoCancion_entry.reproduciendo = reproduciendo
-        if not reproduciendo:
-            estaEscuchandoCancion_entry.progreso = progreso
-        
-        try:
-            db.commit()              
-        except Exception as e:
-            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
-    
-    return jsonify(""), 200
-
-
 """Actualiza el progreso de la cancion actual"""
 @song_bp.route("/change-progreso", methods=["PATCH"])
 @jwt_required()
@@ -109,8 +74,7 @@ def change_progreso():
     data = request.get_json()
     if not data:
         return jsonify({"error": "Datos incorrectos."}), 400
-
-    sid = request.headers.get("sid")
+    
     correo = get_jwt_identity()
     progreso = data.get("progreso")
     if progreso is None:
@@ -143,7 +107,6 @@ def change_modo():
     if not data:
         return jsonify({"error": "Datos incorrectos."}), 400
 
-    sid = request.headers.get("sid")
     correo = get_jwt_identity()
     modo = data.get("modo")
     if not modo:
@@ -268,7 +231,6 @@ def put_cancion_sola():
     if not data:
         return jsonify({"error": "Datos incorrectos."}), 400
 
-    sid = request.headers.get("sid")
     correo = get_jwt_identity()
     cancion_id = data.get("id")
     if not cancion_id:
@@ -288,7 +250,6 @@ def put_cancion_sola():
         else:
             estaEscuchandoCancion_entry.Cancion_id = cancion_id
             estaEscuchandoCancion_entry.progreso = 0
-            estaEscuchandoCancion_entry.reproduciendo = True
         
             # Recuperar coleccion actual
             estaEscuchandoColeccion_entry = db.get(EstaEscuchandoColeccion, correo)
@@ -316,7 +277,6 @@ def put_cancion_coleccion():
     if not data:
         return jsonify({"error": "Datos incorrectos."}), 400
 
-    sid = request.headers.get("sid")
     correo = get_jwt_identity()
     coleccion_id = data.get("coleccion")
     modo = data.get("modo")
@@ -346,7 +306,6 @@ def put_cancion_coleccion():
         else:
             estaEscuchandoCancion_entry.Cancion_id = cancion_id
             estaEscuchandoCancion_entry.progreso = 0
-            estaEscuchandoCancion_entry.reproduciendo = True
 
             # Recuperar coleccion actual
             estaEscuchandoColeccion_entry = db.get(EstaEscuchandoColeccion, correo)
@@ -439,7 +398,7 @@ def create_cancion():
 
             db.commit()
 
-        return jsonify({"message": "Canción subida exitosamente."}), 201
+        return jsonify(""), 201
 
     except Exception as e:
         return jsonify({"error": f"Error al subir la canción: {e}"}), 500   
@@ -474,7 +433,7 @@ def delete_cancion():
 
             db.commit()
 
-        return jsonify({"message": "Canción borrada exitosamente."}), 200
+        return jsonify(""), 204
 
     except Exception as e:
         return jsonify({"error": f"Error al borrar la canción: {e}"}), 500
@@ -493,8 +452,10 @@ def get_estadisticas_cancion():
     
     with get_db() as db:
         cancion_entry = db.get(Cancion, id)
+        if not cancion_entry:
+            return jsonify({"error": "La cancion no existe."}), 404
         if cancion_entry.artista.correo != correo and not cancion_entry.artista in cancion_entry.featuring:
-            return jsonify({"error": "El artista no puede consultar las estadisticas de esta cancion."})
+            return jsonify({"error": "El artista no puede consultar las estadisticas de esta cancion."}), 403
         
         n_playlists, favs = estadisticas_song(cancion_entry, db)
         cancion = {
@@ -525,6 +486,8 @@ def get_estadisticas_favs():
     
     with get_db() as db:
         cancion_entry = db.get(Cancion, id)
+        if not cancion_entry:
+            return jsonify({"error": "La cancion no existe."}), 404
         if cancion_entry.artista.correo != correo and not cancion_entry.artista in cancion_entry.featuring:
             return jsonify({"error": "El artista no puede consultar las estadisticas de esta cancion."})
         
@@ -565,8 +528,10 @@ def get_estadisticas_playlists():
     
     with get_db() as db:
         cancion_entry = db.get(Cancion, id)
+        if not cancion_entry:
+            return jsonify({"error": "La cancion no existe."}), 404
         if cancion_entry.artista.correo != correo and not cancion_entry.artista in cancion_entry.featuring:
-            return jsonify({"error": "El artista no puede consultar las estadisticas de esta cancion."})
+            return jsonify({"error": "El artista no puede consultar las estadisticas de esta cancion."}), 403
         
         stmt = (
             select(Playlist)

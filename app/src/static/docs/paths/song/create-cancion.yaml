@@ -1,6 +1,6 @@
 post:
   summary: Añade una canción del artista logueado
-  description: Permite a un artista logueado añadir una nueva canción a su cuenta.
+  description: Permite a un artista añadir una nueva canción a su cuenta.
   security:
     - bearerAuth: []
   tags:
@@ -20,11 +20,11 @@ post:
               items:
                 type: string
               description: Etiquetas de la canción (mínimo 1, máximo 3)
-            artistas:
+            featuring:
               type: array
               items:
                 type: string
-              description: Nombre de usuario del artista
+              description: Nombre de usuario de los artistas que colaboran en la canción
             audio:
               type: string
               description: URL del audio en Cloudinary
@@ -37,24 +37,58 @@ post:
         example:
           nombre: "hola"
           etiquetas: ["pop", "soft", "chill"]
-          artistas: ["nombreUsuario"]
+          featuring: ["nombreUsuario1"]
           audio: "https://res.cloudinary.com/dftnw6kjf/video/upload/v1616161616/sample.mp3"
           duracion: 180
           album: 1
   responses:
-    "201":
+    200:
       description: Canción añadida exitosamente.
+      content:
+        application/json:
+          schema:
+            type: string
+            example: ""
+    400:
+      description: Datos incorrectos o faltantes en la solicitud.
       content:
         application/json:
           schema:
             type: object
             properties:
-              message:
+              error:
                 type: string
-                description: Mensaje de éxito
-            example:
-              message: "Canción subida exitosamente."
-    "400":
-      description: Faltan datos requeridos o datos incorrectos.
-    "500":
-      description: Ha ocurrido un error inesperado.
+                example: "Datos incorrectos."
+    401:
+      description: Usuario no autenticado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido"
+    403:
+      description: Usuario autenticado sin permisos para la accion
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
+    500:
+      description: Error interno del servidor
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Ha ocurrido un error inesperado."
+              details:
+                type: string
+                example: "Error de base de datos"
