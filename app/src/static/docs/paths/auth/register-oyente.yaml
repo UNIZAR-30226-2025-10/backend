@@ -59,7 +59,7 @@ post:
                 type: string
                 example: "Faltan campos."
     409:
-      description: Conflicto. El correo o nombre de usuario ya están en uso.
+      description: Conflicto por estado actual del recurso.
       content:
         application/json:
           schema:

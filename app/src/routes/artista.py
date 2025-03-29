@@ -69,7 +69,7 @@ def get_mis_datos_artista():
     with get_db() as db: 
         artista = db.get(Artista, correo)
         if not artista:
-            return jsonify({"error": "El artista no existe."}), 401
+            return jsonify({"error": "El artista no existe."}), 404
         
         return jsonify({
             "nombre":artista.nombreUsuario,
@@ -306,7 +306,7 @@ def get_mis_albumes():
     with get_db() as db:
         artista_entry = db.get(Artista, correo)
         if not artista_entry:
-            return jsonify({"error": "El artista no existe."}), 401
+            return jsonify({"error": "El artista no existe."}), 404
 
         albumes = [
             {

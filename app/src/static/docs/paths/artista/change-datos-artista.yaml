@@ -30,7 +30,7 @@ put:
           nombreArtistico: "User Artist"
           biografia: "Hola, ejemplo de biografia."
   responses:
-    "200":
+    200:
       description: Datos del artista actualizados exitosamente.
       content:
         application/json:
@@ -42,7 +42,7 @@ put:
                 description: Mensaje de éxito
             example:
               message: "Datos del artista actualizados exitosamente."
-    "400":
+    400:
       description: Faltan datos para actualizar el artista o el nombre de usuario ya está en uso.
       content:
         application/json:
@@ -52,8 +52,28 @@ put:
               error:
                 type: string
                 example: "Faltan datos para actualizar el artista o el nombre de usuario ya está en uso."
-    "404":
-      description: El artista no existe.
+    401:
+      description: Usuario no autenticado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "No tienes permisos para realizar esta acción."
+    403:
+      description: Usuario autenticado sin permisos para la accion.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
+    404:
+      description: Recurso no encontrado.
       content:
         application/json:
           schema:
@@ -62,7 +82,7 @@ put:
               error:
                 type: string
                 example: "El artista no existe."
-    "500":
+    500:
       description: Ha ocurrido un error inesperado.
       content:
         application/json:

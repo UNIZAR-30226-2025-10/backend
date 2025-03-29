@@ -48,7 +48,7 @@ post:
               etiquetas: ["pop", "rock", "indie"]
               audio: "<link-cloudinary>"
   responses:
-    "201":
+    201:
       description: Álbum creado exitosamente.
       content:
         application/json:
@@ -60,7 +60,7 @@ post:
                 description: Mensaje de éxito
             example:
               message: "Álbum creado exitosamente."
-    "400":
+    400:
       description: Faltan datos del álbum o la canción, o el álbum debe tener al menos una canción.
       content:
         application/json:
@@ -70,8 +70,8 @@ post:
               error:
                 type: string
                 example: "Faltan datos del álbum o la canción, o el álbum debe tener al menos una canción."
-    "401":
-      description: El artista no existe.
+    401:
+      description: El recurso no existe.
       content:
         application/json:
           schema:
@@ -80,7 +80,17 @@ post:
               error:
                 type: string
                 example: "El artista no existe."
-    "500":
+    403:
+      description: Usuario autenticado sin permisos para la acción.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "No tienes permiso para actualizar este álbum."
+    500:
       description: Ha ocurrido un error inesperado.
       content:
         application/json:

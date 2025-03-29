@@ -1,0 +1,78 @@
+get:
+  summary: Obtener estadísticas de un álbum
+  description: Devuelve las estadísticas de un álbum, incluyendo reproducciones, número de playlists en las que aparece y favoritos.
+  security:
+    - BearerAuth: []
+  tags:
+    - Álbum
+  parameters:
+    - name: id
+      in: query
+      required: true
+      description: ID del álbum a consultar.
+      schema:
+        type: string
+  responses:
+    200:
+      description: Estadísticas del álbum obtenidas exitosamente.
+      content:
+        application/json:
+          example:
+            nombre: "Nombre del Álbum"
+            fotoPortada: "<link_cloudinary>"
+            nombreArtisticoArtista: "Nombre del Artista"
+            fechaPublicacion: "2023-05-10"
+            duracion: 3600
+            reproducciones: 50000
+            nPlaylists: 120
+            favs: 3000
+            canciones:
+              - id: 1
+                fotoPortada: "<link_cloudinary>"
+                nombre: "Canción 1"
+                duracion: 210
+                fechaPublicacion: "2023-05-10"
+                reproducciones: 10000
+                puesto: 1
+                nPlaylists: 50
+                favs: 500
+    400:
+      description: Falta de parámetros.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Falta el id del álbum."
+    401:
+      description: No autorizado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido o expirado."
+    403:
+      description: Usuario autenticado sin permisos para la acción.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
+    404:
+      description: El recurso solicitado no existe.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "El álbum no existe."

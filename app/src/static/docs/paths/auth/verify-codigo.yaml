@@ -21,7 +21,7 @@ post:
               type: string
               example: "123456"
   responses:
-    200:
+    201:
       description: Código válido, se genera un token temporal
       content:
         application/json:
@@ -32,7 +32,7 @@ post:
                 type: string
                 example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
     400:
-      description: Datos inválidos o código incorrecto
+      description: Datos inválidos o faltantes
       content:
         application/json:
           schema:

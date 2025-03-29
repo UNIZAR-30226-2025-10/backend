@@ -1,4 +1,4 @@
-post:
+delete:
   summary: Elimina una cuenta de la app
   description: Permite a un usuario eliminar su cuenta proporcionando su contraseña actual.
   tags:
@@ -19,7 +19,7 @@ post:
               format: password
               example: "password123"
   responses:
-    200:
+    204:
       description: Cuenta eliminada con éxito
       content:
         application/json:
@@ -37,7 +37,7 @@ post:
                 type: string
                 example: "Faltan campos en la petición."
     401:
-      description: Contraseña incorrecta
+      description: Datos incorrectos
       content:
         application/json:
           schema:

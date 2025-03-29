@@ -25,10 +25,16 @@ paths:
     $ref: "/static/docs/paths/auth/verify-artista.yaml"
   /change-datos-artista:
     $ref: "/static/docs/paths/artista/change-datos-artista.yaml"
-  /get-datos-album:
-    $ref: "/static/docs/paths/artista/get-datos-album.yaml"
+  /get-albumes:
+    $ref: "/static/docs/paths/artista/get-albumes.yaml"
   /get-mis-canciones:
     $ref: "/static/docs/paths/artista/get-mis-canciones.yaml"
+  /get-mis-albumes:
+    $ref: "/static/docs/paths/artista/get-mis-albumes.yaml"
+  /get-mis-datos-artista:
+    $ref: "/static/docs/paths/artista/get-mis-datos-artista.yaml"
+  /get-numero-canciones-favoritas:
+    $ref: "/static/docs/paths/artista/get-numero-canciones-favoritas.yaml"
   /get-canciones:
     $ref: "/static/docs/paths/artista/get-canciones.yaml"
   /get-canciones-populares:
@@ -53,6 +59,8 @@ paths:
     $ref: "/static/docs/paths/album/change-album.yaml"
   /create-album:
     $ref: "/static/docs/paths/album/create-album.yaml"
+  /get-estadisticas-album:
+    $ref: "/static/docs/paths/album/get-estadisticas-album.yaml"
   /change-contrasenya:
     $ref: "/static/docs/paths/oyente/change-contrasenya.yaml"
   /get-datos-oyente:

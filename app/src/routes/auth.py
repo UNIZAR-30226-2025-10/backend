@@ -280,7 +280,7 @@ def verify_codigo():
         # Token temporal para cambiar contraseña
         token = create_access_token(identity=correo, expires_delta=timedelta(minutes=5),
                                     additional_claims={"reset-password": "yes"})
-    return jsonify({"token_temporal": token}), 200
+    return jsonify({"token_temporal": token}), 201
 
 
 """Restablece la contraseña en caso de olvido"""
@@ -315,11 +315,11 @@ def reset_password():
             db.rollback()
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
 
-    return jsonify(""), 200
+    return jsonify(""), 201
 
 
 """Elimina una cuenta de la app"""
-@auth_bp.route('/delete-account', methods=['POST'])
+@auth_bp.route('/delete-account', methods=['DELETE'])
 @jwt_required()
 @tokenVersion_required()
 def delete_account():
@@ -345,7 +345,7 @@ def delete_account():
             db.rollback()
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
         
-    return jsonify(""), 200
+    return jsonify(""), 204
 
 
 """Cierra sesion en la app"""

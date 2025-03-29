@@ -26,7 +26,7 @@ get:
                       type: string
                       example: "Artista Famoso"
     401:
-      description: No autorizado. Se requiere autenticación de administrador
+      description: Usuario no autorizado.
       content:
         application/json:
           schema:
@@ -34,7 +34,17 @@ get:
             properties:
               error:
                 type: string
-                example: "No tienes permisos para realizar esta acción."
+                example: "Token inválido."
+    403:
+      description: Usuario autenticado sin permisos para la accion.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
     500:
       description: Error interno del servidor
       content:

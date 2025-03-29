@@ -50,6 +50,26 @@ post:
               error:
                 type: string
                 example: "Correo no existe."
+    401:
+      description: Usuario no autenticado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido."
+    403:
+      description: Usuario autenticado sin permisos para la accion.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
     500:
       description: Error inesperado en el servidor.
       content:

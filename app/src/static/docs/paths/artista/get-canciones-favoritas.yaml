@@ -2,7 +2,7 @@ get:
   summary: "Devuelve una lista con las canciones favoritas de un artista"
   description: "Obtiene una lista de canciones de un artista que el usuario autenticado ha marcado como favoritas."
   tags:
-    - "Artista"
+    - Artista
   security:
     - BearerAuth: []
   parameters:
@@ -13,7 +13,7 @@ get:
         type: string
       description: "Nombre de usuario del artista del que se desean obtener las canciones favoritas."
   responses:
-    "200":
+    200:
       description: "Lista de canciones favoritas del artista."
       content:
         application/json:
@@ -35,7 +35,26 @@ get:
                       type: string
                       nullable: true
                       description: "URL de la foto de portada del álbum, si existe."
-    "400":
+                    album:
+                      type: string
+                      description: "Nombre del álbum de la canción."
+                    duracion:
+                      type: integer
+                      description: "Nombre de la canción."
+                    featuring:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          nombreUsuario: 
+                            type: string
+                            description: "Nombre del artista featuring."
+                      nullable: true
+                      description: "Lista de los artista featuring de la canción."
+                    fecha:
+                      type: string
+                      description: "Dia Mes Año"
+    400:
       description: "Falta el nombre de usuario del artista."
       content:
         application/json:
@@ -45,8 +64,28 @@ get:
               error:
                 type: string
                 example: "Falta el nombreUsuario del artista."
-    "404":
-      description: "El artista no existe."
+    401:
+      description: Usuario no autenticado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "No tienes permisos para realizar esta acción."
+    403:
+      description: Usuario autenticado sin permisos para la accion.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado." 
+    404:
+      description: "El recurso solicitado no existe."
       content:
         application/json:
           schema:

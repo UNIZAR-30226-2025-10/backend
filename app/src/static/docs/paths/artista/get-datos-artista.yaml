@@ -13,7 +13,7 @@ get:
       schema:
         type: string
   responses:
-    "200":
+    200:
       description: Datos del artista obtenidos exitosamente.
       content:
         application/json:
@@ -64,8 +64,8 @@ get:
               id: 35
               fecha: "20/03/2025 19:07"
               like: false
-    "400":
-      description: Falta el parámetro nombreUsuario.
+    400:
+      description: Datos faltantes en la solicitud.
       content:
         application/json:
           schema:
@@ -75,8 +75,28 @@ get:
                 type: string
           example:
             error: "Falta el nombreUsuario del artista."
-    "404":
-      description: El artista no existe.
+    401:
+      description: Usuario no autenticado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "No tienes permisos para realizar esta acción."
+    403:
+      description: Usuario autenticado sin permisos para la accion.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado." 
+    404:
+      description: El recurso no existe.
       content:
         application/json:
           schema:
@@ -86,7 +106,7 @@ get:
                 type: string
           example:
             error: "El artista no existe."
-    "500":
+    500:
       description: Ha ocurrido un error inesperado.
       content:
         application/json:

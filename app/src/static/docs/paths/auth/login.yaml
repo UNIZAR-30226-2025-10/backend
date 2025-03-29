@@ -67,3 +67,13 @@ post:
               error:
                 type: string
                 example: "Contraseña incorrecta."
+    403:
+      description: Sesion previamente iniciada.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Sesion previamente iniciada."

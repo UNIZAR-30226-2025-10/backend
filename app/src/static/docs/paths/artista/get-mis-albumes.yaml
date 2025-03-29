@@ -19,8 +19,32 @@ get:
                 nombre: "Álbum 2"
                 fotoPortada: "url_portada2.jpg"
     401:
-      description: El usuario no es un artista o no está autenticado.
+      description: Usuario no autenticado
       content:
         application/json:
-          example:
-            error: "El artista no existe."
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "No tienes permisos para realizar esta acción."
+    403:
+      description: Usuario autenticado sin permisos para la accion.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
+    404:
+      description: "El recurso solicitado no existe."
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "El artista no existe."

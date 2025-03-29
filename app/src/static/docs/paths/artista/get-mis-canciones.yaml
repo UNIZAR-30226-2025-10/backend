@@ -4,9 +4,9 @@ get:
   security:
     - bearerAuth: []
   tags:
-    - Canciones
+    - Artista
   responses:
-    "200":
+    200:
       description: Lista de canciones del artista obtenida exitosamente.
       content:
         application/json:
@@ -36,17 +36,7 @@ get:
               - id: 2
                 nombre: "Otra canción"
                 fotoPortada: null
-    "404":
-      description: El artista no existe.
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-                example: "El artista no existe."
-    "401":
+    401:
       description: No autorizado.
       content:
         application/json:
@@ -56,3 +46,23 @@ get:
               error:
                 type: string
                 example: "Token inválido o expirado."
+    403:
+      description: Usuario autenticado sin permisos para la accion.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
+    404:
+      description: El recurso solicitado no existe.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "El artista no existe."
