@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from db.models import Playlist, Oyente, Cancion, EsParteDePlaylist, Usuario, participante_table, invitado_table
+from db.models import Playlist, Oyente, Cancion, EsParteDePlaylist, Usuario, participante_table, invitado_table, Album, Artista
 from db.db import get_db
 from sqlalchemy import select, exists, delete, insert, and_
 from utils.decorators import roles_required, tokenVersion_required
@@ -34,9 +34,15 @@ def get_datos_playlist():
         creador_entry = db.get(Oyente, playlist_entry.Oyente_correo)
         participantes = [p.nombreUsuario for p in playlist_entry.participantes]
 
-        canciones_entry = [ep.cancion for ep in playlist_entry.esParteDePlaylist]
+        canciones_stmt = select(Cancion, EsParteDePlaylist.fecha, Album.fotoPortada, Artista.nombreUsuario, Artista.nombreArtistico
+            ).join(EsParteDePlaylist, EsParteDePlaylist.Cancion_id == Cancion.id
+            ).join(Album, Album.id == Cancion.Album_id
+            ).join(Artista, Artista.correo == Cancion.Artista_correo
+            ).where(EsParteDePlaylist.Playlist_id == id)
 
-        duracion_total = sum(c.duracion for c in canciones_entry)
+        canciones_entry = db.execute(canciones_stmt).fetchall()
+
+        duracion_total = sum(row[0].duracion for row in canciones_entry)
 
         stmt_fav = select(EsParteDePlaylist.Cancion_id).join(Playlist
             ).where(and_(
@@ -61,17 +67,18 @@ def get_datos_playlist():
             },
             "canciones": [
                 {
-                    "id": c.id,
-                    "nombre": c.nombre,
-                    "nombreArtisticoArtista": c.artista.nombreArtistico,
-                    "featuring": [f.nombreArtistico for f in c.featuring],
-                    "reproducciones": c.reproducciones,
-                    "duracion": c.duracion,
-                    "fav": c.id in favoritos_set,
-                    "nombreUsuarioArtista": c.artista.nombreUsuario,
-                    "fotoPortada": c.album.fotoPortada,
+                    "id": row[0].id,
+                    "nombre": row[0].nombre,
+                    "nombreArtisticoArtista": row[4],
+                    "featuring": [f.nombreArtistico for f in row[0].featuring],
+                    "reproducciones": row[0].reproducciones,
+                    "duracion": row[0].duracion,
+                    "fav": row[0].id in favoritos_set,
+                    "nombreUsuarioArtista": row[3],
+                    "fotoPortada": row[2],
+                    "fecha": row[1].strftime("%d %m %Y")
                 }
-                for c in canciones_entry
+                for row in canciones_entry
             ],
             "rol": rol
         }
