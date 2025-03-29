@@ -44,11 +44,7 @@ get:
                     featuring:
                       type: array
                       items:
-                        type: object
-                        properties:
-                          nombreUsuario: 
-                            type: string
-                            description: "Nombre del artista featuring."
+                        type: string
                       nullable: true
                       description: "Lista de los artista featuring de la canción."
                     fecha:

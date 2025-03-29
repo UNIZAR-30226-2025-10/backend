@@ -40,19 +40,15 @@ get:
                       description: "Número de reproducciones de la canción."
                     duracion:
                       type: integer
-                      description: "Nombre de la canción."
+                      description: "Duración de la canción en segundos."
                     featuring:
                       type: array
                       items:
-                        type: object
-                        properties:
-                          nombreUsuario: 
-                            type: string
-                            description: "Nombre del artista featuring."
+                        type: string
                       nullable: true
                       description: "Lista de los artista featuring de la canción."
                     fav:
-                      type: bool
+                      type: boolean
                       description: "Si la cancion del artista está en favoritos del usuario"
     400:
       description: Error de solicitud, falta el parámetro "nombreUsuario".
