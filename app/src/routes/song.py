@@ -3,11 +3,10 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import select
 from db.models import EstaEscuchandoCancion, EstaEscuchandoColeccion, Oyente, Playlist, EsParteDePlaylist, HistorialCancion, HistorialColeccion, Cancion, GeneroMusical
 from db.db import get_db
-from utils.decorators import roles_required, tokenVersion_required, sid_required
+from utils.decorators import roles_required, tokenVersion_required
 from utils.fav import fav
 from utils.estadisticas import estadisticas_song
 from datetime import datetime
-from .websocket import socketio
 import pytz
 import os
 import cloudinary.uploader
@@ -71,7 +70,6 @@ def get_cancion_actual():
 @jwt_required()
 @tokenVersion_required()
 @roles_required("oyente","artista")
-@sid_required()
 def play_pause():
     data = request.get_json()
     if not data:
@@ -99,9 +97,6 @@ def play_pause():
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
     
-    # Emitir el evento de socket con el nuevo estado de la cancion
-    socketio.emit("play-pause-ws", {"reproduciendo": reproduciendo, "progreso": progreso if not reproduciendo else None}, room=correo, skip_sid=sid)
-
     return jsonify(""), 200
 
 
@@ -110,7 +105,6 @@ def play_pause():
 @jwt_required()
 @tokenVersion_required()
 @roles_required("oyente","artista")
-@sid_required()
 def change_progreso():
     data = request.get_json()
     if not data:
@@ -135,9 +129,6 @@ def change_progreso():
             db.commit()              
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
-    
-    # Emitir el evento de socket con el nuevo progreso
-    socketio.emit("change-progreso-ws", {"progreso": progreso}, room=correo, skip_sid=sid)
 
     return jsonify(""), 200
 
@@ -147,7 +138,6 @@ def change_progreso():
 @jwt_required()
 @tokenVersion_required()
 @roles_required("oyente","artista")
-@sid_required()
 def change_modo():
     data = request.get_json()
     if not data:
@@ -172,9 +162,6 @@ def change_modo():
             db.commit()              
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
-    
-    # Emitir el evento de socket con el nuevo modo
-    socketio.emit("change-modo-ws", {"modo": modo}, room=correo, skip_sid=sid)
 
     return jsonify(""), 200
 
@@ -276,7 +263,6 @@ def add_reproduccion():
 @jwt_required()
 @tokenVersion_required()
 @roles_required("oyente","artista")
-@sid_required()
 def put_cancion_sola():    
     data = request.get_json()
     if not data:
@@ -315,18 +301,6 @@ def put_cancion_sola():
             db.commit()              
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
-
-        cancion = estaEscuchandoCancion_entry.cancion
-        # Emitir evento de socket con la nueva cancion actual
-        socketio.emit("put-cancion-sola-ws", {"cancion": {
-                                                "id": cancion_id,
-                                                "audio": cancion.audio,
-                                                "nombre": cancion.nombre,
-                                                "nombreArtisticoArtista": cancion.artista.nombreArtistico,
-                                                "nombreUsuarioArtista": cancion.artista.nombreUsuario,
-                                                "progreso": 0,
-                                                "fav": fav(cancion.id, correo, db),
-                                                "fotoPortada": cancion.album.fotoPortada}}, room=correo, skip_sid=sid)
         
         return jsonify({ "audio": estaEscuchandoCancion_entry.cancion.audio,
                 "nombreUsuarioArtista": estaEscuchandoCancion_entry.cancion.artista.nombreUsuario,
@@ -337,7 +311,6 @@ def put_cancion_sola():
 @jwt_required()
 @tokenVersion_required()
 @roles_required("oyente","artista")
-@sid_required()
 def put_cancion_coleccion():
     data = request.get_json()
     if not data:
@@ -395,24 +368,6 @@ def put_cancion_coleccion():
             db.commit()              
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
-
-        cancion = estaEscuchandoCancion_entry.cancion
-        coleccion = estaEscuchandoColeccion_entry.coleccion
-        # Emitir evento de socket con la nueva cancion actual
-        socketio.emit("put-cancion-sola-ws", {"cancion": {
-                                                "id": cancion_id,
-                                                "audio": cancion.audio,
-                                                "nombre": cancion.nombre,
-                                                "nombreArtisticoArtista": cancion.artista.nombreArtistico,
-                                                "nombreUsuarioArtista": cancion.artista.nombreUsuario,
-                                                "progreso": 0,
-                                                "fav": fav(cancion.id, correo, db),
-                                                "fotoPortada": cancion.album.fotoPortada},
-                                           "coleccion": {
-                                                "id": coleccion.id,
-                                                "orden": coleccion.orden,
-                                                "index": coleccion.index,                      
-                                                "modo": estaEscuchandoColeccion_entry.modo}}, room=correo, skip_sid=sid)
 
         return jsonify({"audio": estaEscuchandoCancion_entry.cancion.audio,
                 "nombreUsuarioArtista": estaEscuchandoCancion_entry.cancion.artista.nombreUsuario,
