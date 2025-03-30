@@ -1,6 +1,6 @@
 get:
   summary: Obtener lista de seguidos
-  description: Devuelve una lista con los usuarios que sigue el usuario con nombreUsuario.
+  description: Devuelve una lista con los usuarios que sigue el usuario autenticado.
   security:
     - BearerAuth: []
   tags:

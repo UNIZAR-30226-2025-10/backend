@@ -26,7 +26,7 @@ cloudinary.config(
 def get_datos_oyente():
     nombre_usuario = request.args.get("nombreUsuario")
     if not nombre_usuario:
-        return jsonify({"error": "Falta el nombreUsuario del artista."}), 400
+        return jsonify({"error": "Falta el nombreUsuario del usuario."}), 400
     
     correo_actual = get_jwt_identity()
     
@@ -78,12 +78,12 @@ def get_mis_datos_oyente():
             }), 200
 
 
-"""Devuelve una lista con los seguidos del usuario"""
-@oyente_bp.route('/get-seguidos', methods=['GET'])
+"""Devuelve una lista con los seguidos del usuario logueado"""
+@oyente_bp.route('/get-mis-seguidos', methods=['GET'])
 @jwt_required()
 @tokenVersion_required()
 @roles_required("oyente", "artista")
-def get_seguidos():
+def get_mis_seguidos():
     correo = get_jwt_identity()  
 
     with get_db() as db:
@@ -94,12 +94,92 @@ def get_seguidos():
         seguidos = [
             {
                 "nombreUsuario": s.nombreUsuario,
-                "fotoPerfil": s.fotoPerfil
+                "fotoPerfil": s.fotoPerfil,
+                "tipo": s.tipo
             }
             for s in oyente_entry.seguidos[:30]
         ]
 
     return jsonify({"seguidos": seguidos}), 200
+
+
+"""Devuelve una lista con los seguidores del usuario logueado"""
+@oyente_bp.route('/get-mis-seguidores', methods=['GET'])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente", "artista")
+def get_mis_seguidores():
+    correo = get_jwt_identity()
+
+    with get_db() as db:
+        oyente_entry = db.get(Oyente, correo)
+        if not oyente_entry:
+            return jsonify({"error": "Correo no existe."}), 401
+
+        seguidores = [
+            {
+                "nombreUsuario": s.nombreUsuario,
+                "fotoPerfil": s.fotoPerfil,
+                "tipo": s.tipo
+            }
+            for s in oyente_entry.seguidores[:30]
+        ]
+
+    return jsonify({"seguidores": seguidores}), 200
+
+
+"""Devuelve una lista con los seguidos del usuario con nombre dado"""
+@oyente_bp.route('/get-seguidos', methods=['GET'])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente", "artista")
+def get_seguidos():
+    nombre_usuario = request.args.get("nombreUsuario")
+    if not nombre_usuario:
+        return jsonify({"error": "Falta el nombreUsuario del usuario."}), 400
+    
+    with get_db() as db:
+        oyente = db.query(Oyente).filter_by(nombreUsuario=nombre_usuario).first()
+        if not oyente:
+            return jsonify({"error": "El oyente no existe."}), 404
+
+        seguidos = [
+            {
+                "nombreUsuario": s.nombreUsuario,
+                "fotoPerfil": s.fotoPerfil,
+                "tipo": s.tipo
+            }
+            for s in oyente.seguidos[:30]
+        ]
+
+    return jsonify({"seguidos": seguidos}), 200
+
+
+"""Devuelve una lista con los seguidores del usuario con nombre dado"""
+@oyente_bp.route('/get-seguidores', methods=['GET'])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente", "artista")
+def get_seguidores():
+    nombre_usuario = request.args.get("nombreUsuario")
+    if not nombre_usuario:
+        return jsonify({"error": "Falta el nombreUsuario del usuario."}), 400
+    
+    with get_db() as db:
+        oyente = db.query(Oyente).filter_by(nombreUsuario=nombre_usuario).first()
+        if not oyente:
+            return jsonify({"error": "El oyente no existe."}), 404
+
+        seguidores = [
+            {
+                "nombreUsuario": s.nombreUsuario,
+                "fotoPerfil": s.fotoPerfil,
+                "tipo": s.tipo
+            }
+            for s in oyente.seguidores[:30]
+        ]
+
+    return jsonify({"seguidores": seguidores}), 200
 
 
 """Devuelve una lista con el historial de artistas del usuario"""

@@ -81,8 +81,14 @@ paths:
     $ref: "/static/docs/paths/oyente/get-mis-playlists.yaml"
   /get-recomendaciones:
     $ref: "/static/docs/paths/oyente/get-recomendaciones.yaml"
+  /get-mis-seguidos:
+    $ref: "/static/docs/paths/oyente/get-mis-seguidos.yaml"
+  /get-mis-seguidores:
+    $ref: "/static/docs/paths/oyente/get-mis-seguidores.yaml"
   /get-seguidos:
     $ref: "/static/docs/paths/oyente/get-seguidos.yaml"
+  /get-seguidores:
+    $ref: "/static/docs/paths/oyente/get-seguidores.yaml"
   /add-reproduccion:
     $ref: "/static/docs/paths/song/add-reproduccion.yaml"
   /get-estadisticas-cancion:

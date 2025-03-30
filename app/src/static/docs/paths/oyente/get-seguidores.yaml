@@ -1,19 +1,19 @@
 get:
-  summary: Obtener lista de seguidos
-  description: Devuelve una lista con los usuarios que sigue el usuario con nombreUsuario.
+  summary: Obtener lista de seguidores
+  description: Devuelve una lista con los usuarios que siguen al usuario con nombreUsuario.
   security:
     - BearerAuth: []
   tags:
       - Oyente
   responses:
     200:
-      description: Lista de usuarios seguidos.
+      description: Lista de usuarios seguidores.
       content:
         application/json:
           schema:
             type: object
             properties:
-              seguidos:
+              seguidores:
                 type: array
                 items:
                   type: object
@@ -25,10 +25,10 @@ get:
                     tipo:
                       type: string
           example:
-            seguidos:
+            seguidores:
                 nombreUsuario: "Nombre Usuario"
                 fotoPerfil: "url_foto.jpg"
-                tipo: "artista"
+                tipo: "oyente"
     401:
       description: Usuario no autenticado
       content:
