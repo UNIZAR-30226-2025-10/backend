@@ -1,13 +1,13 @@
 get:
-  summary: Obtener playlists del usuario logueado
-  description: Devuelve una lista con las playlists creadas y en las que participa el usuario logueado.
+  summary: Obtener playlists públicas de un usuario
+  description: Devuelve una lista con las playlists creadas y en las que participa el usuario, públicas, dado un nombreUsuario.
   security:
     - BearerAuth: []
   tags:
       - Oyente
   responses:
     200:
-      description: Lista de playlists del usuario.
+      description: Lista de playlists públicas del usuario.
       content:
         application/json:
           schema:

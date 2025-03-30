@@ -43,16 +43,6 @@ def get_datos_album():
         )
         favoritos_set = {row[0] for row in db.execute(stmt_fav).all()}
 
-        total_likes = db.scalar(
-            select(func.count(EsParteDePlaylist.Cancion_id))
-            .join(Playlist)
-            .where(
-                and_(
-                    Playlist.nombre == "Favoritos",
-                    EsParteDePlaylist.Cancion_id.in_([c.id for c in album.canciones])
-                )
-            )
-        )
         stmt = (
             select(func.count(EsParteDePlaylist.Cancion_id))
             .join(Playlist)

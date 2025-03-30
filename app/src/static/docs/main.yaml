@@ -79,6 +79,8 @@ paths:
     $ref: "/static/docs/paths/oyente/get-historial-colecciones.yaml"
   /get-mis-playlists:
     $ref: "/static/docs/paths/oyente/get-mis-playlists.yaml"
+  /get-playlists:
+    $ref: "/static/docs/paths/oyente/get-playlists.yaml"
   /get-recomendaciones:
     $ref: "/static/docs/paths/oyente/get-recomendaciones.yaml"
   /get-mis-seguidos:

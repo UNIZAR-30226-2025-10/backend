@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from db.db import get_db
@@ -269,7 +270,7 @@ def get_historial_colecciones():
     return jsonify({"historial_colecciones": historial}), 200
 
 
-"""Devuelve una lista con las playlists del usuario"""
+"""Devuelve una lista con las playlists del usuario logueado"""
 @oyente_bp.route('/get-mis-playlists', methods=['GET'])
 @jwt_required()
 @tokenVersion_required()
@@ -292,7 +293,6 @@ def get_mis_playlists():
             for s in oyente_entry.playlists[:30]
         ]
 
-        # Accede directamente a la relacion con playlists en las que se participa
         participando_playlists = [
             {
                 "id": s.id,
@@ -302,10 +302,56 @@ def get_mis_playlists():
             for s in oyente_entry.participante[:30]
         ]
 
-        # Unimos ambos diccionarios
         playlists = mis_playlists + participando_playlists
 
-        # Ordenamos el diccionario por el campo "nombre"
+        playlists_ordenadas = sorted(playlists, key=lambda x: x["nombre"])
+        
+    return jsonify({"playlists": playlists_ordenadas[:30]}), 200
+
+
+"""Devuelve una lista con las playlists públicas del usuario dado un nombreUsuario"""
+@oyente_bp.route('/get-playlists', methods=['GET'])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente", "artista")
+def get_playlists():
+    nombre_usuario = request.args.get("nombreUsuario")
+    if not nombre_usuario:
+        return jsonify({"error": "Falta el nombreUsuario del usuario."}), 400
+    
+    with get_db() as db:
+        oyente = db.query(Oyente).filter_by(nombreUsuario=nombre_usuario).first()
+        if not oyente:
+            return jsonify({"error": "El oyente no existe."}), 401
+
+        stmt_mis_playlists = select(Playlist).where(
+            Playlist.Oyente_correo == oyente.correo,
+            Playlist.privacidad == False
+        ).limit(30)
+        mis_playlists = [
+            {
+                "id": s.id,
+                "fotoPortada": s.fotoPortada,
+                "nombre": s.nombre
+            }
+            for s in db.execute(stmt_mis_playlists).scalars().all()
+        ]
+
+        stmt_participando_playlists = select(Playlist).join(Playlist.participantes).where(
+            Oyente.correo == oyente.correo,
+            Playlist.privacidad == False
+        ).limit(30)
+        participando_playlists = [
+            {
+                "id": s.id,
+                "fotoPortada": s.fotoPortada,
+                "nombre": s.nombre
+            }
+            for s in db.execute(stmt_participando_playlists).scalars().all()
+        ]
+
+        playlists = mis_playlists + participando_playlists
+
         playlists_ordenadas = sorted(playlists, key=lambda x: x["nombre"])
         
     return jsonify({"playlists": playlists_ordenadas[:30]}), 200
