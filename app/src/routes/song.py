@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import select
-from db.models import EstaEscuchandoCancion, EstaEscuchandoColeccion, Oyente, Playlist, EsParteDePlaylist, HistorialCancion, HistorialColeccion, Cancion, GeneroMusical
+from db.models import EstaEscuchandoCancion, EstaEscuchandoColeccion, Oyente, Playlist, EsParteDePlaylist, HistorialCancion, HistorialColeccion, Cancion, GeneroMusical, Artista
 from db.db import get_db
 from utils.decorators import roles_required, tokenVersion_required
 from utils.fav import fav
@@ -348,8 +348,9 @@ def create_cancion():
     audio_url = data.get("audio_url")
     album_id = data.get("album_id")
     tags = data.get("tags")
+    artistasFt = data.get("artistasFt")
 
-    if not nombre or not artista or not album_id or not duracion or not audio_url or not tags:
+    if not nombre or not artista or not album_id or not duracion or not audio_url or not tags or not artistasFt:
         return jsonify({
         "error": "Faltan datos de la canción.",
         "nombre": nombre,
@@ -357,7 +358,8 @@ def create_cancion():
         "album_id": album_id,
         "duracion": duracion,
         "audio_url": audio_url,
-        "tags": tags
+        "tags": tags,
+        "artistasFt": artistasFt
     }), 400
 
     if not tags or len(tags) < 1 or len(tags) > 3:
@@ -395,6 +397,13 @@ def create_cancion():
             for tag in tags:
                 genero = db.get(GeneroMusical, tag)
                 nueva_cancion.generosMusicales.append(genero)
+
+            for artistaFt in artistasFt:
+                artista_entry = db.query(Artista).filter_by(nombreArtistico=artistaFt).first()
+                if artista_entry:
+                    nueva_cancion.featuring.append(artista_entry)
+                else:
+                    return jsonify({"error": f"El artista '{artistaFt}' no existe."}), 404
 
             db.commit()
 
