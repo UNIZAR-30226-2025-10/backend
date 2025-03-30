@@ -430,14 +430,15 @@ def change_datos_oyente():
 
         if foto_perfil != oyente_entry.fotoPerfil:
 
-            fotoAntigua = oyente_entry.fotoPerfil
-            public_id = fotoAntigua.split('/')[-2] + '/' + fotoAntigua.split('/')[-1].split('.')[0]
-            print(public_id)
+            if oyente_entry.fotoPerfil != "DEFAULT":
+                fotoAntigua = oyente_entry.fotoPerfil
+                public_id = fotoAntigua.split('/')[-2] + '/' + fotoAntigua.split('/')[-1].split('.')[0]
+                print(public_id)
 
-            try:
-                cloudinary.uploader.destroy(public_id, resource_type="image")
-            except Exception as e:
-                return f"Error al eliminar el album de Cloudinary: {e}"
+                try:
+                    cloudinary.uploader.destroy(public_id, resource_type="image")
+                except Exception as e:
+                    return f"Error al eliminar el album de Cloudinary: {e}"
             
             oyente_entry.fotoPerfil = foto_perfil
             

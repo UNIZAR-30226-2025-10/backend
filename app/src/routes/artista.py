@@ -6,7 +6,6 @@ from flask import Blueprint, request, jsonify
 from sqlalchemy import select, and_, func
 import cloudinary.uploader
 import os
-from utils.fav import fav
 
 artista_bp = Blueprint('info', __name__) 
 
@@ -345,13 +344,15 @@ def change_datos_artista():
             return jsonify({"error": "El artista no existe."}), 404
 
         if foto_perfil != artista_entry.fotoPerfil:
-            foto_antigua = artista_entry.fotoPerfil
-            public_id = foto_antigua.split('/')[-2] + '/' + foto_antigua.split('/')[-1].split('.')[0]
 
-            try:
-                cloudinary.uploader.destroy(public_id, resource_type="image")
-            except Exception as e:
-                return jsonify({"error": f"Error al eliminar la foto de perfil antigua de Cloudinary: {e}"}), 500
+            if artista_entry.fotoPerfil != "DEFAULT":
+                foto_antigua = artista_entry.fotoPerfil
+                public_id = foto_antigua.split('/')[-2] + '/' + foto_antigua.split('/')[-1].split('.')[0]
+
+                try:
+                    cloudinary.uploader.destroy(public_id, resource_type="image")
+                except Exception as e:
+                    return jsonify({"error": f"Error al eliminar la foto de perfil antigua de Cloudinary: {e}"}), 500
 
             artista_entry.fotoPerfil = foto_perfil
 

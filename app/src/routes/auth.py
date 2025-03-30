@@ -38,7 +38,16 @@ def login():
             return jsonify({"error": "Nombre de usuario o correo no válido."}), 401
         if not verify(contrasenya, usuario.contrasenya):
             return jsonify({"error": "Contraseña incorrecta."}), 401
+        if usuario.sesionActiva:
+            return jsonify({"error": "Ya hay una sesion iniciada."}), 403
         
+        usuario.sesionActiva = True
+        try:
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+
         usuario_dict = {
             "fotoPerfil": usuario.fotoPerfil,
             "volumen": usuario.volumen
@@ -55,6 +64,59 @@ def login():
     else:
         return jsonify({"token": access_token, "tipo": tipo}), 200
 
+
+"""Cierra sesion en la app y abre una nueva"""
+@auth_bp.route("/switch-session", methods=["POST"])
+def switch_session():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Datos incorrectos."}), 400
+
+    correo = data.get("correo")
+    nombreUsuario = data.get("nombreUsuario")
+    contrasenya = data.get("contrasenya")
+    
+    if not contrasenya:
+        return jsonify({"error": "Falta la contraseña."}), 400
+    if not correo and not nombreUsuario:
+        return jsonify({"error": "Falta el nombre de usario o correo."}), 400
+
+    with get_db() as db:
+        if nombreUsuario:
+            usuario = db.query(Usuario).filter(Usuario.nombreUsuario == nombreUsuario).first()
+        elif correo:
+            usuario = db.get(Usuario, correo)
+                
+        if not usuario:
+            return jsonify({"error": "Nombre de usuario o correo no válido."}), 401
+        if not verify(contrasenya, usuario.contrasenya):
+            return jsonify({"error": "Contraseña incorrecta."}), 401
+        if not usuario.sesionActiva:
+            return jsonify({"error": "La sesion no ha sido iniciada."}), 403
+        
+        usuario.tokenVersion += 1
+        try:
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+
+        usuario_dict = {
+            "fotoPerfil": usuario.fotoPerfil,
+            "volumen": usuario.volumen
+        } if usuario.tipo in ["oyente", "artista"] else None
+        tipo = usuario.tipo
+
+    access_token = create_access_token(identity=usuario.correo, 
+                                       additional_claims={"tokenVersion": usuario.tokenVersion,
+                                                          "tipo": usuario.tipo},
+                                       expires_delta=False)
+
+    if usuario_dict:
+        return jsonify({"token": access_token, "usuario": usuario_dict, "tipo": tipo}), 200
+    else:
+        return jsonify({"token": access_token, "tipo": tipo}), 200
+    
 
 """Crea una cuenta de oyente en la app"""
 @auth_bp.route("/register-oyente", methods=["POST"])
@@ -82,7 +144,7 @@ def register_oyente():
         contrasenyaHash = hash(contrasenya)           
         oyente = Oyente(correo=correo, nombreUsuario=nombreUsuario,
                             contrasenya=contrasenyaHash, fotoPerfil="DEFAULT",
-                            volumen=50, tokenVersion=1)
+                            volumen=50, tokenVersion=1, sesionActiva=True)
         fav_playlist = Playlist(nombre="Favoritos", fotoPortada="DEFAULT", Oyente_correo=correo,
                                 privacidad=False, fecha=datetime.now(pytz.timezone('Europe/Madrid')))
         db.add(oyente) 
@@ -131,7 +193,7 @@ def register_artista():
         contrasenyaHash = hash(contrasenya)           
         pendiente = Pendiente(correo=correo, nombreUsuario=nombreUsuario,
                               contrasenya=contrasenyaHash, nombreArtistico=nombreArtistico,
-                              tokenVersion=1)
+                              tokenVersion=1, sesionActiva=True)
         db.add(pendiente) 
         try:
             db.commit() 
@@ -176,7 +238,7 @@ def verify_artista():
         new_artist = Artista(correo=valid_user.correo, nombreUsuario=valid_user.nombreUsuario,
                              contrasenya=valid_user.contrasenya, fotoPerfil="DEFAULT",
                              volumen=50, nombreArtistico=valid_user.nombreArtistico, 
-                             biografia=None, tokenVersion=valid_user.tokenVersion) 
+                             biografia=None, tokenVersion=valid_user.tokenVersion, sesionActiva=True) 
         fav_playlist = Playlist(nombre="Favoritos", fotoPortada="DEFAULT", Oyente_correo=valid_user.correo,
                                 privacidad=False, fecha=datetime.now(pytz.timezone('Europe/Madrid')))
 
@@ -358,6 +420,7 @@ def logout():
         # Invalidar token
         usuario = db.get(Usuario, correo)
         usuario.tokenVersion += 1
+        usuario.sesionActiva = False
         try:
             db.commit()
         except Exception as e:

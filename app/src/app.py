@@ -1,6 +1,3 @@
-#from gevent import monkey
-#monkey.patch_all()
-
 from flask import Flask
 from flask_jwt_extended import JWTManager
 from utils.mail import init_mail
@@ -25,6 +22,3 @@ init_mail(app)
 
 # Registras rutas API
 register_routes(app)
-
-#if __name__ == '__main__':
-#    socketio.run(app, debug=True, host='0.0.0.0', port=5000)

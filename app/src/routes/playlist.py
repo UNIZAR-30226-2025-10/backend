@@ -4,11 +4,20 @@ from db.models import Playlist, Oyente, Cancion, EsParteDePlaylist, Usuario, par
 from db.db import get_db
 from sqlalchemy import select, exists, delete, insert, and_
 from utils.decorators import roles_required, tokenVersion_required
-from utils.fav import fav
 from datetime import datetime
 import pytz
+import cloudinary.uploader
+import os
 
 playlist_bp = Blueprint('playlist', __name__)
+
+
+cloudinary.config(
+  cloud_name = os.getenv('CLOUDINARY_NAME'),
+  api_key = os.getenv('CLOUDINARY_KEY'),
+  api_secret = os.getenv('CLOUDINARY_SECRET'),
+  secure = True
+)
 
 
 """Devuelve los datos de una playlist, en concreto la lista de canciones de la playlist ordenada según el criterio especificado"""
@@ -32,7 +41,12 @@ def get_datos_playlist():
             return jsonify({"error": "No tienes acceso a esta playlist."}), 403
  
         creador_entry = db.get(Oyente, playlist_entry.Oyente_correo)
-        participantes = [p.nombreUsuario for p in playlist_entry.participantes]
+        
+        participantes = []
+        participantes_correos = []
+        for p in playlist_entry.participantes:
+            participantes.append(p.nombreUsuario)
+            participantes_correos.append(p.correo)
 
         canciones_stmt = select(Cancion, EsParteDePlaylist.fecha, Album.fotoPortada, Artista.nombreUsuario, Artista.nombreArtistico
             ).join(EsParteDePlaylist, EsParteDePlaylist.Cancion_id == Cancion.id
@@ -53,7 +67,7 @@ def get_datos_playlist():
         favoritos_set = {row[0] for row in db.execute(stmt_fav).all()}
 
         rol = ("creador" if creador_entry.correo == correo 
-            else "participante" if correo in participantes 
+            else "participante" if correo in participantes_correos 
             else "nada")
 
         respuesta = {
@@ -340,7 +354,19 @@ def change_playlist():
             return jsonify({"error": "La playlist 'Favoritos' no se puede modificar."}), 403
 
         playlist.nombre = nuevo_nombre
-        playlist.fotoPortada = nueva_foto
+
+        if nueva_foto != playlist.fotoPortada:
+            
+            if playlist.fotoPortada != "DEFAULT":
+                foto_antigua = playlist.fotoPortada
+                public_id = foto_antigua.split('/')[-2] + '/' + foto_antigua.split('/')[-1].split('.')[0]
+
+                try:
+                    cloudinary.uploader.destroy(public_id, resource_type="image")
+                except Exception as e:
+                    return jsonify({"error": f"Error al eliminar la foto de perfil antigua de Cloudinary: {e}"}), 500
+                
+            playlist.fotoPortada = nueva_foto
 
         try:
             db.commit()              

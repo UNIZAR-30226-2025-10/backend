@@ -50,8 +50,8 @@ notificacionAlbum_table = Table(
 )
 
 # Tabla intermedia para 'Lee'
-lee_table = Table(
-    "Lee", Base.metadata,
+sin_leer_table = Table(
+    "SinLeer", Base.metadata,
     Column("Oyente_correo", String, ForeignKey("Oyente.correo", ondelete="CASCADE"), primary_key=True),
     Column("Noizzy_id", String, ForeignKey("Noizzy.id", ondelete="CASCADE"), primary_key=True)
 )
@@ -86,7 +86,6 @@ class EstaEscuchandoCancion(Base):
     Oyente_correo: Mapped[str] = mapped_column(ForeignKey("Oyente.correo", ondelete="CASCADE"), primary_key=True)
     Cancion_id: Mapped[int] = mapped_column(ForeignKey("Cancion.id", ondelete="CASCADE"), nullable=False)
     progreso: Mapped[int] = mapped_column(nullable=False)
-    reproduciendo: Mapped[bool] = mapped_column(nullable=False)
 
     # Restricciones a nivel de BD
     __table_args__ = (
@@ -156,6 +155,8 @@ class Usuario(Base):
     contrasenya: Mapped[str] = mapped_column(nullable=False)
     tokenVersion: Mapped[int] = mapped_column(nullable=False)
     tipo: Mapped[str] = mapped_column(nullable=False)
+    sesionActiva: Mapped[bool] = mapped_column(nullable=False)
+    
 
     # Parametros de herencia
     __mapper_args__ = {
@@ -270,7 +271,7 @@ class Oyente(Usuario):
         back_populates="notificados", passive_deletes=True)
     
     # Relacion "Lee" con Noizzy (N a M)
-    leidos: Mapped[list["Noizzy"]] = relationship(secondary=lee_table, back_populates="lectores", 
+    leidos: Mapped[list["Noizzy"]] = relationship(secondary=sin_leer_table, back_populates="lectores", 
         passive_deletes=True)
  
 
@@ -464,7 +465,7 @@ class Noizzy(Base):
         passive_deletes=True)
     
     # Relacion "Lee" con Oyente (N a M)
-    lectores: Mapped[list["Oyente"]] = relationship(secondary=lee_table, back_populates="leidos", 
+    lectores: Mapped[list["Oyente"]] = relationship(secondary=sin_leer_table, back_populates="leidos", 
         passive_deletes=True)
     
 # Entidad Noizzito
