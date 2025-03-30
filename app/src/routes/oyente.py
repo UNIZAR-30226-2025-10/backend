@@ -353,8 +353,11 @@ def get_playlists():
         playlists = mis_playlists + participando_playlists
 
         playlists_ordenadas = sorted(playlists, key=lambda x: x["nombre"])
+
+        n_playlists = len(playlists_ordenadas)
         
-    return jsonify({"playlists": playlists_ordenadas[:30]}), 200
+    return jsonify({"playlists": playlists_ordenadas[:30],
+                    "n_playlists": n_playlists}), 200
 
 
 """Devuelve una lista con las canciones recomendadas para el usuario"""

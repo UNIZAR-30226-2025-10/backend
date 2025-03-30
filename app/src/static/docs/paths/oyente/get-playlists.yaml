@@ -13,6 +13,8 @@ get:
           schema:
             type: object
             properties:
+              n_playlists:
+                type: integer
               playlists:
                 type: array
                 items:
@@ -25,6 +27,7 @@ get:
                     nombre:
                       type: string
           example:
+            n_playlists: "1"
             playlists:
                 id: "789"
                 fotoPortada: "url_playlist.jpg"
