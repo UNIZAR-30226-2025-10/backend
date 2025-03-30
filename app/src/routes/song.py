@@ -381,7 +381,7 @@ def create_cancion():
             nueva_cancion = Cancion(
                 Artista_correo=artista,
                 nombre=nombre,
-                duracion=duracion,
+                duracion=int(duracion),
                 audio=audio_url,
                 fecha=datetime.now(pytz.timezone('Europe/Madrid')),
                 reproducciones=0,
