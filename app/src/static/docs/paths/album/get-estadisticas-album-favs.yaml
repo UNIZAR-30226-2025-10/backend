@@ -1,0 +1,55 @@
+get:
+  summary: Obtener oyentes que dieron me gusta a canciones de un álbum
+  description: Devuelve la lista de oyentes que han añadido alguna canción del álbum a su playlist de "Favoritos".
+  security:
+    - BearerAuth: []
+  tags:
+    - Álbum
+  parameters:
+    - name: id
+      in: query
+      required: true
+      description: ID del álbum a consultar.
+      schema:
+        type: string
+  responses:
+    200:
+      description: Lista de oyentes obtenida exitosamente.
+      content:
+        application/json:
+          example:
+            oyentes_favs:
+              - nombreUsuario: "usuario123"
+                fotoPerfil: "<link_cloudinary>"
+              - nombreUsuario: "melomano_92"
+                fotoPerfil: "<link_cloudinary>"
+    400:
+      description: Falta de parámetros.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Falta el id del álbum."
+    403:
+      description: Usuario autenticado sin permisos para la acción.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "No tienes permiso para consultar las estadísticas de este álbum."
+    404:
+      description: El recurso solicitado no existe.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "El álbum no existe."

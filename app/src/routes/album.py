@@ -7,7 +7,7 @@ from utils.estadisticas import estadisticas_song
 import pytz
 import cloudinary.uploader
 import os
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, func
 
 album_bp = Blueprint('album', __name__)
 
@@ -43,6 +43,29 @@ def get_datos_album():
         )
         favoritos_set = {row[0] for row in db.execute(stmt_fav).all()}
 
+        total_likes = db.scalar(
+            select(func.count(EsParteDePlaylist.Cancion_id))
+            .join(Playlist)
+            .where(
+                and_(
+                    Playlist.nombre == "Favoritos",
+                    EsParteDePlaylist.Cancion_id.in_([c.id for c in album.canciones])
+                )
+            )
+        )
+        stmt = (
+            select(func.count(EsParteDePlaylist.Cancion_id))
+            .join(Playlist)
+            .where(
+                and_(
+                    Playlist.nombre == "Favoritos",
+                    EsParteDePlaylist.Cancion_id.in_([c.id for c in album.canciones])
+                )
+            )
+        )
+
+        total_favoritas = db.execute(stmt).scalar()
+
         canciones = [
             {
                 "id": cancion.id,
@@ -63,7 +86,8 @@ def get_datos_album():
             "nombreArtisticoArtista": album.artista.nombreArtistico, 
             "fechaPublicacion": album.fecha.date().isoformat(),
             "duracion": sum(cancion.duracion for cancion in album.canciones),
-            "canciones": canciones
+            "canciones": canciones,
+            "favs": total_favoritas
             }), 200
     
 
@@ -190,7 +214,6 @@ def change_album():
         if not album:
             return jsonify({"error": "El álbum no existe."}), 401
 
-        # Verificar que el artista logueado es el dueño del álbum
         correo_artista = get_jwt_identity()
         if album.Artista_correo != correo_artista:
             return jsonify({"error": "No tienes permiso para actualizar este álbum."}), 403
@@ -213,11 +236,55 @@ def change_album():
     return jsonify({"message": "Álbum actualizado exitosamente."}), 200
 
 
-"""Devuelve las estadísticas de una canción para su artista"""
+"""Devuelve los oyentes que han dado me gusta a una canción del álbum para su artista"""
+@album_bp.route("/get-estadisticas-album-favs", methods=["GET"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista")
+def get_estadisticas_album_favs():
+    id = request.args.get("id")
+    if not id:
+        return jsonify({"error": "Falta el id del álbum."}), 400
+
+    with get_db() as db:     
+        album = db.get(Album, id)
+        if not album:
+            return jsonify({"error": "El álbum no existe."}), 404
+        
+        correo_artista = get_jwt_identity()
+        if album.Artista_correo != correo_artista:
+            return jsonify({"error": "No tienes permiso para consultar las estadísticas de este álbum."}), 403
+
+        personas_fav = []
+        for cancion in album.canciones:
+            stmt_likes = (
+                select(Oyente)
+                .join(Playlist, Playlist.Oyente_correo == Oyente.correo)
+                .join(EsParteDePlaylist, EsParteDePlaylist.Playlist_id == Playlist.id)
+                .where(
+                    Playlist.nombre == "Favoritos",
+                    EsParteDePlaylist.Cancion_id == cancion.id
+                )
+                .distinct()
+            )
+            personas_fav.extend([row[0] for row in db.execute(stmt_likes).all()])
+
+        oyentes_favs = [
+            {
+                "nombreUsuario": oyente.nombreUsuario,
+                "fotoPerfil": oyente.fotoPerfil
+            }
+            for oyente in personas_fav
+        ]
+        
+    return jsonify({"oyentes_favs": oyentes_favs}), 200
+    
+
+"""Devuelve las estadísticas de un album para su artista"""
 @album_bp.route("/get-estadisticas-album", methods=["GET"])
 @jwt_required()
 @tokenVersion_required()
-@roles_required("oyente", "artista")
+@roles_required("artista")
 def get_estadisticas_album():
     id = request.args.get("id")
     if not id:
@@ -227,6 +294,10 @@ def get_estadisticas_album():
         album = db.get(Album, id)
         if not album:
             return jsonify({"error": "El álbum no existe."}), 404
+        
+        correo_artista = get_jwt_identity()
+        if album.Artista_correo != correo_artista:
+            return jsonify({"error": "No tienes permiso para consultar las estadísticas de este álbum."}), 403
         
         total_reproducciones = 0
         total_nPlaylists = 0
