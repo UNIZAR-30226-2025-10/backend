@@ -243,7 +243,7 @@ def put_cancion_sola():
         # 1ª cancion actual
         if not estaEscuchandoCancion_entry:
             estaEscuchandoCancion_entry = EstaEscuchandoCancion(Oyente_correo=correo, Cancion_id=cancion_id, 
-                                                                progreso=0, reproduciendo=True)
+                                                                progreso=0)
             db.add(estaEscuchandoCancion_entry)
         
         # Actualizar cancion actual
@@ -299,7 +299,7 @@ def put_cancion_coleccion():
         # 1ª cancion actual
         if not estaEscuchandoCancion_entry:
             estaEscuchandoCancion_entry = EstaEscuchandoCancion(Oyente_correo=correo, Cancion_id=cancion_id, 
-                                                                progreso=0, reproduciendo=True)
+                                                                progreso=0)
             db.add(estaEscuchandoCancion_entry)
         
         # Actualizar cancion actual
