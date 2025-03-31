@@ -282,7 +282,7 @@ def put_cancion_coleccion():
     modo = data.get("modo")
     orden = data.get("orden")
     index = data.get("index")
-    if not coleccion_id or not modo or not orden or not index:
+    if not coleccion_id or not modo or not orden or index is None:
         return jsonify({"error": "Faltan campos en la peticion."}), 400 
 
     if modo not in ["enBucle", "aleatorio", "enOrden"]:
@@ -291,7 +291,7 @@ def put_cancion_coleccion():
     if index > len(orden):
         return jsonify({"error": "Index no valido."}), 400 
 
-    cancion_id = orden[index - 1]
+    cancion_id = orden[index]
     with get_db() as db:
         # Recuperar cancion actual
         estaEscuchandoCancion_entry = db.get(EstaEscuchandoCancion, correo)
