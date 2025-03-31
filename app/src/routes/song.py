@@ -591,3 +591,26 @@ def get_tags():
         tags_list = [tag[0] for tag in tags]  # Extraer solo los nombres de los géneros musicales
 
     return jsonify({"tags": tags_list}), 200
+
+
+"""Devuelve informacion de una cancion"""
+@song_bp.route("/get-data-cancion", methods=["GET"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente","artista")
+def get_cancion():
+    id = request.args.get("id")
+    if not id:
+        return jsonify({"error": "Falta la cancion."}), 400
+    
+    with get_db() as db:
+        # Obtener la canción
+        cancion = db.get(Cancion, id)
+        if not cancion:
+            return jsonify({"error": "La canción no existe."}), 401
+        
+        return jsonify({
+            "nombre":cancion.nombre,
+            "nombreArtisticoArtista": cancion.artista.nombreArtistico,
+            "fotoPortada": cancion.album.fotoPortada
+            }), 200

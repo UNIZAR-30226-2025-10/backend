@@ -474,6 +474,7 @@ class Noizzito(Noizzy):
 
     id: Mapped[int] = mapped_column(ForeignKey('Noizzy.id', ondelete="CASCADE"), primary_key=True)
     Noizzy_id: Mapped[int] = mapped_column(ForeignKey('Noizzy.id', ondelete="CASCADE"))
+    visto: Mapped[bool] = mapped_column(nullable=False)
 
     __mapper_args__ = {
         'polymorphic_identity': 'noizzito',
