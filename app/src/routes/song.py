@@ -48,12 +48,12 @@ def get_cancion_actual():
             
             estaEscuchandoColeccion_entry = db.get(EstaEscuchandoColeccion, correo)
             if estaEscuchandoColeccion_entry:
-                coleccion = estaEscuchandoColeccion_entry.coleccion
+                coleccion = estaEscuchandoColeccion_entry
                 coleccion_dict = {
-                        "id": coleccion.id,
+                        "id": coleccion.Coleccion_id,
                         "orden": coleccion.orden,
                         "index": coleccion.index,                      
-                        "modo": estaEscuchandoColeccion_entry.modo
+                        "modo": coleccion.modo
                     }
             else: 
                 coleccion_dict = None
