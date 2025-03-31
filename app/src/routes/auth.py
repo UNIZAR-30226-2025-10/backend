@@ -57,7 +57,7 @@ def login():
     access_token = create_access_token(identity=usuario.correo, 
                                        additional_claims={"tokenVersion": usuario.tokenVersion,
                                                           "tipo": usuario.tipo},
-                                       expires_delta=timedelta(hours=1))
+                                       expires_delta=False)
 
     if usuario_dict:
         return jsonify({"token": access_token, "usuario": usuario_dict, "tipo": tipo}), 200
@@ -157,7 +157,7 @@ def register_oyente():
     access_token = create_access_token(identity=oyente.correo,
                                        additional_claims={"tokenVersion": 1,
                                                           "tipo": "oyente"},
-                                       expires_delta=timedelta(hours=1))
+                                       expires_delta=False)
     return jsonify({"token": access_token, 
                     "oyente": {"fotoPerfil": oyente.fotoPerfil,
                                "volumen": oyente.volumen}, 
@@ -203,7 +203,7 @@ def register_artista():
         access_token = create_access_token(identity=pendiente.correo,
                                        additional_claims={"tokenVersion": 1,
                                                           "tipo": "pendiente"},
-                                       expires_delta=timedelta(hours=1))
+                                       expires_delta=False)
 
     return jsonify({"token": access_token, "tipo": "pendiente"}), 201
 
@@ -257,7 +257,7 @@ def verify_artista():
     access_token = create_access_token(identity=new_artist.correo,
                                        additional_claims={"tokenVersion": new_artist.tokenVersion,
                                                           "tipo": "artista"},
-                                       expires_delta=timedelta(hours=1))
+                                       expires_delta=False)
     return jsonify({"token": access_token, 
                     "artista_valido": {"fotoPerfil": new_artist.fotoPerfil,
                                        "volumen": new_artist.volumen}, 
