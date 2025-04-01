@@ -123,7 +123,9 @@ def change_modo():
 
     correo = get_jwt_identity()
     modo = data.get("modo")
-    if not modo:
+    orden = data.get("orden")
+    index = data.get("index")
+    if not modo or not orden or index is None:
         return jsonify({"error": "Falta el modo de la cancion."}), 400 
     
     if modo not in ["aleatorio", "enBucle", "enOrden"]:
@@ -134,7 +136,10 @@ def change_modo():
         if not estaEscuchandoColeccion_entry:
             return jsonify({"error": "El usuario no esta reproduciendo ninguna cancion en una coleccion."}), 404 
 
-        estaEscuchandoColeccion_entry.modo = modo    
+        estaEscuchandoColeccion_entry.modo = modo
+        estaEscuchandoColeccion_entry.orden = orden
+        estaEscuchandoColeccion_entry.index = index
+
         try:
             db.commit()              
         except Exception as e:
@@ -173,7 +178,7 @@ def change_fav():
             db.add(new_entry)
 
         elif not fav and fav_entry:
-            # Si esta en favoritos y fav == False, eliminarla
+            # Si esta en Favoritos y fav == False, eliminarla
             db.delete(fav_entry)
 
         elif fav_entry:
