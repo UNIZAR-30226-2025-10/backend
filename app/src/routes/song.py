@@ -42,6 +42,7 @@ def get_cancion_actual():
                     "nombreArtisticoArtista": cancion.artista.nombreArtistico,
                     "nombreUsuarioArtista": cancion.artista.nombreUsuario,
                     "progreso": estaEscuchandoCancion_entry.progreso,
+                    "featuring": [f.nombreArtistico for f in cancion.featuring],
                     "fav": fav(cancion.id, correo, db),
                     "fotoPortada": cancion.album.fotoPortada
                 }
@@ -49,9 +50,22 @@ def get_cancion_actual():
             estaEscuchandoColeccion_entry = db.get(EstaEscuchandoColeccion, correo)
             if estaEscuchandoColeccion_entry:
                 coleccion = estaEscuchandoColeccion_entry
+                if coleccion.modo == "aleatorio":
+                    if coleccion.coleccion.tipo == "playlist":
+                        ordenNatural = db.execute(select(EsParteDePlaylist.Cancion_id
+                                                         ).where(EsParteDePlaylist.Playlist_id == coleccion.Coleccion_id).order_by(EsParteDePlaylist.fecha.asc())
+                                                 ).scalars().all()
+                    else:
+                        ordenNatural = db.execute(select(Cancion.id
+                                                         ).where(Cancion.Album_id == coleccion.Coleccion_id).order_by(Cancion.puesto.asc())
+                                                 ).scalars().all()
+                else:
+                    ordenNatural = None
+
                 coleccion_dict = {
                         "id": coleccion.Coleccion_id,
                         "orden": coleccion.orden,
+                        "ordenNatural": ordenNatural,
                         "index": coleccion.index,                      
                         "modo": coleccion.modo
                     }
