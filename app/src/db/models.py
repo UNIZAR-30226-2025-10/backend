@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Table, Column, ForeignKey, CheckConstraint, String, UniqueConstraint
+from sqlalchemy import Table, Column, ForeignKey, CheckConstraint, String, UniqueConstraint, desc
 from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase
 from sqlalchemy.types import JSON
 
@@ -107,7 +107,7 @@ class EstaEscuchandoColeccion(Base):
 
     # Restricciones a nivel de BD
     __table_args__ = (
-        CheckConstraint("modo IN ('aleatorio', 'enBucle', 'enOrden')", name='chk_modo'),
+        CheckConstraint("modo IN ('aleatorio', 'enOrden')", name='chk_modo'),
     )
 
     oyente: Mapped["Oyente"] = relationship(back_populates="estaEscuchandoColeccion")
@@ -241,11 +241,11 @@ class Oyente(Usuario):
     
     # Relacion con HistorialColeccion (N:M)
     historialColeccion: Mapped[list["HistorialColeccion"]] = relationship(back_populates="oyente",
-        cascade="all, delete")
+        cascade="all, delete", order_by=desc("HistorialColeccion.fecha"))
 
     # Relacion con tabla intermedia "HistorialCancion"
     historialCancion: Mapped[list["HistorialCancion"]] = relationship(back_populates="oyente",
-        cascade="all, delete")
+        cascade="all, delete", order_by=desc("HistorialCancion.fecha"))
     
     # Relacion con tabla intermedia "EstaEscuchandoCancion"
     estaEscuchandoCancion: Mapped["EstaEscuchandoCancion"] = relationship(uselist=False, back_populates="oyente",
@@ -256,7 +256,7 @@ class Oyente(Usuario):
         cascade="all, delete-orphan")
         
     # Relacion "Postea" con Noizzy (1 a N)
-    noizzys: Mapped[list["Noizzy"]] = relationship(back_populates="oyente", cascade="all, delete-orphan")
+    noizzys: Mapped[list["Noizzy"]] = relationship(back_populates="oyente", cascade="all, delete-orphan", order_by="Noizzy.fecha")
     
     # Relacion "Like" con Noizzy (N a M)
     liked: Mapped[list["Noizzy"]] = relationship(secondary=like_table, back_populates="likes",
@@ -271,7 +271,7 @@ class Oyente(Usuario):
         back_populates="notificados", passive_deletes=True)
     
     # Relacion "Lee" con Noizzy (N a M)
-    leidos: Mapped[list["Noizzy"]] = relationship(secondary=sin_leer_table, back_populates="lectores", 
+    leidos: Mapped[list["Noizzy"]] = relationship(secondary=sin_leer_table, back_populates="porleer", 
         passive_deletes=True)
  
 
@@ -358,7 +358,7 @@ class Playlist(Coleccion):
 
     # Relacion con tabla intermedia "EsParteDePlaylist"
     esParteDePlaylist: Mapped[list["EsParteDePlaylist"]] = relationship(back_populates="playlist",
-        cascade="all, delete-orphan")
+        cascade="all, delete-orphan", order_by="EsParteDePlaylist.fecha")
 
     # Relacion con "Usuario" (N:M) a traves de la la tabla intermedia "Participantes"
     participantes: Mapped[list["Oyente"]] = relationship(secondary=participante_table, back_populates="participante",
@@ -455,7 +455,7 @@ class Noizzy(Base):
 
     # Relacion "Responde" con Noizzito (1 a N)
     noizzitos: Mapped[list["Noizzito"]] = relationship(back_populates="noizzy", foreign_keys="[Noizzito.Noizzy_id]", 
-        cascade="all, delete-orphan")
+        cascade="all, delete-orphan", order_by="Noizzito.fecha")
 
     # Relacion "Referencia" con Cancion (1 a N)
     cancion: Mapped["Cancion"] = relationship(uselist=False, back_populates="noizzys")
@@ -465,7 +465,7 @@ class Noizzy(Base):
         passive_deletes=True)
     
     # Relacion "Lee" con Oyente (N a M)
-    lectores: Mapped[list["Oyente"]] = relationship(secondary=sin_leer_table, back_populates="leidos", 
+    porleer: Mapped[list["Oyente"]] = relationship(secondary=sin_leer_table, back_populates="leidos", 
         passive_deletes=True)
     
 # Entidad Noizzito

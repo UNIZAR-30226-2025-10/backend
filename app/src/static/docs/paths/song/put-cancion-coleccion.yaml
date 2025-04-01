@@ -17,7 +17,7 @@ put:
               description: ID de la coleccion
             modo: 
               type: string
-              description: modo in ["aleatorio", "enOrden", "enBucle"]
+              description: modo in ["aleatorio", "enOrden"]
             orden:
               type: array
               items:
@@ -28,7 +28,7 @@ put:
               description: Posicion en la lista anterior de la cancion actual
         example:
           coleccion: 456
-          modo: "enBucle"
+          modo: "aleatorio"
           orden: [123, 456, 789]
           index: 2
   responses:

@@ -14,7 +14,7 @@ patch:
           properties:
             modo:
               type: string
-              description: modo in ["aleatorio", "enBucle", "enOrden"]
+              description: modo in ["aleatorio", "enOrden"]
         example:
           modo: "aleatorio"
   responses:

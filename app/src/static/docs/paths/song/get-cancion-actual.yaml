@@ -47,7 +47,7 @@ get:
                     type: integer
                   modo: 
                     type: string
-                    description: modo in ["aleatorio", "enOrden", "enBucle"]
+                    description: modo in ["aleatorio", "enOrden"]
           example:
             cancion:
               id: 123

@@ -128,8 +128,11 @@ def change_modo():
     if not modo or not orden or index is None:
         return jsonify({"error": "Falta el modo de la cancion."}), 400 
     
-    if modo not in ["aleatorio", "enBucle", "enOrden"]:
+    if modo not in ["aleatorio", "enOrden"]:
         return jsonify({"error": "Modo incorrecto."}), 400 
+
+    if index > len(orden):
+        return jsonify({"error": "Index no valido."}), 400 
 
     with get_db() as db:
         estaEscuchandoColeccion_entry = db.get(EstaEscuchandoColeccion, correo)
@@ -304,7 +307,7 @@ def put_cancion_coleccion():
     if not coleccion_id or not modo or not orden or index is None:
         return jsonify({"error": "Faltan campos en la peticion."}), 400 
 
-    if modo not in ["enBucle", "aleatorio", "enOrden"]:
+    if modo not in ["aleatorio", "enOrden"]:
         return jsonify({"error": "Modo no valido."}), 400 
 
     if index > len(orden):
