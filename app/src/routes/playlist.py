@@ -90,7 +90,8 @@ def get_datos_playlist():
                     "fav": row[0].id in favoritos_set,
                     "nombreUsuarioArtista": row[3],
                     "fotoPortada": row[2],
-                    "fecha": row[1].strftime("%d %m %Y")
+                    "fecha": row[1].strftime("%d %m %Y"),
+                    "album": row[0].Album_id
                 }
                 for row in canciones_entry
             ],
