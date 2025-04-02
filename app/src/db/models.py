@@ -241,11 +241,11 @@ class Oyente(Usuario):
     
     # Relacion con HistorialColeccion (N:M)
     historialColeccion: Mapped[list["HistorialColeccion"]] = relationship(back_populates="oyente",
-        cascade="all, delete", order_by=desc("HistorialColeccion.fecha"))
+        cascade="all, delete", order_by=[HistorialColeccion.fecha.desc()])
 
     # Relacion con tabla intermedia "HistorialCancion"
     historialCancion: Mapped[list["HistorialCancion"]] = relationship(back_populates="oyente",
-        cascade="all, delete", order_by=desc("HistorialCancion.fecha"))
+        cascade="all, delete", order_by=[HistorialCancion.fecha.desc()])
     
     # Relacion con tabla intermedia "EstaEscuchandoCancion"
     estaEscuchandoCancion: Mapped["EstaEscuchandoCancion"] = relationship(uselist=False, back_populates="oyente",
@@ -256,7 +256,7 @@ class Oyente(Usuario):
         cascade="all, delete-orphan")
         
     # Relacion "Postea" con Noizzy (1 a N)
-    noizzys: Mapped[list["Noizzy"]] = relationship(back_populates="oyente", cascade="all, delete-orphan", order_by="Noizzy.fecha")
+    noizzys: Mapped[list["Noizzy"]] = relationship(back_populates="oyente", cascade="all, delete-orphan", order_by=lambda: desc(Noizzy.fecha))
     
     # Relacion "Like" con Noizzy (N a M)
     liked: Mapped[list["Noizzy"]] = relationship(secondary=like_table, back_populates="likes",
@@ -455,7 +455,7 @@ class Noizzy(Base):
 
     # Relacion "Responde" con Noizzito (1 a N)
     noizzitos: Mapped[list["Noizzito"]] = relationship(back_populates="noizzy", foreign_keys="[Noizzito.Noizzy_id]", 
-        cascade="all, delete-orphan", order_by="Noizzito.fecha")
+        cascade="all, delete-orphan", order_by=lambda: desc(Noizzito.fecha))
 
     # Relacion "Referencia" con Cancion (1 a N)
     cancion: Mapped["Cancion"] = relationship(uselist=False, back_populates="noizzys")
