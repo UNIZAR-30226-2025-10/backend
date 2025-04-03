@@ -1,0 +1,70 @@
+get:
+  summary: Buscar canciones para añadir a un Noizzy
+  description: Devuelve una lista de canciones que pueden añadirse a un Noizzy
+  security:
+    - bearerAuth: []
+  tags:
+    - Búsqueda
+  parameters:
+    - name: termino
+      in: query
+      required: false
+      description: Término de búsqueda para filtrar canciones. Si es null o vacío, devuelve una lista vacía.
+      schema:
+        type: string
+      example: "Blank Space"
+  responses:
+    200:
+      description: Lista de canciones que pueden añadirse a un Noizzy.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              canciones:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ID de la canción
+                    nombre:
+                      type: string
+                      description: Nombre de la canción
+                    fotoPortada:
+                      type: string
+                      description: URL de la portada del álbum de la canción
+                    nombreArtisticoArtista:
+                      type: string
+                      description: Nombre artístico del artista
+          example:
+            canciones:
+              - id: "1"
+                nombre: "Blank Space"
+                fotoPortada: "https://example.com/1989.jpg"
+                nombreArtisticoArtista: "Taylor Swift"
+              - id: "2"
+                nombre: "Shake It Off"
+                fotoPortada: "https://example.com/1989.jpg"
+                nombreArtisticoArtista: "Taylor Swift"
+    401:
+      description: Usuario no autenticado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido."
+    403:
+      description: Usuario autenticado sin permisos para la acción.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."

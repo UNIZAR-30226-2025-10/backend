@@ -113,13 +113,16 @@ class EstaEscuchandoColeccion(Base):
     oyente: Mapped["Oyente"] = relationship(back_populates="estaEscuchandoColeccion")
     coleccion: Mapped["Coleccion"] = relationship(back_populates="estaEscuchandoColeccion")
     
-
 # Tabla intermedia para "Like"
-like_table = Table(
-    "Like", Base.metadata,
-    Column("Oyente_correo", ForeignKey("Oyente.correo", ondelete="CASCADE"), primary_key=True),
-    Column("Noizzy_id", ForeignKey("Noizzy.id", ondelete="CASCADE"), primary_key=True)
-)
+class Like(Base):
+    __tablename__ = "Like"
+
+    Oyente_correo: Mapped[str] = mapped_column(ForeignKey("Oyente.correo", ondelete="CASCADE"), primary_key=True)
+    Noizzy_id: Mapped[str] = mapped_column(ForeignKey("Noizzy.id", ondelete="CASCADE"), primary_key=True)
+    visto: Mapped[bool] = mapped_column(nullable=False)
+
+    oyente: Mapped["Oyente"] = relationship(back_populates="likes")
+    noizzy: Mapped["Noizzy"] = relationship(back_populates="likes")
 
 # Tabla intermedia para "EsParteDePlaylist"
 class EsParteDePlaylist(Base):
@@ -259,8 +262,7 @@ class Oyente(Usuario):
     noizzys: Mapped[list["Noizzy"]] = relationship(back_populates="oyente", cascade="all, delete-orphan", order_by=lambda: desc(Noizzy.fecha))
     
     # Relacion "Like" con Noizzy (N a M)
-    liked: Mapped[list["Noizzy"]] = relationship(secondary=like_table, back_populates="likes",
-        passive_deletes=True)
+    likes: Mapped[list["Like"]] = relationship(back_populates="oyente", cascade="all, delete-orphan")
     
     # Relacion "NotificacionCancion" con Cancion (N a M)
     notificacionesCancion: Mapped[list["Cancion"]] = relationship(secondary=notificacionCancion_table,
@@ -461,8 +463,7 @@ class Noizzy(Base):
     cancion: Mapped["Cancion"] = relationship(uselist=False, back_populates="noizzys")
     
     # Relacion "Like" con Oyente (N a M)
-    likes: Mapped[list["Oyente"]] = relationship(secondary=like_table, back_populates="liked",
-        passive_deletes=True)
+    likes: Mapped[list["Like"]] = relationship(back_populates="noizzy", cascade="all, delete-orphan")
     
     # Relacion "Lee" con Oyente (N a M)
     porleer: Mapped[list["Oyente"]] = relationship(secondary=sin_leer_table, back_populates="leidos", 

@@ -143,6 +143,14 @@ paths:
     $ref: "/static/docs/paths/playlist/leave-playlist.yaml"
   /get-invitaciones:
     $ref: "/static/docs/paths/playlist/get-invitaciones.yaml"
+  /search:
+    $ref: "/static/docs/paths/search/search.yaml"
+  /search-invitados:
+    $ref: "/static/docs/paths/search/search-invitados.yaml"
+  /search-for-playlist:
+    $ref: "/static/docs/paths/search/search-for-playlist.yaml"
+  /search-for-noizzy:
+    $ref: "/static/docs/paths/search/search-for-noizzy.yaml"
 
 components:
   securitySchemes:
