@@ -421,6 +421,8 @@ def create_cancion():
                 nueva_cancion.generosMusicales.append(genero)
 
             for artistaFt in artistasFt:
+                if not artistaFt.strip():  # Ignorar valores vacíos o solo espacios
+                    continue
                 artista_entry = db.query(Artista).filter_by(nombreArtistico=artistaFt).first()
                 if artista_entry:
                     nueva_cancion.featuring.append(artista_entry)
