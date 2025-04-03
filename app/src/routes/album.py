@@ -85,19 +85,14 @@ def get_datos_album():
 @album_bp.route("/create-album", methods=["POST"])
 @jwt_required()
 @tokenVersion_required()
-@roles_required("artista")
+@roles_required("oyente, artista")
 def create_album():
     data = request.get_json()
 
     nombre_album = data.get("nombre_album")
     foto_portada_url = data.get("fotoPortada")
 
-    nombre_cancion = data.get("nombre_cancion")
-    cancion_url = data.get("cancion")
-    cancion_duracion = data.get("duracion")
-    tags = data.get("tags")
-
-    if not data or not nombre_album or not foto_portada_url or not nombre_cancion or not cancion_url or not cancion_duracion or len(tags) > 3 or len(tags) < 1:
+    if not data or not nombre_album or not foto_portada_url:
         return jsonify({"error": "Faltan datos del álbum o la canción, o el álbum debe tener al menos una canción."}), 400
 
     with get_db() as db:
@@ -115,23 +110,6 @@ def create_album():
         db.add(nuevo_album)
         db.commit()
 
-        nueva_cancion = Cancion(
-            nombre=nombre_cancion,
-            duracion=cancion_duracion,
-            audio=cancion_url,
-            fecha=datetime.now(pytz.timezone('Europe/Madrid')),
-            reproducciones=0,
-            Album_id=nuevo_album.id,
-            Artista_correo=correo_artista,
-            puesto=0
-        )
-        db.add(nueva_cancion)
-
-        for tag in tags:
-            genero = db.query(GeneroMusical).filter_by(nombre=tag).first()
-            nueva_cancion.generosMusicales.append(genero)
-
-        db.commit()
 
     return jsonify({"message": "Álbum creado exitosamente."}), 201
 
