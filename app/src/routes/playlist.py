@@ -8,6 +8,7 @@ from datetime import datetime
 import pytz
 import cloudinary.uploader
 import os
+from .websocket import socketio
 
 playlist_bp = Blueprint('playlist', __name__)
 
@@ -245,7 +246,13 @@ def invite_to_playlist():
             db.commit()              
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
-    
+
+        # Emitir el evento de socket con la invitacion
+        socketio.emit("invite-to-playlist-ws", {"id": playlist_entry.id,
+                                                "nombre": playlist_entry.nombre,
+                                                "nombreUsuario": playlist_entry.oyente.nombreUsuario,
+                                                "fotoPortada": playlist_entry.fotoPortada}, room=usuario_entry.correo)
+
     return jsonify(""), 201
 
 """Elimina al usuario logueado de participante de una playlist"""

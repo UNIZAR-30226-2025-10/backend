@@ -1,0 +1,87 @@
+get:
+  summary: Buscar usuarios invitables a una playlist
+  description: Devuelve una lista de usuarios que pueden ser invitados a una playlist. Se incluyen seguidores que no sean ya participantes ni invitados en la playlist. Si el término es null o vacío, devuelve una lista vacía.
+  security:
+    - bearerAuth: []
+  tags:
+    - Búsqueda
+  parameters:
+    - name: termino
+      in: query
+      required: false
+      description: Término de búsqueda para filtrar usuarios. Si es null o vacío, devuelve una lista vacía.
+      schema:
+        type: string
+      example: "usuario"
+    - name: playlist
+      in: query
+      required: true
+      description: ID de la playlist a la que se quiere invitar usuarios.
+      schema:
+        type: string
+      example: "123"
+  responses:
+    200:
+      description: Lista de usuarios invitables.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              perfiles:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    nombreUsuario:
+                      type: string
+                      description: Nombre de usuario del perfil
+                    fotoPerfil:
+                      type: string
+                      description: URL de la foto de perfil del usuario
+          example:
+            perfiles:
+              - nombreUsuario: "usuario1"
+                fotoPerfil: "https://example.com/usuario1.jpg"
+              - nombreUsuario: "usuario2"
+                fotoPerfil: "https://example.com/usuario2.jpg"
+    400:
+      description: Datos inválidos o faltantes.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Falta el ID de la playlist."
+    401:
+      description: Usuario no autenticado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido."
+    403:
+      description: Usuario autenticado sin permisos para la acción.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
+    404:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "La playlist no existe."

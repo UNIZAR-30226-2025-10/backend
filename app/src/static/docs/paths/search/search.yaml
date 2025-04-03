@@ -1,0 +1,142 @@
+get:
+  summary: Buscar contenido en la plataforma
+  description: Devuelve listas de canciones, álbumes, playlists, artistas y perfiles que coincidan con el término buscado.
+  security:
+    - bearerAuth: []
+  tags:
+    - Búsqueda
+  parameters:
+    - name: termino
+      in: query
+      required: false
+      description: Término de búsqueda para filtrar contenido. Si es null o vacío, devuelve listas vacías.
+      schema:
+        type: string
+      example: "Taylor Swift"
+  responses:
+    200:
+      description: Resultados de la búsqueda.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              canciones:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ID de la canción
+                    nombre:
+                      type: string
+                      description: Nombre de la canción
+                    fotoPortada:
+                      type: string
+                      description: URL de la portada del álbum de la canción
+                    nombreArtisticoArtista:
+                      type: string
+                      description: Nombre artístico del artista
+              albumes:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ID del álbum
+                    nombre:
+                      type: string
+                      description: Nombre del álbum
+                    fotoPortada:
+                      type: string
+                      description: URL de la portada del álbum
+                    nombreArtisticoArtista:
+                      type: string
+                      description: Nombre artístico del artista
+              playlists:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ID de la playlist
+                    nombre:
+                      type: string
+                      description: Nombre de la playlist
+                    fotoPortada:
+                      type: string
+                      description: URL de la portada de la playlist
+                    nombreUsuarioCreador:
+                      type: string
+                      description: Nombre de usuario del creador de la playlist
+              artistas:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    nombreArtistico:
+                      type: string
+                      description: Nombre artístico del artista
+                    nombreUsuario:
+                      type: string
+                      description: Nombre de usuario del artista
+                    fotoPerfil:
+                      type: string
+                      description: URL de la foto de perfil del artista
+              perfiles:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    nombreUsuario:
+                      type: string
+                      description: Nombre de usuario del perfil
+                    fotoPerfil:
+                      type: string
+                      description: URL de la foto de perfil del usuario
+          example:
+            canciones:
+              - id: "1"
+                nombre: "Shake it Off"
+                fotoPortada: "https://example.com/1989.jpg"
+                nombreArtisticoArtista: "Luis Fonsi"
+            albumes:
+              - id: "10"
+                nombre: "1989"
+                fotoPortada: "https://example.com/1989.jpg"
+                nombreArtisticoArtista: "Luis Fonsi"
+            playlists:
+              - id: "100"
+                nombre: "Top Taylor Swift"
+                fotoPortada: "https://example.com/topTaylorSwift.jpg"
+                nombreUsuarioCreador: "JuanPerez"
+            artistas:
+              - nombreArtistico: "Taylor Swift"
+                nombreUsuario: "taylor.swift"
+                fotoPerfil: "https://example.com/TaylorSwift.jpg"
+            perfiles:
+              - nombreUsuario: "taylorswiftfan"
+                fotoPerfil: "https://example.com/taylorswiftfan.jpg"
+    401:
+      description: Usuario no autenticado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido."
+    403:
+      description: Usuario autenticado sin permisos para la acción.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
