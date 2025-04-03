@@ -85,7 +85,7 @@ def get_datos_album():
 @album_bp.route("/create-album", methods=["POST"])
 @jwt_required()
 @tokenVersion_required()
-@roles_required("oyente, artista")
+@roles_required("oyente", "artista")
 def create_album():
     data = request.get_json()
 
