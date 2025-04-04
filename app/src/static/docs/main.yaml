@@ -151,6 +151,20 @@ paths:
     $ref: "/static/docs/paths/search/search-for-playlist.yaml"
   /search-for-noizzy:
     $ref: "/static/docs/paths/search/search-for-noizzy.yaml"
+  /change-like:
+    $ref: "/static/docs/paths/noizzy/change-like.yaml"
+  /delete-noizzy:
+    $ref: "/static/docs/paths/noizzy/delete-noizzy.yaml"
+  /get-datos-noizzy:
+    $ref: "/static/docs/paths/noizzy/get-datos-noizzy.yaml"
+  /get-mis-noizzys:
+    $ref: "/static/docs/paths/noizzy/get-mis-noizzys.yaml"
+  /get-noizzys:
+    $ref: "/static/docs/paths/noizzy/get-noizzys.yaml"
+  /post-noizzito:
+    $ref: "/static/docs/paths/noizzy/post-noizzito.yaml"
+  /post-noizzy:
+    $ref: "/static/docs/paths/noizzy/post-noizzy.yaml"
 
 components:
   securitySchemes:
