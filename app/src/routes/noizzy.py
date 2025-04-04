@@ -6,8 +6,7 @@ from db.db import get_db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import Blueprint, request, jsonify
 from sqlalchemy import select, and_, func
-import os
-from utils.fav import fav
+from .websocket import socketio
 
 noizzy_bp = Blueprint('noizzy', __name__) 
 
@@ -165,3 +164,182 @@ def delete_noizzy():
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
     
     return jsonify(""), 204
+
+"""Devuelve los noizzys (no noizzitos) de un usuario"""
+@noizzy_bp.route("/get-noizzys", methods=["GET"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente", "artista")
+def get_noizzys():
+    nombreUsuario = request.args.get("nombreUsuario")
+    if not nombreUsuario:
+        return jsonify({"error": "Falta el nombreUsuario del usuario."}), 400
+    
+    correo = get_jwt_identity()
+    
+    with get_db() as db:
+        oyente = db.execute(select(Oyente).filter_by(nombreUsuario=nombreUsuario)).scalar_one_or_none()
+        if not oyente:
+            return jsonify({"error": "El oyente no existe."}), 404
+
+        subquery_num_comentarios = select(func.count(Noizzito.id)).where(Noizzito.Noizzy_id == Noizzy.id).scalar_subquery()
+        stmt = select(Noizzy.id, Noizzy.fecha, Noizzy.texto, Noizzy.Cancion_id,
+                      func.count(Like.Noizzy_id).label("num_likes"),
+                      subquery_num_comentarios.label("num_comentarios"),
+                      func.count(Like.Noizzy_id).filter(Like.Oyente_correo == correo).label("user_like_exists"),
+                      Artista.nombreArtistico, Coleccion.fotoPortada
+               ).outerjoin(Like, Like.Noizzy_id == Noizzy.id
+               ).outerjoin(Cancion, Cancion.id == Noizzy.Cancion_id
+               ).outerjoin(Artista, Artista.correo == Cancion.Artista_correo
+               ).outerjoin(Coleccion, Coleccion.id == Cancion.Album_id
+               ).where(and_(Noizzy.tipo == 'noizzy', Noizzy.Oyente_correo == oyente.correo)
+               ).group_by(Noizzy.id, Artista.nombreArtistico, Coleccion.fotoPortada
+               ).order_by(Noizzy.fecha.desc())
+
+        noizzys = db.execute(stmt).all()
+        noizzys_dict = [
+            {
+                "nombreUsuario": nombreUsuario,
+                "fecha": row[1].strftime("%d %m %y %H %M"),
+                "id": row[0],
+                "texto": row[2],
+                "like": True if row[6] else False,
+                "cancion": {
+                    "id": row[3],
+                    "fotoPortada": row[8],
+                    "nombreArtisticoArtista": row[7]
+                } if row[3] else None,
+                "num_likes": row[4],
+                "num_comentarios": row[5]
+            }
+        for row in noizzys]
+    
+    return jsonify({"noizzys": noizzys_dict}), 200
+
+
+"""Devuelve los noizzys (no noizzitos) del usuario logueado"""
+@noizzy_bp.route("/get-mis-noizzys", methods=["GET"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente", "artista")
+def get_mis_noizzys():
+    correo = get_jwt_identity()
+    with get_db() as db:
+        usuario_entry = db.get(Oyente, correo)
+
+        subquery_num_comentarios = select(func.count(Noizzito.id)).where(Noizzito.Noizzy_id == Noizzy.id).scalar_subquery()
+        stmt = select(Noizzy.id, Noizzy.fecha, Noizzy.texto, Noizzy.Cancion_id,
+                      func.count(Like.Noizzy_id).label("num_likes"),
+                      subquery_num_comentarios.label("num_comentarios"),
+                      func.count(Like.Noizzy_id).filter(Like.Oyente_correo == correo).label("user_like_exists"),
+                      Artista.nombreArtistico, Coleccion.fotoPortada
+               ).outerjoin(Like, Like.Noizzy_id == Noizzy.id
+               ).outerjoin(Cancion, Cancion.id == Noizzy.Cancion_id
+               ).outerjoin(Artista, Artista.correo == Cancion.Artista_correo
+               ).outerjoin(Coleccion, Coleccion.id == Cancion.Album_id
+               ).where(and_(Noizzy.tipo == 'noizzy', Noizzy.Oyente_correo == correo)
+               ).group_by(Noizzy.id, Artista.nombreArtistico, Coleccion.fotoPortada
+               ).order_by(Noizzy.fecha.desc())
+
+        noizzys = db.execute(stmt).all()
+        noizzys_dict = [
+            {
+                "nombreUsuario": usuario_entry.nombreUsuario,
+                "fecha": row[1].strftime("%d %m %y %H %M"),
+                "id": row[0],
+                "texto": row[2],
+                "like": True if row[6] else False,
+                "cancion": {
+                    "id": row[3],
+                    "fotoPortada": row[8],
+                    "nombreArtisticoArtista": row[7]
+                } if row[3] else None,
+                "num_likes": row[4],
+                "num_comentarios": row[5]
+            }
+        for row in noizzys]
+    
+    return jsonify({"noizzys": noizzys_dict}), 200
+
+
+"""Añade un noizzy al usuario logueado y avisa a sus seguidores"""
+@noizzy_bp.route("/post-noizzy", methods=["POST"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente", "artista")
+def post_noizzy():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Datos incorrectos."}), 400
+
+    correo = get_jwt_identity()
+    texto = data.get('texto')
+    cancion = data.get('cancion')
+    if not texto:
+        return jsonify({"error": "Falta el texto del noizzy."}), 400
+    
+    with get_db() as db:
+        noizzy = Noizzy(Oyente_correo=correo, fecha=datetime.now(pytz.timezone('Europe/Madrid')),
+                        texto = texto, Cancion_id=cancion)
+        db.add(noizzy)
+
+        try:
+            db.commit()              
+        except Exception as e:
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+        
+        usuario_entry = db.get(Oyente, correo)
+
+        for seguidor in usuario_entry.seguidores:
+            # Emitir el evento de socket con la notificacion
+            socketio.emit("new-noizzy-ws", {"nombreUsuario": usuario_entry.nombreUsuario,
+                                            "fotoPerfil": usuario_entry.fotoPerfil,
+                                            "tipo": usuario_entry.tipo}, room=seguidor.correo)
+    
+    return jsonify(""), 201
+            
+        
+"""Actualiza el estado de like del usuario logueado a un noizzy"""
+@noizzy_bp.route('/change-like', methods=['PUT'])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente", "artista")
+def change_like():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Datos incorrectos."}), 400
+
+    correo = get_jwt_identity()
+    like = data.get("like")
+    noizzy = data.get("noizzy")
+    if noizzy is None or like is None:
+        return jsonify({"error": "Faltan campos en la peticion."}), 400
+    
+    with get_db() as db:
+        noizzy_entry = db.get(Noizzy, noizzy)
+        if not noizzy_entry:
+            return jsonify({"error": "El noizzy no existe."}), 404
+        
+        like_entry = db.get(Like, (correo, noizzy))    
+        
+        if like and not like_entry:
+            # Si no le he dado like y like == True, darle like
+            like_entry = Like(Oyente_correo=correo, Noizzy_id=noizzy, visto=False)
+            db.add(like_entry)
+
+        elif not like and like_entry:
+            # Si le he dado like y like == False, quitarle el like
+            db.delete(like_entry)
+
+        elif like_entry:
+            return jsonify({"error": "Ya has dado like a este noizzy."}), 409
+
+        else:
+            return jsonify({"error": "No has dado like a este noizzy."}), 404
+        
+        try:
+            db.commit()              
+        except Exception as e:
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+        
+    return jsonify(""), 200
