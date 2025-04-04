@@ -1,0 +1,119 @@
+get:
+  summary: Devuelve los noizzys de un usuario
+  description: Obtiene la lista de noizzys (publicaciones) de un usuario específico.
+  security:
+    - bearerAuth: []
+  tags:
+    - Noizzy
+  parameters:
+    - name: nombreUsuario
+      in: query
+      required: true
+      description: Nombre de usuario del oyente o artista.
+      schema:
+        type: string
+  responses:
+    200:
+      description: Lista de noizzys obtenida exitosamente.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              noizzys:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: ID del noizzy
+                    fecha:
+                      type: string
+                      description: Fecha de creación del noizzy en formato dd mm yy HH MM
+                    texto:
+                      type: string
+                      description: Contenido del noizzy
+                    num_likes:
+                      type: integer
+                      description: Número de likes
+                    num_comentarios:
+                      type: integer
+                      description: Número de comentarios
+                    like:
+                      type: boolean
+                      description: Indica si el usuario autenticado le ha dado like
+                    nombreUsuario:
+                      type: string
+                      description: Nombre del usuario propietario del noizzy
+                    cancion:
+                      type: object
+                      nullable: true
+                      properties:
+                        id:
+                          type: integer
+                          description: ID de la canción asociada
+                        fotoPortada:
+                          type: string
+                          description: URL de la portada del álbum
+                        nombreArtisticoArtista:
+                          type: string
+                          description: Nombre artístico del artista
+          example:
+            noizzys:
+              - id: 1
+                fecha: "02 04 25 18 36"
+                texto: "Me encanta esta canción!"
+                num_likes: 10
+                num_comentarios: 5
+                like: true
+                nombreUsuario: "usuarioEjemplo"
+                cancion:
+                  id: 134
+                  fotoPortada: "https://example.com/portada.jpg"
+                  nombreArtisticoArtista: "Artista Ejemplo"
+    400:
+      description: Falta de parámetros en la solicitud.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "Falta el nombreUsuario del usuario."
+    401:
+      description: Usuario no autenticado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "No tienes permisos para realizar esta acción."
+    403:
+      description: Usuario autenticado sin permisos para la acción.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "Acceso denegado."
+    404:
+      description: Recurso no existe.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "El oyente no existe."
+

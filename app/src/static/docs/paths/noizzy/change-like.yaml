@@ -1,0 +1,95 @@
+put:
+  summary: Actualiza el estado de like de un noizzy
+  description: Permite a un usuario autenticado dar o quitar like a un noizzy.
+  security:
+    - bearerAuth: []
+  tags:
+    - Noizzy
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            like:
+              type: boolean
+              description: Indica si se da (true) o se quita (false) el like.
+            noizzy:
+              type: integer
+              description: ID del noizzy al que se le da o quita like.
+        example:
+          like: true
+          noizzy: 15
+  responses:
+    200:
+      description: Like actualizado correctamente.
+    400:
+      description: Datos incorrectos o faltantes en la solicitud.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "Faltan campos en la petición."
+    401:
+      description: Usuario no autenticado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "No tienes permisos para realizar esta acción."
+    403:
+      description: Usuario autenticado sin permisos para la acción.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "Acceso denegado."
+    404:
+      description: Recurso no encontrado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "El noizzy no existe."
+    409:
+      description: El usuario ya ha dado like a este noizzy.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "Ya has dado like a este noizzy."
+    500:
+      description: Ha ocurrido un error inesperado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: string
+          example:
+            error: "Ha ocurrido un error inesperado."
+            details: "Error de base de datos."

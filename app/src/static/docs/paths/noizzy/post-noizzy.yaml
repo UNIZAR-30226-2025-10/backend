@@ -1,0 +1,74 @@
+post:
+  summary: Añade un noizzy al usuario logueado y avisa a sus seguidores
+  description: Permite a un usuario autenticado publicar un noizzy y notificar a sus seguidores.
+  security:
+    - bearerAuth: []
+  tags:
+    - Noizzy
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            texto:
+              type: string
+              description: Contenido del noizzy
+            cancion:
+              type: integer
+              description: ID de la canción asociada (opcional)
+              nullable: true
+        example:
+          texto: "¡Nuevo noizzy compartido!"
+          cancion: 42
+  responses:
+    201:
+      description: Noizzy creado exitosamente.
+    400:
+      description: Datos faltantes o incorrectos en la solicitud.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "Falta el texto del noizzy."
+    401:
+      description: Usuario no autenticado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "No tienes permisos para realizar esta acción."
+    403:
+      description: Usuario autenticado sin permisos para la acción.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "Acceso denegado."
+    500:
+      description: Ha ocurrido un error inesperado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: string
+          example:
+            error: "Ha ocurrido un error inesperado."
+            details: "Error de base de datos."

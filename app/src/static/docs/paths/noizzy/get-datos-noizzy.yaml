@@ -1,0 +1,154 @@
+get:
+  summary: Obtiene la información de un Noizzy
+  description: Devuelve los detalles de un Noizzy específico, incluyendo sus noizzitos asociados.
+  security:
+    - bearerAuth: []
+  tags:
+    - Noizzy
+  parameters:
+    - name: id
+      in: query
+      required: true
+      schema:
+        type: integer
+      description: ID del Noizzy a consultar.
+  responses:
+    200:
+      description: Información del Noizzy obtenida exitosamente.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: ID del Noizzy
+              fecha:
+                type: string
+                format: date-time
+                description: Fecha del Noizzy
+              texto:
+                type: string
+                description: Contenido del Noizzy
+              num_likes:
+                type: integer
+                description: Número de likes del Noizzy
+              num_comentarios:
+                type: integer
+                description: Número de comentarios del Noizzy
+              like:
+                type: boolean
+                description: Indica si el usuario ha dado like
+              cancion:
+                type: object
+                nullable: true
+                properties:
+                  id:
+                    type: integer
+                    description: ID de la canción asociada
+                  nombreArtisticoArtista:
+                    type: string
+                    description: Nombre artístico del artista
+                  fotoPortada:
+                    type: string
+                    format: uri
+                    description: URL de la foto de portada del álbum
+              noizzitos:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: ID del Noizzito
+                    fecha:
+                      type: string
+                      format: date-time
+                      description: Fecha del Noizzito
+                    texto:
+                      type: string
+                      description: Contenido del Noizzito
+                    nombreUsuario:
+                      type: string
+                      description: Nombre del usuario que creó el Noizzito
+                    like:
+                      type: boolean
+                      description: Indica si el usuario ha dado like
+                    num_likes:
+                      type: integer
+                      description: Número de likes del Noizzito
+                    num_comentarios:
+                      type: integer
+                      description: Número de comentarios del Noizzito
+                    cancion:
+                      type: object
+                      nullable: true
+                      properties:
+                        id:
+                          type: integer
+                          description: ID de la canción asociada
+                        fotoPortada:
+                          type: string
+                          format: uri
+                          description: URL de la foto de portada
+                        nombreArtisticoArtista:
+                          type: string
+                          description: Nombre artístico del artista
+    400:
+      description: Faltan datos en la solicitud.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "Falta el id del noizzy."
+    401:
+      description: Usuario no autenticado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "No tienes permisos para realizar esta acción."
+    403:
+      description: Usuario autenticado sin permisos suficientes.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "Acceso denegado."
+    404:
+      description: Recurso no encontrado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "Noizzy no encontrado."
+    500:
+      description: Ha ocurrido un error inesperado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: string
+          example:
+            error: "Ha ocurrido un error inesperado."
+            details: "Error de base de datos."
