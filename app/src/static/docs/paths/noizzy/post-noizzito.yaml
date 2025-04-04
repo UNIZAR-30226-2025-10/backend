@@ -4,7 +4,7 @@ post:
   security:
     - bearerAuth: []
   tags:
-    - Noizzito
+    - Noizzy
   requestBody:
     required: true
     content:
