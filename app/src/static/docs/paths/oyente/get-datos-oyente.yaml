@@ -31,31 +31,56 @@ get:
                     type: integer
                   siguiendo:
                     type: boolean
+                  fotoPerfil:
+                    type: string
+                    description: URL de la foto de perfil del oyente
               ultimoNoizzy:
                 type: object
                 nullable: true
                 properties:
-                  texto:
-                    type: string
                   id:
                     type: integer
                   fecha:
                     type: string
                     format: date-time
+                  texto:
+                    type: string
+                  num_likes:
+                    type: integer
+                  num_comentarios:
+                    type: integer
                   like:
                     type: boolean
+                    description: Indica si el usuario actual le dio like
+                  cancion:
+                    type: object
+                    nullable: true
+                    properties:
+                      id:
+                        type: integer
+                      nombreArtisticoArtista:
+                        type: string
+                      fotoPortada:
+                        type: string
+                        description: URL de la portada del álbum
           example:
             oyente:
               nombreUsuario: "juan123"
               numSeguidos: 15
               numSeguidores: 50
               siguiendo: false
-              fotoPerfil: "<link_cloudinary>"
+              fotoPerfil: "https://cloudinary.com/imagen-perfil.jpg"
             ultimoNoizzy:
-              texto: "Me encanta esta nueva canción!"
               id: 42
               fecha: "21/03/2025 14:30"
+              texto: "Me encanta esta nueva canción!"
+              num_likes: 10
+              num_comentarios: 3
               like: true
+              cancion:
+                id: 5
+                nombreArtisticoArtista: "Taylor Swift"
+                fotoPortada: "https://cloudinary.com/album-cover.jpg"
     400:
       description: Datos incorrectos o faltantes en la solicitud.
       content:
@@ -76,9 +101,10 @@ get:
             properties:
               error:
                 type: string
-                example: "Token inválido"
+          example:
+            error: "Token inválido"
     403:
-      description: Usuario autenticado sin permisos para la accion
+      description: Usuario autenticado sin permisos para la acción.
       content:
         application/json:
           schema:
@@ -86,7 +112,8 @@ get:
             properties:
               error:
                 type: string
-                example: "Acceso denegado."
+          example:
+            error: "Acceso denegado."
     404:
       description: Recurso no encontrado.
       content:

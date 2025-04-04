@@ -37,33 +37,56 @@ get:
                     type: boolean
                   fotoPerfil:
                     type: string
+                    description: URL de la foto de perfil del artista
               ultimoNoizzy:
                 type: object
                 nullable: true
                 properties:
-                  texto:
-                    type: string
                   id:
                     type: integer
                   fecha:
                     type: string
                     format: date-time
+                  texto:
+                    type: string
+                  num_likes:
+                    type: integer
+                  num_comentarios:
+                    type: integer
                   like:
                     type: boolean
+                    description: Indica si el usuario actual le dio like
+                  cancion:
+                    type: object
+                    nullable: true
+                    properties:
+                      id:
+                        type: integer
+                      nombreArtisticoArtista:
+                        type: string
+                      fotoPortada:
+                        type: string
+                        description: URL de la portada del álbum
           example:
             artista:
               nombreUsuario: "cepeda"
               nombreArtistico: "Cepeda"
-              biografía: "Salí de OT"
+              biografia: "Salí de OT"
               numSeguidos: 10
               numSeguidores: 30
               siguiendo: true
-              fotoPerfil: "<link_cloudinary>"
+              fotoPerfil: "https://cloudinary.com/imagen-perfil.jpg"
             ultimoNoizzy:
-              texto: "Escucha mi nueva canción"
               id: 35
               fecha: "20/03/2025 19:07"
+              texto: "Escucha mi nueva canción"
+              num_likes: 25
+              num_comentarios: 5
               like: false
+              cancion:
+                id: 12
+                nombreArtisticoArtista: "Cepeda"
+                fotoPortada: "https://cloudinary.com/album-cover.jpg"
     400:
       description: Datos faltantes en la solicitud.
       content:
@@ -76,7 +99,7 @@ get:
           example:
             error: "Falta el nombreUsuario del artista."
     401:
-      description: Usuario no autenticado
+      description: Usuario no autenticado.
       content:
         application/json:
           schema:
@@ -84,9 +107,10 @@ get:
             properties:
               error:
                 type: string
-                example: "No tienes permisos para realizar esta acción."
+          example:
+            error: "No tienes permisos para realizar esta acción."
     403:
-      description: Usuario autenticado sin permisos para la accion.
+      description: Usuario autenticado sin permisos para la acción.
       content:
         application/json:
           schema:
@@ -94,7 +118,8 @@ get:
             properties:
               error:
                 type: string
-                example: "Acceso denegado." 
+          example:
+            error: "Acceso denegado."
     404:
       description: El recurso no existe.
       content:

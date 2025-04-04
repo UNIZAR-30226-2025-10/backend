@@ -54,7 +54,6 @@ def get_datos_noizzy():
         else:
             return jsonify({"error": "Noizzy no encontrado."}), 404
         
-        
         subquery_num_comentarios = (select(func.count(Noizzito.id)).where(Noizzito.Noizzy_id == Noizzito.id).scalar_subquery())
 
         stmt_noizzitos = select(
