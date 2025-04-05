@@ -35,39 +35,6 @@ def get_datos_artista():
         
         usuario_actual = db.get(Oyente, correo_actual)
         siguiendo = usuario_actual in artista.seguidores if usuario_actual else False
-        
-        subquery_num_comentarios = (select(func.count(Noizzito.id))
-                                    .where(Noizzito.Noizzy_id == Noizzy.id)
-                                    .scalar_subquery())
-
-        stmt = (select(Noizzy.id, Noizzy.fecha, Noizzy.texto, Noizzy.Cancion_id,
-                      func.count(Like.Noizzy_id).label("num_likes"),
-                      subquery_num_comentarios.label("num_comentarios"),
-                      func.count(Like.Noizzy_id).filter(Like.Oyente_correo == correo_actual).label("user_like_exists"),
-                      Artista.nombreArtistico, Coleccion.fotoPortada)
-                .outerjoin(Like, Like.Noizzy_id == Noizzy.id)
-                .outerjoin(Cancion, Cancion.id == Noizzy.Cancion_id)
-                .outerjoin(Artista, Artista.correo == Cancion.Artista_correo)
-                .outerjoin(Coleccion, Coleccion.id == Cancion.Album_id)
-                .where(and_(Noizzy.tipo == 'noizzy', Noizzy.Oyente_correo == artista.correo))
-                .order_by(Noizzy.fecha.desc())
-                .limit(1))
-
-        noizzy = db.execute(stmt).first()
-
-        ultimo_noizzy_data = {
-            "id": noizzy[0],
-            "fecha": noizzy[1].strftime("%d/%m/%Y %H:%M"),
-            "texto": noizzy[2],
-            "num_likes": noizzy[4],
-            "num_comentarios": noizzy[5],
-            "like": True if noizzy[6] else False,
-            "cancion": {
-                "id": noizzy[3],
-                "nombreArtisticoArtista": noizzy[7],
-                "fotoPortada": noizzy[8]
-            } if noizzy[3] else None
-        } if noizzy else None
 
         return jsonify({
             "artista": {
@@ -78,8 +45,7 @@ def get_datos_artista():
                 "numSeguidores": len(artista.seguidores),
                 "siguiendo": siguiendo,
                 "fotoPerfil": artista.fotoPerfil
-            },
-            "ultimoNoizzy": ultimo_noizzy_data
+            }
         }), 200
     
 

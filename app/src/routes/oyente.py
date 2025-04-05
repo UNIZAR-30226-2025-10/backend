@@ -1,4 +1,4 @@
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, literal, exists
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from db.db import get_db
@@ -139,21 +139,33 @@ def get_mis_seguidores():
     correo = get_jwt_identity()
 
     with get_db() as db:
-        oyente_entry = db.get(Oyente, correo)
-        if not oyente_entry:
-            return jsonify({"error": "Correo no existe."}), 401
+        stmt = select(Oyente.nombreUsuario, Oyente.fotoPerfil, Oyente.tipo,
+                      exists(select(literal(True)
+                                    ).select_from(sigue_table).where(and_(sigue_table.c.Seguidor_correo == correo,
+                                                 sigue_table.c.Seguido_correo == Usuario.correo)).correlate(Usuario)).label("followBack")
+                     ).join(sigue_table, sigue_table.c.Seguidor_correo == Oyente.correo
+                     ).where(sigue_table.c.Seguido_correo == correo)
+        seguidores = db.execute(stmt).all()
 
-        seguidores = [
+        seguidores_dict = [
             {
-                "nombreUsuario": s.nombreUsuario,
-                "fotoPerfil": s.fotoPerfil,
-                "tipo": s.tipo
+                "nombreUsuario": row[0],
+                "fotoPerfil": row[1],
+                "tipo": row[2],
+                "followBack": row[3]
             }
-            for s in oyente_entry.seguidores[:30]
+            for row in seguidores
         ]
 
-    return jsonify({"seguidores": seguidores}), 200
+    return jsonify({"seguidores": seguidores_dict}), 200
 
+"""
+SELECT "Usuario"."nombreUsuario", "Oyente"."fotoPerfil", "Usuario".tipo, EXISTS 
+    (SELECT 1
+    FROM "Sigue"
+    WHERE "Sigue"."Seguidor_correo" = ruben@gmail.com AND "Sigue"."Seguido_correo" = "Oyente".correo) AS "followBack"
+FROM "Usuario" JOIN "Oyente" ON "Usuario".correo = "Oyente".correo JOIN "Sigue" ON "Sigue"."Seguidor_correo" = "Oyente".correo
+WHERE "Sigue"."Seguido_correo" = ruben@gmail.com"""
 
 """Devuelve una lista con los seguidos del usuario con nombre dado"""
 @oyente_bp.route('/get-seguidos', methods=['GET'])

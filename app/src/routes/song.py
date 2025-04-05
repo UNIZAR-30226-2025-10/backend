@@ -285,8 +285,9 @@ def put_cancion_sola():
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
         
-        return jsonify({ "audio": estaEscuchandoCancion_entry.cancion.audio,
+        return jsonify({"audio": estaEscuchandoCancion_entry.cancion.audio,
                 "nombreUsuarioArtista": estaEscuchandoCancion_entry.cancion.artista.nombreUsuario,
+                "featuring": [f.nombreArtistico for f in estaEscuchandoCancion_entry.cancion.featuring],
                 "fav": fav(cancion_id, correo, db)}), 200
 
 """Reproduce una cancion en una coleccion"""
@@ -352,6 +353,7 @@ def put_cancion_coleccion():
 
         return jsonify({"audio": estaEscuchandoCancion_entry.cancion.audio,
                 "nombreUsuarioArtista": estaEscuchandoCancion_entry.cancion.artista.nombreUsuario,
+                "featuring": [f.nombreArtistico for f in estaEscuchandoCancion_entry.cancion.featuring],
                 "fav": fav(cancion_id, correo, db)}), 200
     
 """Sube una nueva cancion"""

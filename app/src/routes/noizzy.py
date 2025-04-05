@@ -28,18 +28,19 @@ def get_datos_noizzy():
                       func.count(Like.Noizzy_id).label("num_likes"),
                       subquery_num_comentarios.label("num_comentarios"),
                       func.count(Like.Noizzy_id).filter(Like.Oyente_correo == correo).label("user_like_exists"),
-                      Artista.nombreArtistico, Coleccion.fotoPortada
+                      Artista.nombreArtistico, Coleccion.fotoPortada, Oyente
                 ).outerjoin(Like, Like.Noizzy_id == Noizzy.id
                 ).outerjoin(Cancion, Cancion.id == Noizzy.Cancion_id
                 ).outerjoin(Artista, Artista.correo == Cancion.Artista_correo
                 ).outerjoin(Coleccion, Coleccion.id == Cancion.Album_id
+                ).outerjoin(Oyente, Oyente.correo == Noizzy.Oyente_correo
                 ).where(Noizzy.id == id
                 ).group_by(Noizzy.id, Cancion.id, Artista.nombreArtistico, Coleccion.fotoPortada)
 
         noizzy = db.execute(stmt).first()
         if noizzy:
             result = {
-                "id": noizzy[0],
+                "nombreUsuario": noizzy[9].nombreUsuario if noizzy[9].tipo == "oyente" else noizzy[9].nombreArtistico,
                 "fecha": noizzy[1].strftime("%d %m %Y %H %M"),
                 "texto": noizzy[2],
                 "num_likes": noizzy[4],
@@ -61,7 +62,7 @@ def get_datos_noizzy():
             func.count(Like.Noizzy_id).label("num_likes"),
             subquery_num_comentarios.label("num_comentarios"),
             func.count(Like.Noizzy_id).filter(Like.Oyente_correo == correo).label("user_like_exists"),
-            Noizzito.Cancion_id, Artista.nombreArtistico, Coleccion.fotoPortada, Oyente.nombreUsuario
+            Noizzito.Cancion_id, Artista.nombreArtistico, Coleccion.fotoPortada, Oyente
         ).outerjoin(Like, Like.Noizzy_id == Noizzito.id
         ).outerjoin(Cancion, Cancion.id == Noizzito.Cancion_id
         ).outerjoin(Artista, Artista.correo == Cancion.Artista_correo
@@ -75,7 +76,7 @@ def get_datos_noizzy():
         
         noizzitos = [
             {
-                "nombreUsuario": row[9],
+                "nombreUsuario": row[9].nombreUsuario if row[9].tipo == "oyente" else row[9].nombreArtistico,
                 "fecha": row[1].strftime("%d %m %y %H %M"),
                 "id": row[0],
                 "texto": row[2],
@@ -198,7 +199,7 @@ def get_noizzys():
         noizzys = db.execute(stmt).all()
         noizzys_dict = [
             {
-                "nombreUsuario": nombreUsuario,
+                "nombreUsuario": nombreUsuario if oyente.tipo == "oyente" else oyente.nombreArtistico,
                 "fecha": row[1].strftime("%d %m %y %H %M"),
                 "id": row[0],
                 "texto": row[2],
@@ -243,7 +244,7 @@ def get_mis_noizzys():
         noizzys = db.execute(stmt).all()
         noizzys_dict = [
             {
-                "nombreUsuario": usuario_entry.nombreUsuario,
+                "nombreUsuario": usuario_entry.nombreUsuario if usuario_entry.tipo == "oyente" else usuario_entry.nombreArtistico,
                 "fecha": row[1].strftime("%d %m %y %H %M"),
                 "id": row[0],
                 "texto": row[2],
