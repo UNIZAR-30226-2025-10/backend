@@ -266,11 +266,11 @@ class Oyente(Usuario):
     
     # Relacion "NotificacionCancion" con Cancion (N a M)
     notificacionesCancion: Mapped[list["Cancion"]] = relationship(secondary=notificacionCancion_table,
-        back_populates="notificados", passive_deletes=True)
+        back_populates="notificados", passive_deletes=True, order_by=lambda: desc(Cancion.fecha))
 
     # Relacion "NotificacionAlbum" con Album (N a M)
     notificacionesAlbum: Mapped[list["Album"]] = relationship(secondary=notificacionAlbum_table,
-        back_populates="notificados", passive_deletes=True)
+        back_populates="notificados", passive_deletes=True, order_by=lambda: desc(Album.fecha))
     
     # Relacion "Lee" con Noizzy (N a M)
     leidos: Mapped[list["Noizzy"]] = relationship(secondary=sin_leer_table, back_populates="porleer", 

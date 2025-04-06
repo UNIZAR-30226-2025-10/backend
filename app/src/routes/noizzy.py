@@ -1,11 +1,12 @@
 from datetime import datetime
 import pytz
 from utils.decorators import roles_required, tokenVersion_required
-from db.models import Noizzy, Noizzito, Like, Artista, Coleccion, Cancion, Oyente
+from db.models import Noizzy, Noizzito, Like, Artista, Coleccion, Cancion, Oyente, sin_leer_table, sigue_table, Usuario
 from db.db import get_db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import Blueprint, request, jsonify
-from sqlalchemy import select, and_, func
+from sqlalchemy import select, and_, func, delete, insert, exists, literal, desc, case
+from sqlalchemy.orm import selectinload
 from .websocket import socketio
 
 noizzy_bp = Blueprint('noizzy', __name__) 
@@ -282,14 +283,21 @@ def post_noizzy():
         noizzy = Noizzy(Oyente_correo=correo, fecha=datetime.now(pytz.timezone('Europe/Madrid')),
                         texto = texto, Cancion_id=cancion)
         db.add(noizzy)
+        db.flush()
+
+        usuario_entry = db.get(Oyente, correo, options=[selectinload(Oyente.seguidores)])
+        notificaciones = [
+            {"Oyente_correo": seguidor.correo, "Noizzy_id": noizzy.id}
+            for seguidor in usuario_entry.seguidores
+        ]
+        if notificaciones:
+            db.execute(insert(sin_leer_table), notificaciones)
 
         try:
             db.commit()              
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
         
-        usuario_entry = db.get(Oyente, correo)
-
         for seguidor in usuario_entry.seguidores:
             # Emitir el evento de socket con la notificacion
             socketio.emit("new-noizzy-ws", {"nombreUsuario": usuario_entry.nombreUsuario,
@@ -343,3 +351,85 @@ def change_like():
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
         
     return jsonify(""), 200
+
+
+"""Lee los noizzys de un perfil que estaban sin leer"""
+@noizzy_bp.route("/read-noizzys", methods=["DELETE"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista", "oyente")
+def read_noizzys():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Faltan campos en la petición."}), 400
+    
+    oyente_nombreUsuario = data.get("nombreUsuario")
+    if not oyente_nombreUsuario:
+        return jsonify({"error": "Falta el nombre del usuario."}), 400
+    
+    correo = get_jwt_identity()
+    with get_db() as db:
+        oyente_entry = db.execute(select(Oyente).where(Oyente.nombreUsuario == oyente_nombreUsuario)).scalar_one_or_none()
+        if not oyente_entry:
+            return jsonify({"error": "No existe el usuario."}), 404
+        
+        stmt = delete(sin_leer_table).where(
+            (sin_leer_table.c.Oyente_correo == correo) &
+            (sin_leer_table.c.Noizzy_id.in_(
+                select(Noizzy.id).where(Noizzy.Oyente_correo == oyente_entry.correo)))
+        )
+
+        result = db.execute(stmt)
+        if result.rowcount == 0:
+            return jsonify({"error": "No hay noizzys sin leer."}), 404
+        
+        try:
+            db.commit() 
+        except Exception as e:
+            db.rollback()
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+    
+    return jsonify(""), 204
+
+
+"""Devuelve una lista con los seguidos del usuario logueado en orden de actividad
+   y si tienen noizzys sin leer"""
+@noizzy_bp.route("/get-actividad-seguidos", methods=["GET"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista", "oyente")
+def get_actividad_seguidos():
+    correo = get_jwt_identity()  
+
+    with get_db() as db:
+        sin_leer_subq = select(literal(1)
+            ).where(and_(sin_leer_table.c.Oyente_correo == correo,
+                         sin_leer_table.c.Noizzy_id.in_(
+                            select(Noizzy.id).where(Noizzy.Oyente_correo == Usuario.correo).correlate(Usuario))))
+
+        ultimo_noizzy_subq = select(Noizzy.fecha).where(
+            Noizzy.Oyente_correo == Usuario.correo
+        ).order_by(Noizzy.fecha.desc()).limit(1).correlate(Usuario)
+
+        # Recuperar seguidos, si tienen noizzy sin leer y ordenados por fecha del ultimo noizzy
+        stmt = select(Oyente, 
+                      exists(sin_leer_subq).label("sin_leer"),
+                      ultimo_noizzy_subq.label("ultimo_noizzy_fecha")
+            ).join(sigue_table, sigue_table.c.Seguido_correo == Oyente.correo
+            ).where(sigue_table.c.Seguidor_correo == correo
+            ).order_by(case((exists(sin_leer_subq), 1), else_=2),
+                       desc("ultimo_noizzy_fecha")
+            ).limit(30)
+        
+        seguidos = db.execute(stmt)
+        seguidos_dict = [
+            {
+                "nombreUsuario": row[0].nombreUsuario,
+                "fotoPerfil": row[0].fotoPerfil,
+                "tipo": row[0].tipo,
+                "sinLeer": row[1]
+            }
+            for row in seguidos
+        ]
+
+    return jsonify({"seguidos": seguidos_dict}), 200

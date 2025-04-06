@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from sqlalchemy import select
-from db.models import EstaEscuchandoCancion, EstaEscuchandoColeccion, Oyente, Playlist, EsParteDePlaylist, HistorialCancion, HistorialColeccion, Cancion, GeneroMusical, Artista
+from sqlalchemy import select, insert
+from sqlalchemy.orm import selectinload
+from db.models import EstaEscuchandoCancion, EstaEscuchandoColeccion, Oyente, Playlist, EsParteDePlaylist, HistorialCancion, HistorialColeccion, Cancion, GeneroMusical, Artista, notificacionCancion_table
 from db.db import get_db
 from utils.decorators import roles_required, tokenVersion_required
 from utils.fav import fav
@@ -400,43 +401,54 @@ def create_cancion():
         ultimo_puesto = max(cancion.puesto for cancion in canciones)
         return ultimo_puesto
 
-    try:
+    # Guardar la información de la canción en la base de datos
+    with get_db() as db:
+        nueva_cancion = Cancion(
+            Artista_correo=artista,
+            nombre=nombre,
+            duracion=int(duracion),
+            audio=audio_url,
+            fecha=datetime.now(pytz.timezone('Europe/Madrid')),
+            reproducciones=0,
+            Album_id=album_id,
+            puesto=obtener_ultimo_puesto(db, album_id, artista) + 1
+        )
 
-        # Guardar la información de la canción en la base de datos
-        with get_db() as db:
-            nueva_cancion = Cancion(
-                Artista_correo=artista,
-                nombre=nombre,
-                duracion=int(duracion),
-                audio=audio_url,
-                fecha=datetime.now(pytz.timezone('Europe/Madrid')),
-                reproducciones=0,
-                Album_id=album_id,
-                puesto=obtener_ultimo_puesto(db, album_id, artista) + 1
-            )
+        db.add(nueva_cancion)
+        db.flush()
 
-            db.add(nueva_cancion)
+        # Añadir los tags
+        for tag in tags:
+            genero = db.get(GeneroMusical, tag)
+            nueva_cancion.generosMusicales.append(genero)
 
-            # Añadir los tags
-            for tag in tags:
-                genero = db.get(GeneroMusical, tag)
-                nueva_cancion.generosMusicales.append(genero)
+        for artistaFt in artistasFt:
+            if not artistaFt.strip():  # Ignorar valores vacíos o solo espacios
+                continue
+            artista_entry = db.query(Artista).filter_by(nombreArtistico=artistaFt).first()
+            if artista_entry:
+                nueva_cancion.featuring.append(artista_entry)
+            else:
+                return jsonify({"error": f"El artista '{artistaFt}' no existe."}), 404
 
-            for artistaFt in artistasFt:
-                if not artistaFt.strip():  # Ignorar valores vacíos o solo espacios
-                    continue
-                artista_entry = db.query(Artista).filter_by(nombreArtistico=artistaFt).first()
-                if artista_entry:
-                    nueva_cancion.featuring.append(artista_entry)
-                else:
-                    return jsonify({"error": f"El artista '{artistaFt}' no existe."}), 404
+        artista_actual = db.get(Artista, artista, options=[selectinload(Artista.seguidores)])
+        notificaciones = [
+            {"Oyente_correo": seguidor.correo, "Cancion_id": nueva_cancion.id}
+            for seguidor in artista_actual.seguidores
+        ]
+        if notificaciones:
+            db.execute(insert(notificacionCancion_table), notificaciones)
 
+        try:
             db.commit()
+        except Exception as e:
+            db.rollback()
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+
+        # Websockets para notificacion en tiempo real
 
         return jsonify(""), 201
-
-    except Exception as e:
-        return jsonify({"error": f"Error al subir la canción: {e}"}), 500   
+      
 
 """Borra una canción dado su ID"""
 @song_bp.route("/delete-cancion", methods=["DELETE"])
