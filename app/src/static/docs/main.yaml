@@ -165,6 +165,12 @@ paths:
     $ref: "/static/docs/paths/noizzy/post-noizzito.yaml"
   /post-noizzy:
     $ref: "/static/docs/paths/noizzy/post-noizzy.yaml"
+  /delete-novedades-musicales:
+    $ref: "/static/docs/paths/notificaciones/delete-novedades-musicales.yaml"
+  /get-interacciones:
+    $ref: "/static/docs/paths/notificaciones/get-interacciones.yaml"
+  /read-interacciones:
+    $ref: "/static/docs/paths/notificaciones/read-interacciones.yaml"
 
 components:
   securitySchemes:
