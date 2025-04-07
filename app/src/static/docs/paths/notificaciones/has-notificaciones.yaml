@@ -1,0 +1,40 @@
+get:
+  summary: Verificar si hay notificaciones para el usuario
+  description: Devuelve `true` si el usuario tiene notificaciones como invitaciones a playlists, noizzitos, likes, nuevos seguidores, o nuevas canciones o álbumes.
+  security:
+    - bearerAuth: []
+  tags:
+    - Notificaciones
+  responses:
+    200:
+      description: Indica si hay notificaciones disponibles para el usuario.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              notificaciones:
+                type: boolean
+                description: `true` si hay notificaciones, `false` en caso contrario.
+          example:
+            notificaciones: true
+    401:
+      description: Usuario no autenticado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido."
+    403:
+      description: Usuario autenticado sin permisos para la acción.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."

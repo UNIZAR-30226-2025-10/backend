@@ -1,0 +1,75 @@
+get:
+  summary: Obtener notificaciones de novedades musicales
+  description: Devuelve una lista con canciones y álbumes nuevos de los artistas que el usuario autenticado sigue.
+  security:
+    - bearerAuth: []
+  tags:
+    - Notificaciones
+  responses:
+    200:
+      description: Lista de canciones y álbumes como notificaciones de novedades musicales.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              resultado:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ID del elemento (canción o álbum)
+                    nombre:
+                      type: string
+                      description: Nombre de la canción o álbum
+                    tipo:
+                      type: string
+                      enum: [cancion, album]
+                      description: Tipo de la notificación
+                    fotoPortada:
+                      type: string
+                      description: URL de la portada del álbum o canción
+                    nombreArtisticoArtista:
+                      type: string
+                      description: Nombre artístico del artista principal
+                    featuring:
+                      type: array
+                      items:
+                        type: string
+                      description: Lista de artistas en colaboración (solo para canciones)
+          example:
+            resultado:
+              - id: "45"
+                nombre: "Midnight Rain"
+                tipo: "cancion"
+                fotoPortada: "https://example.com/midnights.jpg"
+                nombreArtisticoArtista: "Taylor Swift"
+                featuring: []
+              - id: "12"
+                nombre: "Evermore"
+                tipo: "album"
+                fotoPortada: "https://example.com/evermore.jpg"
+                nombreArtisticoArtista: "Taylor Swift"
+                featuring: []
+    401:
+      description: Usuario no autenticado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido."
+    403:
+      description: Usuario autenticado sin permisos para la acción.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."

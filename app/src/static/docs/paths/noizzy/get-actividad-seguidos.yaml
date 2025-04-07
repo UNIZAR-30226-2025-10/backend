@@ -1,0 +1,62 @@
+get:
+  summary: Obtener la actividad de los seguidos
+  description: Devuelve una lista con los usuarios seguidos por el usuario autenticado, ordenados por actividad y si tienen noizzys sin leer.
+  security:
+    - bearerAuth: []
+  tags:
+    - Noizzy
+  responses:
+    200:
+      description: Lista de usuarios seguidos con su actividad reciente y estado de noizzys sin leer.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              seguidos:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    nombreUsuario:
+                      type: string
+                      description: Nombre de usuario del seguido
+                    fotoPerfil:
+                      type: string
+                      description: URL de la foto de perfil del seguido
+                    tipo:
+                      type: string
+                      description: Tipo de usuario (artista u oyente)
+                    sinLeer:
+                      type: boolean
+                      description: Indica si el usuario seguido tiene noizzys sin leer
+          example:
+            seguidos:
+              - nombreUsuario: "usuario1"
+                fotoPerfil: "https://example.com/perfil1.jpg"
+                tipo: "oyente"
+                sinLeer: true
+              - nombreUsuario: "Usuario Artista"
+                fotoPerfil: "https://example.com/perfil2.jpg"
+                tipo: "artista"
+                sinLeer: false
+    401:
+      description: Usuario no autenticado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido."
+    403:
+      description: Usuario autenticado sin permisos para la acción.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."

@@ -1,0 +1,80 @@
+delete:
+  summary: Marcar noizzys como leídos
+  description: Marca como leidos los noizzys sin leer de un perfil específico para el usuario autenticado.
+  security:
+    - bearerAuth: []
+  tags:
+    - Noizzy
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            nombreUsuario:
+              type: string
+              description: Nombre de usuario del perfil cuyos noizzys se quieren marcar como leídos.
+          required:
+            - nombreUsuario
+        example:
+          nombreUsuario: "usuario1"
+  responses:
+    204:
+      description: Noizzys marcados como leídos correctamente.
+    400:
+      description: Datos inválidos o faltantes
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "Faltan campos en la petición."
+    401:
+      description: Usuario no autenticado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido."
+    403:
+      description: Usuario autenticado sin permisos para la acción.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
+    404:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "No hay noizzys sin leer."
+    500:
+      description: Error inesperado del servidor.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: string
+          example:
+            error: "Ha ocurrido un error inesperado."
+            details: "IntegrityError: foreign key constraint fails"
