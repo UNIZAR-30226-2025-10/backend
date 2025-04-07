@@ -52,7 +52,10 @@ def has_notificaciones():
             )
         ).scalar()
 
-        return jsonify({"notificaciones": any([notif_cancion, notif_album, invitado_playlist, like_no_visto, noizzito_no_visto])}), 200
+        return jsonify({"invitaciones": invitado_playlist,
+                        "novedades-musicales": notif_album or notif_cancion,
+                        "interacciones": like_no_visto or noizzito_no_visto,
+                        "seguidores": False}), 200
 
 
 """Devuelve una lista con las notificaciones de novedades musicales """

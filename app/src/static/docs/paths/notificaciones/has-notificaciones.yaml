@@ -1,23 +1,35 @@
 get:
   summary: Verificar si hay notificaciones para el usuario
-  description: Devuelve `true` si el usuario tiene notificaciones como invitaciones a playlists, noizzitos, likes, nuevos seguidores, o nuevas canciones o álbumes.
+  description: Devuelve `true` para cada tipo de notificacion (invitaciones a playlist, novedades musicales, interacciones con un noizzy y nuevos seguidores) si el usuario tiene notificaciones sin leer 
   security:
     - bearerAuth: []
   tags:
     - Notificaciones
   responses:
     200:
-      description: Indica si hay notificaciones disponibles para el usuario.
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              notificaciones:
-                type: boolean
-                description: `true` si hay notificaciones, `false` en caso contrario.
-          example:
-            notificaciones: true
+  description: Indica si hay notificaciones disponibles para el usuario, clasificadas por tipo.
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          invitaciones:
+            type: boolean
+            description: `true` si el usuario tiene invitaciones a playlists.
+          novedades-musicales:
+            type: boolean
+            description: `true` si hay nuevas canciones o álbumes disponibles.
+          interacciones:
+            type: boolean
+            description: `true` si hay likes o noizzitos no vistos.
+          seguidores:
+            type: boolean
+            description: `true` si hay nuevos seguidores. 
+      example:
+        invitaciones: true
+        novedades-musicales: true
+        interacciones: false
+        seguidores: false
     401:
       description: Usuario no autenticado.
       content:
