@@ -8,4 +8,3 @@ pruebas
 app/src/cliente1.py
 app/src/cliente2.py
 app/src/populate.py
-app/src/routes/notificaciones.py

@@ -120,6 +120,7 @@ class Like(Base):
     Oyente_correo: Mapped[str] = mapped_column(ForeignKey("Oyente.correo", ondelete="CASCADE"), primary_key=True)
     Noizzy_id: Mapped[str] = mapped_column(ForeignKey("Noizzy.id", ondelete="CASCADE"), primary_key=True)
     visto: Mapped[bool] = mapped_column(nullable=False)
+    fecha: Mapped[datetime] = mapped_column(nullable=False)
 
     oyente: Mapped["Oyente"] = relationship(back_populates="likes")
     noizzy: Mapped["Noizzy"] = relationship(back_populates="likes")
