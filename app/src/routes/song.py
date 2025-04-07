@@ -11,6 +11,7 @@ from datetime import datetime
 import pytz
 import os
 import cloudinary.uploader
+from .websocket import socketio
 
 
 song_bp = Blueprint('song', __name__)
@@ -446,6 +447,13 @@ def create_cancion():
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
 
         # Websockets para notificacion en tiempo real
+        for seguidor in artista_actual.seguidores:
+            socketio.emit("novedad-musical-ws", {"id": nueva_cancion.id,
+                                                "nombre": nueva_cancion.nombre,
+                                                "fotoPortada": nueva_cancion.album.fotoPortada,
+                                                "nombreArtisticoArtista": nueva_cancion.artista.nombreArtistico,
+                                                "featuring": [f.nombreArtistico for f in nueva_cancion.featuring]}
+                                                , room=seguidor.correo)
 
         return jsonify(""), 201
       

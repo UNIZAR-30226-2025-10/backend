@@ -552,6 +552,9 @@ def change_follow():
         if siguiendo and not siguiendo_entry:
             # Si no lo sigo y siguiendo == True, seguirlo
             usuario_actual.seguidos.append(oyente)
+            """socketio.emit("nuevo-seguidor-ws", {"nombreUsuario": usuario_actual.nombreUsuario if usuario_actual.tipo == "oyente" else usuario_actual.nombreArtistico,
+                                                "fotoPerfil": usuario_actual.fotoPerfil,
+                                                "tipo": usuario_actual.tipo}, room=oyente.correo)"""
 
         elif not siguiendo and siguiendo_entry:
             # Si lo sigo y siguiendo == False, dejar de seguirlo

@@ -131,6 +131,12 @@ def post_noizzito():
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
     
+         # Websockets para notificacion en tiempo real
+        socketio.emit("nueva-interaccion-ws", {"nombreUsuario": new_entry.oyente.nombreUsuario,
+                                                "noizzy": new_entry.id,
+                                                "texto": new_entry.texto}
+                                            , room=new_entry.noizzy.oyente.correo)
+    
     return jsonify(""), 201
 
 
@@ -303,7 +309,14 @@ def post_noizzy():
             socketio.emit("new-noizzy-ws", {"nombreUsuario": usuario_entry.nombreUsuario,
                                             "fotoPerfil": usuario_entry.fotoPerfil,
                                             "tipo": usuario_entry.tipo}, room=seguidor.correo)
+
+        for seguidor in usuario_entry.seguidores:
+            # Emitir el evento de socket con la notificacion
+            socketio.emit("new-noizzy-ws", {"nombreUsuario": usuario_entry.nombreUsuario,
+                                            "fotoPerfil": usuario_entry.fotoPerfil,
+                                            "tipo": usuario_entry.tipo}, room=seguidor.correo)
     
+
     return jsonify(""), 201
             
         
@@ -349,6 +362,13 @@ def change_like():
             db.commit()              
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+        
+        # Websockets para notificacion en tiempo real
+        socketio.emit("nueva-interaccion-ws", {"nombreUsuario": like_entry.oyente.nombreUsuario,
+                                                "noizzy": like_entry.id,
+                                                "texto": like_entry.texto}
+                                                , room=like_entry.noizzy.oyente.correo)
+        
         
     return jsonify(""), 200
 
