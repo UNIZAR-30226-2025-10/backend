@@ -7,7 +7,9 @@ from utils.estadisticas import estadisticas_song
 import pytz
 import cloudinary.uploader
 import os
-from sqlalchemy import select, and_, func
+from sqlalchemy import select, and_, func, insert
+from sqlalchemy.orm import selectinload
+from .websocket import socketio
 
 album_bp = Blueprint('album', __name__)
 
@@ -91,8 +93,9 @@ def create_album():
 
     nombre_album = data.get("nombre_album")
     foto_portada_url = data.get("fotoPortada")
+    notifica = data.get("notificar")
 
-    if not data or not nombre_album or not foto_portada_url:
+    if not data or not nombre_album or not foto_portada_url or notifica is None:
         return jsonify({"error": "Faltan datos del álbum o la canción, o el álbum debe tener al menos una canción."}), 400
 
     with get_db() as db:
@@ -108,8 +111,26 @@ def create_album():
             fecha=datetime.now(pytz.timezone('Europe/Madrid')),
         )
         db.add(nuevo_album)
+
+        if notifica:
+            artista_actual = db.get(Artista, correo_artista, options=[selectinload(Artista.seguidores)])
+            notificaciones = [
+                {"Oyente_correo": seguidor.Seguidor_correo, "Album_id": nuevo_album.id}
+                for seguidor in artista_actual.seguidores
+            ]
+            if notificaciones:
+                db.execute(insert(notificacionAlbum_table), notificaciones)
+
         db.commit()
 
+        if notifica:
+            # Websockets para notificacion en tiempo real
+            for seguidor in artista_actual.seguidores:
+                socketio.emit("novedad-musical-ws", {"id": nuevo_album.id,
+                                                    "nombre": nuevo_album.nombre,
+                                                    "fotoPortada": nuevo_album.fotoPortada,
+                                                    "nombreArtisticoArtista": nuevo_album.artista.nombreArtistico}
+                                                    , room=seguidor.Seguidor_correo)
 
     return jsonify({"message": "Álbum creado exitosamente."}), 201
 
