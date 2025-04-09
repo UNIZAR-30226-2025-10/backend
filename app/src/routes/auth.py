@@ -146,7 +146,7 @@ def register_oyente():
                             contrasenya=contrasenyaHash, fotoPerfil="DEFAULT",
                             volumen=50, tokenVersion=1, sesionActiva=True)
         fav_playlist = Playlist(nombre="Favoritos", fotoPortada="https://res.cloudinary.com/dftnw6kjf/image/upload/v1743687922/FAVORITOS.png", Oyente_correo=correo,
-                                privacidad=False, fecha=datetime.now(pytz.timezone('Europe/Madrid')))
+                                privacidad=True, fecha=datetime.now(pytz.timezone('Europe/Madrid')))
         db.add(oyente) 
         db.add(fav_playlist) 
         try:
@@ -240,7 +240,7 @@ def verify_artista():
                              volumen=50, nombreArtistico=valid_user.nombreArtistico, 
                              biografia=None, tokenVersion=valid_user.tokenVersion, sesionActiva=True) 
         fav_playlist = Playlist(nombre="Favoritos", fotoPortada="https://res.cloudinary.com/dftnw6kjf/image/upload/v1743687922/FAVORITOS.png",
-                                 Oyente_correo=valid_user.correo, privacidad=False, fecha=datetime.now(pytz.timezone('Europe/Madrid')))
+                                 Oyente_correo=valid_user.correo, privacidad=True, fecha=datetime.now(pytz.timezone('Europe/Madrid')))
 
         # Eliminar el usuario de Valido
         db.delete(valid_user)
