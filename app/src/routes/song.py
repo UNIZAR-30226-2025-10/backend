@@ -375,8 +375,9 @@ def create_cancion():
     album_id = data.get("album_id")
     tags = data.get("tags")
     artistasFt = data.get("artistasFt")
+    notificar = data.get("notificar")
 
-    if not nombre or not artista or not album_id or not duracion or not audio_url or not tags or not artistasFt:
+    if not nombre or not artista or not album_id or not duracion or not audio_url or not tags or artistasFt is None or notificar is None:
         return jsonify({
         "error": "Faltan datos de la canción.",
         "nombre": nombre,
@@ -432,13 +433,14 @@ def create_cancion():
             else:
                 return jsonify({"error": f"El artista '{artistaFt}' no existe."}), 404
 
-        artista_actual = db.get(Artista, artista, options=[selectinload(Artista.seguidores)])
-        notificaciones = [
-            {"Oyente_correo": seguidor.Seguidor_correo, "Cancion_id": nueva_cancion.id}
-            for seguidor in artista_actual.seguidores
-        ]
-        if notificaciones:
-            db.execute(insert(notificacionCancion_table), notificaciones)
+        if notificar:
+            artista_actual = db.get(Artista, artista, options=[selectinload(Artista.seguidores)])
+            notificaciones = [
+                {"Oyente_correo": seguidor.Seguidor_correo, "Cancion_id": nueva_cancion.id}
+                for seguidor in artista_actual.seguidores
+            ]
+            if notificaciones:
+                db.execute(insert(notificacionCancion_table), notificaciones)
 
         try:
             db.commit()
@@ -446,14 +448,15 @@ def create_cancion():
             db.rollback()
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
 
-        # Websockets para notificacion en tiempo real
-        for seguidor in artista_actual.seguidores:
-            socketio.emit("novedad-musical-ws", {"id": nueva_cancion.id,
-                                                "nombre": nueva_cancion.nombre,
-                                                "fotoPortada": nueva_cancion.album.fotoPortada,
-                                                "nombreArtisticoArtista": nueva_cancion.artista.nombreArtistico,
-                                                "featuring": [f.nombreArtistico for f in nueva_cancion.featuring]}
-                                                , room=seguidor.Seguidor_correo)
+        if notificar:
+            # Websockets para notificacion en tiempo real
+            for seguidor in artista_actual.seguidores:
+                socketio.emit("novedad-musical-ws", {"id": nueva_cancion.id,
+                                                    "nombre": nueva_cancion.nombre,
+                                                    "fotoPortada": nueva_cancion.album.fotoPortada,
+                                                    "nombreArtisticoArtista": nueva_cancion.artista.nombreArtistico,
+                                                    "featuring": [f.nombreArtistico for f in nueva_cancion.featuring]}
+                                                    , room=seguidor.Seguidor_correo)
 
         return jsonify(""), 201
       
