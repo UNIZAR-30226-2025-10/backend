@@ -370,10 +370,10 @@ def change_like():
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
         
         # Websockets para notificacion en tiempo real
-        if correo != like_entry.noizzy.oyente.correo:
+        if like and correo != like_entry.noizzy.oyente.correo:
             socketio.emit("nueva-interaccion-ws", {"nombreUsuario": like_entry.oyente.nombreUsuario,
-                                                    "noizzy": like_entry.id,
-                                                    "texto": like_entry.texto}
+                                                    "noizzy": like_entry.noizzy.id,
+                                                    "texto": like_entry.noizzy.texto}
                                                     , room=like_entry.noizzy.oyente.correo)
         
         
