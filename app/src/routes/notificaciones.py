@@ -18,42 +18,51 @@ def has_notificaciones():
     correo = get_jwt_identity()
 
     with get_db() as db:
-        # Hay NotificacionCancion?
-        notif_cancion = db.query(
-            exists().where(notificacionCancion_table.c.Oyente_correo == correo)
+        # Notificación de canción
+        notif_cancion = db.execute(
+            select(exists().where(notificacionCancion_table.c.Oyente_correo == correo))
         ).scalar()
 
-        # Hay NotificacionAlbum?
-        notif_album = db.query(
-            exists().where(notificacionAlbum_table.c.Oyente_correo == correo)
+        # Notificación de álbum
+        notif_album = db.execute(
+            select(exists().where(notificacionAlbum_table.c.Oyente_correo == correo))
         ).scalar()
 
-        # Hay invitaciones a playlist?
-        invitado_playlist = db.query(
-            exists().where(invitado_table.c.Oyente_correo == correo)
+        # Invitaciones a playlist
+        invitado_playlist = db.execute(
+            select(exists().where(invitado_table.c.Oyente_correo == correo))
         ).scalar()
 
-        # Hay Like no visto?
-        like_no_visto = db.query(
-            exists().where(
-                (Like.Oyente_correo == correo) &
-                (Like.visto == False)
-            )
+        # Likes no vistos
+        like_no_visto = db.execute(
+            select(exists().where(
+                (Like.visto == False) &
+                (Like.Noizzy_id == Noizzy.id) &
+                (Noizzy.Oyente_correo == correo)
+            ))
         ).scalar()
 
-        # Hay Noizzito no visto cuyo Noizzy pertenece al oyente?
-        noizzito_no_visto = db.query(
-            exists().where(
+        # Noizzitos no vistos cuyo Noizzy pertenece al oyente
+        noizzito_no_visto = db.execute(
+            select(exists().where(
                 (Noizzito.visto == False) &
                 (Noizzito.Noizzy_id == Noizzy.id) &
                 (Noizzy.Oyente_correo == correo)
-            )
+            ))
+        ).scalar()
+
+        # Nuevos seguidores no vistos
+        seguidor_no_visto = db.execute(
+            select(exists().where(
+                (Sigue.visto == False) &
+                (Sigue.Seguido_correo == correo)
+            ))
         ).scalar()
 
         return jsonify({"invitaciones": invitado_playlist,
                         "novedades-musicales": notif_album or notif_cancion,
                         "interacciones": like_no_visto or noizzito_no_visto,
-                        "seguidores": False}), 200
+                        "seguidores": seguidor_no_visto}), 200
 
 
 """Devuelve una lista con las notificaciones de novedades musicales """
@@ -271,8 +280,8 @@ def get_interacciones():
             if respuestas[i].fecha > likes[j].fecha:
                 resultado.append({
                     "nombreUsuario": respuestas[i].oyente.nombreUsuario,
-                    "noizzy": respuestas[i].id,
-                    "texto": respuestas[i].texto,
+                    "noizzy": respuestas[i].noizzy.id,
+                    "texto": respuestas[i].noizzy.texto,
                     "tipo": "respuesta"
                 })
                 i += 1
@@ -296,8 +305,8 @@ def get_interacciones():
         for l in likes[j:]:
             resultado.append({
                     "nombreUsuario": l.oyente.nombreUsuario,
-                    "noizzy": l.id,
-                    "texto": l.texto,
+                    "noizzy": l.noizzy.id,
+                    "texto": l.noizzy.texto,
                     "tipo": "like"
                 })
 

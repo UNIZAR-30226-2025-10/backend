@@ -351,7 +351,7 @@ def change_like():
         
         if like and not like_entry:
             # Si no le he dado like y like == True, darle like
-            like_entry = Like(Oyente_correo=correo, Noizzy_id=noizzy, visto=False)
+            like_entry = Like(Oyente_correo=correo, Noizzy_id=noizzy, visto=False, fecha=datetime.now(pytz.timezone('Europe/Madrid')))
             db.add(like_entry)
 
         elif not like and like_entry:
