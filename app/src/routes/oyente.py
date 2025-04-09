@@ -37,16 +37,34 @@ def get_datos_oyente():
     correo_actual = get_jwt_identity()
     
     with get_db() as db:
-        Seguidor = aliased(Sigue)
-        Seguido = aliased(Sigue)
-        stmt_oyente = (select(Oyente, func.count(Seguidor.Seguidor_correo).label("num_seguidores"), func.count(Seguido.Seguido_correo).label("num_seguidos")
-                ).outerjoin(Seguidor, Seguidor.Seguido_correo == Oyente.correo
-                ).outerjoin(Seguido, Seguido.Seguidor_correo == Oyente.correo
-                ).where(Oyente.nombreUsuario == nombre_usuario
-                ).group_by(Oyente.correo))
-        oyente, num_seguidores, num_seguidos = db.execute(stmt_oyente).one_or_none()
-        if not oyente:
+        subq_seguidores = (
+            select(func.count())
+            .select_from(Sigue)
+            .where(Sigue.Seguido_correo == Oyente.correo)
+            .scalar_subquery()
+        )
+
+        subq_seguidos = (
+            select(func.count())
+            .select_from(Sigue)
+            .where(Sigue.Seguidor_correo == Oyente.correo)
+            .scalar_subquery()
+        )
+
+        stmt_oyente = (
+            select(
+                Oyente,
+                subq_seguidores.label("num_seguidores"),
+                subq_seguidos.label("num_seguidos")
+            )
+            .where(Oyente.nombreUsuario == nombre_usuario)
+        )
+
+        result = db.execute(stmt_oyente).one_or_none()
+        if not result:
             return jsonify({"error": "El oyente no existe."}), 404
+
+        oyente, num_seguidores, num_seguidos = result
         
         stmt = select(exists(select(Sigue).where(and_(Sigue.Seguidor_correo == correo_actual, Sigue.Seguido_correo == oyente.correo))))
         siguiendo = db.execute(stmt).scalar_one()
@@ -105,14 +123,34 @@ def get_mis_datos_oyente():
     correo = get_jwt_identity()
     
     with get_db() as db:
-        Seguidor = aliased(Sigue)
-        Seguido = aliased(Sigue)
-        stmt_oyente = (select(Oyente, func.count(Seguidor.Seguidor_correo).label("num_seguidores"), func.count(Seguido.Seguido_correo).label("num_seguidos")
-                ).outerjoin(Seguidor, Seguidor.Seguido_correo == Oyente.correo
-                ).outerjoin(Seguido, Seguido.Seguidor_correo == Oyente.correo
-                ).where(Oyente.correo == correo
-                ).group_by(Oyente.correo))
-        oyente, num_seguidores, num_seguidos = db.execute(stmt_oyente).one_or_none()
+        subq_seguidores = (
+            select(func.count())
+            .select_from(Sigue)
+            .where(Sigue.Seguido_correo == Oyente.correo)
+            .scalar_subquery()
+        )
+
+        subq_seguidos = (
+            select(func.count())
+            .select_from(Sigue)
+            .where(Sigue.Seguidor_correo == Oyente.correo)
+            .scalar_subquery()
+        )
+
+        stmt_oyente = (
+            select(
+                Oyente,
+                subq_seguidores.label("num_seguidores"),
+                subq_seguidos.label("num_seguidos")
+            )
+            .where(Oyente.correo == correo)
+        )
+
+        result = db.execute(stmt_oyente).one_or_none()
+        if not result:
+            return jsonify({"error": "El oyente no existe."}), 404
+
+        oyente, num_seguidores, num_seguidos = result
         
         return jsonify({
             "nombreUsuario": oyente.nombreUsuario,

@@ -30,16 +30,34 @@ def get_datos_artista():
     correo_actual = get_jwt_identity()
     
     with get_db() as db:
-        Seguidor = aliased(Sigue)
-        Seguido = aliased(Sigue)
-        stmt_artista = (select(Artista, func.count(Seguidor.Seguidor_correo).label("num_seguidores"), func.count(Seguido.Seguido_correo).label("num_seguidos")
-                ).outerjoin(Seguidor, Seguidor.Seguido_correo == Artista.correo
-                ).outerjoin(Seguido, Seguido.Seguidor_correo == Artista.correo
-                ).where(Artista.nombreUsuario == nombre_usuario
-                ).group_by(Artista.correo))
-        artista, num_seguidores, num_seguidos = db.execute(stmt_artista).one_or_none()
-        if not artista:
+        subq_seguidores = (
+            select(func.count())
+            .select_from(Sigue)
+            .where(Sigue.Seguido_correo == Artista.correo)
+            .scalar_subquery()
+        )
+
+        subq_seguidos = (
+            select(func.count())
+            .select_from(Sigue)
+            .where(Sigue.Seguidor_correo == Artista.correo)
+            .scalar_subquery()
+        )
+
+        stmt_artista = (
+            select(
+                Artista,
+                subq_seguidores.label("num_seguidores"),
+                subq_seguidos.label("num_seguidos")
+            )
+            .where(Artista.nombreUsuario == nombre_usuario)
+        )
+
+        artista_result = db.execute(stmt_artista).one_or_none()
+        if not artista_result:
             return jsonify({"error": "El artista no existe."}), 404
+
+        artista, num_seguidores, num_seguidos = artista_result
         
         stmt = select(exists(select(Sigue).where(and_(Sigue.Seguidor_correo == correo_actual, Sigue.Seguido_correo == artista.correo))))
         siguiendo = db.execute(stmt).scalar_one()
@@ -61,18 +79,35 @@ def get_datos_artista():
 def get_mis_datos_artista():
     correo = get_jwt_identity()
     
-    with get_db() as db: 
-        Seguidor = aliased(Sigue)
-        Seguido = aliased(Sigue)
-        stmt_artista = (select(Artista, func.count(Seguidor.Seguidor_correo).label("num_seguidores"), func.count(Seguido.Seguido_correo).label("num_seguidos")
-                ).outerjoin(Seguidor, Seguidor.Seguido_correo == Artista.correo
-                ).outerjoin(Seguido, Seguido.Seguidor_correo == Artista.correo
-                ).where(Artista.correo == correo
-                ).group_by(Artista.correo))
-        artista, num_seguidores, num_seguidos = db.execute(stmt_artista).one_or_none()
-        artista = db.get(Artista, correo)
-        if not artista:
+    with get_db() as db:
+        subq_seguidores = (
+            select(func.count())
+            .select_from(Sigue)
+            .where(Sigue.Seguido_correo == Artista.correo)
+            .scalar_subquery()
+        )
+
+        subq_seguidos = (
+            select(func.count())
+            .select_from(Sigue)
+            .where(Sigue.Seguidor_correo == Artista.correo)
+            .scalar_subquery()
+        )
+
+        stmt_artista = (
+            select(
+                Artista,
+                subq_seguidores.label("num_seguidores"),
+                subq_seguidos.label("num_seguidos")
+            )
+            .where(Artista.correo == correo)
+        )
+
+        artista_result = db.execute(stmt_artista).one_or_none()
+        if not artista_result:
             return jsonify({"error": "El artista no existe."}), 404
+
+        artista, num_seguidores, num_seguidos = artista_result
         
         return jsonify({
             "nombre":artista.nombreUsuario,
