@@ -434,7 +434,7 @@ def create_cancion():
 
         artista_actual = db.get(Artista, artista, options=[selectinload(Artista.seguidores)])
         notificaciones = [
-            {"Oyente_correo": seguidor.correo, "Cancion_id": nueva_cancion.id}
+            {"Oyente_correo": seguidor.Seguidor_correo, "Cancion_id": nueva_cancion.id}
             for seguidor in artista_actual.seguidores
         ]
         if notificaciones:
@@ -453,7 +453,7 @@ def create_cancion():
                                                 "fotoPortada": nueva_cancion.album.fotoPortada,
                                                 "nombreArtisticoArtista": nueva_cancion.artista.nombreArtistico,
                                                 "featuring": [f.nombreArtistico for f in nueva_cancion.featuring]}
-                                                , room=seguidor.correo)
+                                                , room=seguidor.Seguidor_correo)
 
         return jsonify(""), 201
       

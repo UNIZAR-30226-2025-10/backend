@@ -1,7 +1,7 @@
 from datetime import datetime
 import pytz
 from utils.decorators import roles_required, tokenVersion_required
-from db.models import Noizzy, Noizzito, Like, Artista, Coleccion, Cancion, Oyente, sin_leer_table, sigue_table, Usuario
+from db.models import Noizzy, Noizzito, Like, Artista, Coleccion, Cancion, Oyente, sin_leer_table, Sigue, Usuario
 from db.db import get_db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import Blueprint, request, jsonify
@@ -41,6 +41,7 @@ def get_datos_noizzy():
         noizzy = db.execute(stmt).first()
         if noizzy:
             result = {
+                "fotoPerfil": noizzy[9].fotoPerfil,
                 "nombreUsuario": noizzy[9].nombreUsuario if noizzy[9].tipo == "oyente" else noizzy[9].nombreArtistico,
                 "fecha": noizzy[1].strftime("%d %m %Y %H %M"),
                 "texto": noizzy[2],
@@ -78,6 +79,7 @@ def get_datos_noizzy():
         noizzitos = [
             {
                 "nombreUsuario": row[9].nombreUsuario if row[9].tipo == "oyente" else row[9].nombreArtistico,
+                "fotoPerfil": row[9].fotoPerfil,
                 "fecha": row[1].strftime("%d %m %y %H %M"),
                 "id": row[0],
                 "texto": row[2],
@@ -131,11 +133,12 @@ def post_noizzito():
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
     
-         # Websockets para notificacion en tiempo real
-        socketio.emit("nueva-interaccion-ws", {"nombreUsuario": new_entry.oyente.nombreUsuario,
-                                                "noizzy": new_entry.id,
-                                                "texto": new_entry.texto}
-                                            , room=new_entry.noizzy.oyente.correo)
+        # Websockets para notificacion en tiempo real
+        if correo != new_entry.noizzy.oyente.correo:
+            socketio.emit("nueva-interaccion-ws", {"nombreUsuario": new_entry.oyente.nombreUsuario,
+                                                    "noizzy": new_entry.id,
+                                                    "texto": new_entry.texto}
+                                                , room=new_entry.noizzy.oyente.correo)
     
     return jsonify(""), 201
 
@@ -207,6 +210,7 @@ def get_noizzys():
         noizzys_dict = [
             {
                 "nombreUsuario": nombreUsuario if oyente.tipo == "oyente" else oyente.nombreArtistico,
+                "fotoPerfil": oyente.fotoPerfil,
                 "fecha": row[1].strftime("%d %m %y %H %M"),
                 "id": row[0],
                 "texto": row[2],
@@ -252,6 +256,7 @@ def get_mis_noizzys():
         noizzys_dict = [
             {
                 "nombreUsuario": usuario_entry.nombreUsuario if usuario_entry.tipo == "oyente" else usuario_entry.nombreArtistico,
+                "fotoPerfil": usuario_entry.fotoPerfil,
                 "fecha": row[1].strftime("%d %m %y %H %M"),
                 "id": row[0],
                 "texto": row[2],
@@ -291,11 +296,13 @@ def post_noizzy():
         db.add(noizzy)
         db.flush()
 
-        usuario_entry = db.get(Oyente, correo, options=[selectinload(Oyente.seguidores)])
+        seguidores_entry = db.get(Oyente, correo, options=[selectinload(Oyente.seguidores)])
+
         notificaciones = [
-            {"Oyente_correo": seguidor.correo, "Noizzy_id": noizzy.id}
-            for seguidor in usuario_entry.seguidores
+            {"Oyente_correo": seguidor.Seguidor_correo, "Noizzy_id": noizzy.id}
+            for seguidor in seguidores_entry.seguidores
         ]
+
         if notificaciones:
             db.execute(insert(sin_leer_table), notificaciones)
 
@@ -304,18 +311,17 @@ def post_noizzy():
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
         
-        for seguidor in usuario_entry.seguidores:
-            # Emitir el evento de socket con la notificacion
-            socketio.emit("new-noizzy-ws", {"nombreUsuario": usuario_entry.nombreUsuario,
-                                            "fotoPerfil": usuario_entry.fotoPerfil,
-                                            "tipo": usuario_entry.tipo}, room=seguidor.correo)
+        stmt = (select(Oyente)
+            .join(Sigue, Oyente.correo == Sigue.Seguidor_correo)
+            .where(Sigue.Seguido_correo == correo))
 
-        for seguidor in usuario_entry.seguidores:
+        seguidores_oyentes = db.execute(stmt).scalars().all()
+
+        for seguidor in seguidores_oyentes:
             # Emitir el evento de socket con la notificacion
-            socketio.emit("new-noizzy-ws", {"nombreUsuario": usuario_entry.nombreUsuario,
-                                            "fotoPerfil": usuario_entry.fotoPerfil,
-                                            "tipo": usuario_entry.tipo}, room=seguidor.correo)
-    
+            socketio.emit("new-noizzy-ws", {"nombreUsuario": seguidor.nombreUsuario,
+                                            "fotoPerfil": seguidor.fotoPerfil,
+                                            "tipo": seguidor.tipo}, room=seguidor.correo)    
 
     return jsonify(""), 201
             
@@ -364,10 +370,11 @@ def change_like():
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
         
         # Websockets para notificacion en tiempo real
-        socketio.emit("nueva-interaccion-ws", {"nombreUsuario": like_entry.oyente.nombreUsuario,
-                                                "noizzy": like_entry.id,
-                                                "texto": like_entry.texto}
-                                                , room=like_entry.noizzy.oyente.correo)
+        if correo != like_entry.noizzy.oyente.correo:
+            socketio.emit("nueva-interaccion-ws", {"nombreUsuario": like_entry.oyente.nombreUsuario,
+                                                    "noizzy": like_entry.id,
+                                                    "texto": like_entry.texto}
+                                                    , room=like_entry.noizzy.oyente.correo)
         
         
     return jsonify(""), 200
@@ -435,10 +442,10 @@ def get_actividad_seguidos():
         stmt = select(Oyente, 
                       exists(sin_leer_subq).label("sin_leer"),
                       ultimo_noizzy_subq.label("ultimo_noizzy_fecha")
-            ).join(sigue_table, sigue_table.c.Seguido_correo == Oyente.correo
-            ).where(sigue_table.c.Seguidor_correo == correo
+            ).join(Sigue, Sigue.Seguido_correo == Oyente.correo
+            ).where(Sigue.Seguidor_correo == correo
             ).order_by(case((exists(sin_leer_subq), 1), else_=2),
-                       desc("ultimo_noizzy_fecha")
+                       desc("ultimo_noizzy_fecha"), desc(Sigue.fecha) 
             ).limit(30)
         
         seguidos = db.execute(stmt)

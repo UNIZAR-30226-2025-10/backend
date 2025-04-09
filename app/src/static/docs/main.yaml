@@ -179,6 +179,10 @@ paths:
     $ref: "/static/docs/paths/notificaciones/has-notificaciones.yaml"
   /get-novedades-musicales:
     $ref: "/static/docs/paths/notificaciones/get-novedades-musicales.yaml"
+  /read-nuevo-seguidor:
+    $ref: "/static/docs/paths/notificaciones/read-nuevo-seguidor.yaml"
+  /get-nuevos-seguidores:
+    $ref: "/static/docs/paths/notificaciones/get-nuevos-seguidores.yaml"
 
 components:
   securitySchemes:

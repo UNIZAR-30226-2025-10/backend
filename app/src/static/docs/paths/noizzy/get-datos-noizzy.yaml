@@ -23,6 +23,9 @@ get:
               id:
                 type: integer
                 description: ID del Noizzy
+              fotoPerfil:
+                      type: string
+                      description: Foto de perfil del usuario propietario del noizzy
               fecha:
                 type: string
                 format: date-time
@@ -61,6 +64,9 @@ get:
                     id:
                       type: integer
                       description: ID del Noizzito
+                    fotoPerfil:
+                      type: string
+                      description: Foto de perfil del usuario propietario del noizzy
                     fecha:
                       type: string
                       format: date-time

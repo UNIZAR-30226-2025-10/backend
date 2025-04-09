@@ -28,6 +28,9 @@ get:
                     id:
                       type: integer
                       description: ID del noizzy
+                    fotoPerfil:
+                      type: string
+                      description: Foto de perfil del usuario propietario del noizzy
                     fecha:
                       type: string
                       description: Fecha de creación del noizzy en formato dd mm yy HH MM
@@ -62,6 +65,7 @@ get:
           example:
             noizzys:
               - id: 1
+                fotoPerfil: "https://example.com/foto.jpg"
                 fecha: "02 04 25 18 36"
                 texto: "Me encanta esta canción!"
                 num_likes: 10
