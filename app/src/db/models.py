@@ -6,14 +6,6 @@ from sqlalchemy.types import JSON
 class Base(DeclarativeBase):
     pass
 
-# Tabla intermedia para 'Sigue'
-sigue_table = Table(
-    "Sigue", Base.metadata,
-    Column("Seguidor_correo", String, ForeignKey("Oyente.correo", ondelete="CASCADE"), primary_key=True),
-    Column("Seguido_correo", String, ForeignKey("Oyente.correo", ondelete="CASCADE"), primary_key=True),
-    CheckConstraint("Seguidor_correo != Seguido_correo", name="chk_noAutoSeguimiento")
-)
-
 # Tabla intermedia para 'Participante'
 participante_table = Table(
     "Participante", Base.metadata,
@@ -150,6 +142,23 @@ class ContraReset(Base):
     Usuario_correo: Mapped[str] = mapped_column(ForeignKey("Usuario.correo", ondelete="CASCADE"), primary_key=True)
     codigo: Mapped[str] = mapped_column(nullable=False)
 
+# Tabla intermedia para 'Sigue'
+class Sigue(Base):
+    __tablename__ = "Sigue"
+    
+    Seguidor_correo: Mapped[str] = mapped_column(ForeignKey("Oyente.correo", ondelete="CASCADE"), primary_key=True)
+    Seguido_correo: Mapped[str] = mapped_column(ForeignKey("Oyente.correo", ondelete="CASCADE"), primary_key=True)
+    visto: Mapped[bool] = mapped_column(nullable=False)
+    fecha: Mapped[datetime] = mapped_column(nullable=False)
+
+    # Restricciones a nivel de BD
+    __table_args__ = (
+        CheckConstraint("Seguidor_correo != Seguido_correo", name='chk_noAutoSeguimiento'),
+    )
+
+    seguidor = relationship("Oyente", foreign_keys=[Seguidor_correo], back_populates="seguidos")
+    seguido = relationship("Oyente", foreign_keys=[Seguido_correo], back_populates="seguidores")
+
 # Entidad Usuario
 class Usuario(Base):
     __tablename__ = "Usuario"
@@ -160,7 +169,6 @@ class Usuario(Base):
     tokenVersion: Mapped[int] = mapped_column(nullable=False)
     tipo: Mapped[str] = mapped_column(nullable=False)
     sesionActiva: Mapped[bool] = mapped_column(nullable=False)
-    
 
     # Parametros de herencia
     __mapper_args__ = {
@@ -228,12 +236,10 @@ class Oyente(Usuario):
     playlists: Mapped[list["Playlist"]] = relationship(back_populates="oyente", cascade="all, delete-orphan")
 
     # Relacion "Seguidos" y "Seguidores"
-    seguidos: Mapped[list["Oyente"]] = relationship(
-        secondary=sigue_table,
-        primaryjoin=correo == sigue_table.c.Seguidor_correo,  # El usuario actual es el seguidor
-        secondaryjoin=correo == sigue_table.c.Seguido_correo,  # Se une con los usuarios seguidos
-        backref="seguidores", passive_deletes=True
-    )
+    seguidos = relationship("Sigue", foreign_keys="[Sigue.Seguidor_correo]", back_populates="seguidor", 
+        cascade="all, delete-orphan")
+    seguidores = relationship("Sigue", foreign_keys="[Sigue.Seguido_correo]", back_populates="seguido",
+        cascade="all, delete-orphan")
 
     # Relacion "Participante" con Playlist (N a M)
     participante: Mapped[list["Playlist"]] = relationship(secondary=participante_table, back_populates="participantes",

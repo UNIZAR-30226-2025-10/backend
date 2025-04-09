@@ -7,7 +7,12 @@ from utils.decorators import roles_required, tokenVersion_required
 from utils.hash import hash, verify
 from utils.recommendation import obtener_recomendaciones
 import cloudinary.uploader
+from sqlalchemy import select, and_, func, exists
+from sqlalchemy.orm import aliased
 import os
+from .websocket import socketio
+from datetime import datetime
+import pytz
 
 oyente_bp = Blueprint('oyente', __name__)
 
@@ -32,12 +37,19 @@ def get_datos_oyente():
     correo_actual = get_jwt_identity()
     
     with get_db() as db:
-        oyente = db.query(Oyente).filter_by(nombreUsuario=nombre_usuario).first()
+        Seguidor = aliased(Sigue)
+        Seguido = aliased(Sigue)
+        stmt_oyente = (select(Oyente, func.count(Seguidor.Seguidor_correo).label("num_seguidores"), func.count(Seguido.Seguido_correo).label("num_seguidos")
+                ).outerjoin(Seguidor, Seguidor.Seguido_correo == Oyente.correo
+                ).outerjoin(Seguido, Seguido.Seguidor_correo == Oyente.correo
+                ).where(Oyente.nombreUsuario == nombre_usuario
+                ).group_by(Oyente.correo))
+        oyente, num_seguidores, num_seguidos = db.execute(stmt_oyente).one_or_none()
         if not oyente:
             return jsonify({"error": "El oyente no existe."}), 404
         
-        usuario_actual = db.get(Oyente, correo_actual)
-        siguiendo = usuario_actual in oyente.seguidores if usuario_actual else False
+        stmt = select(exists(select(Sigue).where(and_(Sigue.Seguidor_correo == correo_actual, Sigue.Seguido_correo == oyente.correo))))
+        siguiendo = db.execute(stmt).scalar_one()
         
         subquery_num_comentarios = (select(func.count(Noizzito.id))
                                     .where(Noizzito.Noizzy_id == Noizzy.id)
@@ -75,8 +87,8 @@ def get_datos_oyente():
         return jsonify({
             "oyente": {
                 "nombreUsuario": oyente.nombreUsuario,
-                "numSeguidos": len(oyente.seguidos),
-                "numSeguidores": len(oyente.seguidores),
+                "numSeguidos": num_seguidos,
+                "numSeguidores": num_seguidores,
                 "siguiendo": siguiendo,
                 "fotoPerfil": oyente.fotoPerfil
             },
@@ -93,14 +105,19 @@ def get_mis_datos_oyente():
     correo = get_jwt_identity()
     
     with get_db() as db:
-        oyente = db.get(Oyente, correo)
-        if not oyente:
-            return jsonify({"error": "El oyente no existe"}), 401
+        Seguidor = aliased(Sigue)
+        Seguido = aliased(Sigue)
+        stmt_oyente = (select(Oyente, func.count(Seguidor.Seguidor_correo).label("num_seguidores"), func.count(Seguido.Seguido_correo).label("num_seguidos")
+                ).outerjoin(Seguidor, Seguidor.Seguido_correo == Oyente.correo
+                ).outerjoin(Seguido, Seguido.Seguidor_correo == Oyente.correo
+                ).where(Oyente.correo == correo
+                ).group_by(Oyente.correo))
+        oyente, num_seguidores, num_seguidos = db.execute(stmt_oyente).one_or_none()
         
         return jsonify({
             "nombreUsuario": oyente.nombreUsuario,
-            "numSeguidos": len(oyente.seguidos),  
-            "numSeguidores": len(oyente.seguidores),
+            "numSeguidos": num_seguidos,  
+            "numSeguidores": num_seguidores,
             "fotoPerfil": oyente.fotoPerfil  
             }), 200
 
@@ -114,9 +131,10 @@ def get_mis_seguidos():
     correo = get_jwt_identity()  
 
     with get_db() as db:
-        oyente_entry = db.get(Oyente, correo)
-        if not oyente_entry:
-            return jsonify({"error": "Correo no existe."}), 401
+        stmt = select(Oyente
+                    ).join(Sigue, Sigue.Seguido_correo == Oyente.correo
+                    ).where(Sigue.Seguidor_correo == correo
+                    ).order_by(desc(Sigue.fecha))
 
         seguidos = [
             {
@@ -124,7 +142,7 @@ def get_mis_seguidos():
                 "fotoPerfil": s.fotoPerfil,
                 "tipo": s.tipo
             }
-            for s in oyente_entry.seguidos[:30]
+            for s in db.execute(stmt).scalars().all()
         ]
 
     return jsonify({"seguidos": seguidos}), 200
@@ -141,10 +159,11 @@ def get_mis_seguidores():
     with get_db() as db:
         stmt = select(Oyente.nombreUsuario, Oyente.fotoPerfil, Oyente.tipo,
                       exists(select(literal(True)
-                                    ).select_from(sigue_table).where(and_(sigue_table.c.Seguidor_correo == correo,
-                                                 sigue_table.c.Seguido_correo == Usuario.correo)).correlate(Usuario)).label("followBack")
-                     ).join(sigue_table, sigue_table.c.Seguidor_correo == Oyente.correo
-                     ).where(sigue_table.c.Seguido_correo == correo)
+                                    ).select_from(Sigue).where(and_(Sigue.Seguidor_correo == correo,
+                                                 Sigue.Seguido_correo == Usuario.correo)).correlate(Usuario)).label("followBack")
+                     ).join(Sigue, Sigue.Seguidor_correo == Oyente.correo
+                     ).where(Sigue.Seguido_correo == correo
+                     ).order_by(desc(Sigue.fecha))
         seguidores = db.execute(stmt).all()
 
         seguidores_dict = [
@@ -159,13 +178,6 @@ def get_mis_seguidores():
 
     return jsonify({"seguidores": seguidores_dict}), 200
 
-"""
-SELECT "Usuario"."nombreUsuario", "Oyente"."fotoPerfil", "Usuario".tipo, EXISTS 
-    (SELECT 1
-    FROM "Sigue"
-    WHERE "Sigue"."Seguidor_correo" = ruben@gmail.com AND "Sigue"."Seguido_correo" = "Oyente".correo) AS "followBack"
-FROM "Usuario" JOIN "Oyente" ON "Usuario".correo = "Oyente".correo JOIN "Sigue" ON "Sigue"."Seguidor_correo" = "Oyente".correo
-WHERE "Sigue"."Seguido_correo" = ruben@gmail.com"""
 
 """Devuelve una lista con los seguidos del usuario con nombre dado"""
 @oyente_bp.route('/get-seguidos', methods=['GET'])
@@ -178,9 +190,14 @@ def get_seguidos():
         return jsonify({"error": "Falta el nombreUsuario del usuario."}), 400
     
     with get_db() as db:
-        oyente = db.query(Oyente).filter_by(nombreUsuario=nombre_usuario).first()
+        oyente = db.execute(select(Oyente).filter_by(nombreUsuario=nombre_usuario)).scalar_one_or_none()
         if not oyente:
             return jsonify({"error": "El oyente no existe."}), 404
+
+        stmt = select(Oyente
+                    ).join(Sigue, Sigue.Seguido_correo == Oyente.correo
+                    ).where(Sigue.Seguidor_correo == oyente.correo
+                    ).order_by(desc(Sigue.fecha))
 
         seguidos = [
             {
@@ -188,7 +205,7 @@ def get_seguidos():
                 "fotoPerfil": s.fotoPerfil,
                 "tipo": s.tipo
             }
-            for s in oyente.seguidos[:30]
+            for s in db.execute(stmt).scalars().all()
         ]
 
     return jsonify({"seguidos": seguidos}), 200
@@ -205,17 +222,22 @@ def get_seguidores():
         return jsonify({"error": "Falta el nombreUsuario del usuario."}), 400
     
     with get_db() as db:
-        oyente = db.query(Oyente).filter_by(nombreUsuario=nombre_usuario).first()
+        oyente = db.execute(select(Oyente).filter_by(nombreUsuario=nombre_usuario)).scalar_one_or_none()
         if not oyente:
             return jsonify({"error": "El oyente no existe."}), 404
-
+        
+        stmt = select(Oyente
+                    ).join(Sigue, Sigue.Seguidor_correo == Oyente.correo
+                    ).where(Sigue.Seguido_correo == oyente.correo
+                    ).order_by(desc(Sigue.fecha))
+        
         seguidores = [
             {
                 "nombreUsuario": s.nombreUsuario,
                 "fotoPerfil": s.fotoPerfil,
                 "tipo": s.tipo
             }
-            for s in oyente.seguidores[:30]
+            for s in db.execute(stmt).scalars().all()
         ]
 
     return jsonify({"seguidores": seguidores}), 200
@@ -542,23 +564,21 @@ def change_follow():
         return jsonify({"error": "Faltan campos en la peticion."}), 400
     
     with get_db() as db:
-        oyente = db.query(Oyente).filter_by(nombreUsuario=nombreUsuario).first()
+        oyente = db.execute(select(Oyente).filter_by(nombreUsuario=nombreUsuario)).scalar_one_or_none()
         if not oyente:
             return jsonify({"error": "El oyente no existe."}), 404
         
-        usuario_actual = db.get(Oyente, correo)
-        siguiendo_entry = usuario_actual in oyente.seguidores if usuario_actual else False
+        stmt = select(exists(select(Sigue).where(and_(Sigue.Seguidor_correo == correo, Sigue.Seguido_correo == oyente.correo))))
+        siguiendo_entry = db.execute(stmt).scalar_one()
         
         if siguiendo and not siguiendo_entry:
             # Si no lo sigo y siguiendo == True, seguirlo
-            usuario_actual.seguidos.append(oyente)
-            """socketio.emit("nuevo-seguidor-ws", {"nombreUsuario": usuario_actual.nombreUsuario if usuario_actual.tipo == "oyente" else usuario_actual.nombreArtistico,
-                                                "fotoPerfil": usuario_actual.fotoPerfil,
-                                                "tipo": usuario_actual.tipo}, room=oyente.correo)"""
+            siguiendo_entry = Sigue(Seguidor_correo=correo , Seguido_correo=oyente.correo , visto=False, fecha=datetime.now(pytz.timezone('Europe/Madrid')))
+            db.add(siguiendo_entry)
 
         elif not siguiendo and siguiendo_entry:
             # Si lo sigo y siguiendo == False, dejar de seguirlo
-            usuario_actual.seguidos.remove(oyente)
+            db.delete(siguiendo_entry)
 
         elif siguiendo_entry:
             return jsonify({"error": "Ya sigues a este usuario."}), 409
@@ -570,5 +590,11 @@ def change_follow():
             db.commit()              
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
-    
+
+        if siguiendo:
+            usuario_actual = db.get(Oyente, correo)
+            socketio.emit("nuevo-seguidor-ws", {"nombreUsuario": usuario_actual.nombreUsuario if usuario_actual.tipo == "oyente" else usuario_actual.nombreArtistico,
+                                                "fotoPerfil": usuario_actual.fotoPerfil,
+                                                "tipo": usuario_actual.tipo}, room=oyente.correo)
+
     return jsonify(""), 200

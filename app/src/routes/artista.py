@@ -1,9 +1,10 @@
 from utils.decorators import roles_required, tokenVersion_required
-from db.models import Oyente, Artista, Noizzy, Noizzito, Like, Coleccion, Cancion, Playlist, EsParteDePlaylist, Album, featuring_table
+from db.models import Oyente, Artista, Cancion, Playlist, EsParteDePlaylist, Album, featuring_table, Sigue
 from db.db import get_db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import Blueprint, request, jsonify
-from sqlalchemy import select, and_, func
+from sqlalchemy import select, and_, func, exists
+from sqlalchemy.orm import aliased
 import cloudinary.uploader
 import os
 
@@ -29,24 +30,27 @@ def get_datos_artista():
     correo_actual = get_jwt_identity()
     
     with get_db() as db:
-        artista = db.query(Artista).filter_by(nombreUsuario=nombre_usuario).first()
+        Seguidor = aliased(Sigue)
+        Seguido = aliased(Sigue)
+        stmt_artista = (select(Artista, func.count(Seguidor.Seguidor_correo).label("num_seguidores"), func.count(Seguido.Seguido_correo).label("num_seguidos")
+                ).outerjoin(Seguidor, Seguidor.Seguido_correo == Artista.correo
+                ).outerjoin(Seguido, Seguido.Seguidor_correo == Artista.correo
+                ).where(Artista.nombreUsuario == nombre_usuario
+                ).group_by(Artista.correo))
+        artista, num_seguidores, num_seguidos = db.execute(stmt_artista).one_or_none()
         if not artista:
             return jsonify({"error": "El artista no existe."}), 404
         
-        usuario_actual = db.get(Oyente, correo_actual)
-        siguiendo = usuario_actual in artista.seguidores if usuario_actual else False
+        stmt = select(exists(select(Sigue).where(and_(Sigue.Seguidor_correo == correo_actual, Sigue.Seguido_correo == artista.correo))))
+        siguiendo = db.execute(stmt).scalar_one()
 
-        return jsonify({
-            "artista": {
-                "nombreUsuario": artista.nombreUsuario,
-                "nombreArtistico": artista.nombreArtistico,
-                "biografia": artista.biografia,
-                "numSeguidos": len(artista.seguidos),
-                "numSeguidores": len(artista.seguidores),
-                "siguiendo": siguiendo,
-                "fotoPerfil": artista.fotoPerfil
-            }
-        }), 200
+        return jsonify({"artista": {"nombreUsuario": artista.nombreUsuario,
+                                    "nombreArtistico": artista.nombreArtistico,
+                                    "biografia": artista.biografia,
+                                    "numSeguidos": num_seguidos,
+                                    "numSeguidores": num_seguidores,
+                                    "siguiendo": siguiendo,
+                                    "fotoPerfil": artista.fotoPerfil}}), 200
     
 
 """Devuelve informacion del artista logueado"""
@@ -58,6 +62,14 @@ def get_mis_datos_artista():
     correo = get_jwt_identity()
     
     with get_db() as db: 
+        Seguidor = aliased(Sigue)
+        Seguido = aliased(Sigue)
+        stmt_artista = (select(Artista, func.count(Seguidor.Seguidor_correo).label("num_seguidores"), func.count(Seguido.Seguido_correo).label("num_seguidos")
+                ).outerjoin(Seguidor, Seguidor.Seguido_correo == Artista.correo
+                ).outerjoin(Seguido, Seguido.Seguidor_correo == Artista.correo
+                ).where(Artista.correo == correo
+                ).group_by(Artista.correo))
+        artista, num_seguidores, num_seguidos = db.execute(stmt_artista).one_or_none()
         artista = db.get(Artista, correo)
         if not artista:
             return jsonify({"error": "El artista no existe."}), 404
@@ -65,8 +77,8 @@ def get_mis_datos_artista():
         return jsonify({
             "nombre":artista.nombreUsuario,
             "nombreArtistico":artista.nombreArtistico,
-            "numSeguidos": len(artista.seguidos), 
-            "numSeguidores": len(artista.seguidores),
+            "numSeguidos": num_seguidos, 
+            "numSeguidores": num_seguidores,
             "biografia" : artista.biografia,
             "fotoPerfil": artista.fotoPerfil
             }), 200

@@ -1,12 +1,10 @@
-from datetime import datetime
-import pytz
 from utils.decorators import roles_required, tokenVersion_required
-from db.models import Noizzy, Noizzito, Like, Cancion, Album, notificacionCancion_table, notificacionAlbum_table, invitado_table, Oyente, sigue_table
+from db.models import Noizzy, Noizzito, Like, Cancion, Album, notificacionCancion_table, notificacionAlbum_table, invitado_table, Oyente, Sigue
 from db.db import get_db
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from sqlalchemy.orm import selectinload, aliased
-from sqlalchemy import select, and_, exists, delete
+from sqlalchemy import select, and_, exists, delete, desc
 
 notificacion_bp = Blueprint('notificacion', __name__) 
 
@@ -305,3 +303,61 @@ def get_interacciones():
 
         return jsonify(resultado), 200
 
+
+"""Marca una notificaciones de nuevo seguidor del usuario logueado como leida"""
+@notificacion_bp.route("/read-nuevo-seguidor", methods=["PATCH"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista", "oyente")
+def read_nuevo_seguidor():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Faltan campos en la petición."}), 400
+    
+    nombreUsuario = data.get("nombreUsuario")
+    if not nombreUsuario:
+        return jsonify({"error": "Falta el nombre del usuario."}), 400
+    
+    correo = get_jwt_identity()
+    with get_db() as db:
+        oyente = db.execute(select(Oyente).filter_by(nombreUsuario=nombreUsuario)).scalar_one_or_none()
+        if not oyente:
+            return jsonify({"error": "El oyente no existe."}), 404
+
+        sigue = db.execute(select(Sigue).where(and_(Sigue.Seguidor_correo == oyente.correo, Sigue.Seguido_correo == correo, Sigue.visto == False))).scalar_one_or_none()
+        if not sigue:
+            return jsonify({"error": "No existe la notificación."}), 404
+        
+        sigue.visto = True
+
+        try:
+            db.commit() 
+        except Exception as e:
+            db.rollback()
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+    
+    return jsonify(""), 204 
+
+
+"""Devuelve una lista con las notificaciones de nuevos seguidores"""
+@notificacion_bp.route("/get-nuevos-seguidores", methods=["GET"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista", "oyente")
+def get_nuevos_seguidores():
+    correo = get_jwt_identity()
+    with get_db() as db:
+        stmt = select(Oyente
+                       ).join(Sigue, Sigue.Seguidor_correo == Oyente.correo
+                       ).where(and_(Sigue.Seguido_correo == correo, Sigue.visto == False)
+                       ).order_by(desc(Sigue.fecha))
+        
+        seguidores = db.execute(stmt).scalars().all()
+        seguidores_dict = [{
+            "nombre": s.nombreUsuario if s.tipo == "oyente" else s.nombreArtistico,
+            "nombreUsuario": s.nombreUsuario,
+            "fotoPerfil": s.fotoPerfil,
+            "tipo": s.tipo
+        } for s in seguidores]
+
+        return jsonify({"resultado": seguidores_dict}), 200
