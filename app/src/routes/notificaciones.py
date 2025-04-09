@@ -124,19 +124,31 @@ def get_novedades_musicales():
 @tokenVersion_required()
 @roles_required("artista", "oyente")
 def read_interacciones():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Faltan campos en la petición."}), 400
+    
+    noizzy_id = data.get("noizzy")
+    if not noizzy_id:
+        return jsonify({"error": "Falta el id del noizzy."}), 400
+    
     correo = get_jwt_identity()
     with get_db() as db:
-        NoizzyAlias = aliased(Noizzy)
+        noizzy = db.get(Noizzy, noizzy_id)
+        if not noizzy:
+            return jsonify({"error": "No existe el noizzy."}), 404
+        
+        if noizzy.Oyente_correo != correo:
+            return jsonify({"error": "No tienes permiso para eliminar notificaciones de este noizzy."}), 403
+        
         stmt = select(Noizzito
-                ).join(NoizzyAlias, Noizzito.Noizzy_id == NoizzyAlias.id
-                ).where(and_(NoizzyAlias.Oyente_correo == correo,
+                ).where(and_(Noizzito.Noizzy_id == noizzy_id,
                     Noizzito.visto == False))
         
         respuestas = db.execute(stmt).scalars().all()
         
         stmt = select(Like
-                ).join(Noizzy, Noizzy.id == Like.Noizzy_id
-                ).where(and_(Noizzy.Oyente_correo == correo,
+                ).where(and_(Like.Noizzy_id == noizzy_id,
                     Like.visto == False))
         
         likes = db.execute(stmt).scalars().all()
@@ -159,21 +171,62 @@ def read_interacciones():
     return jsonify(""), 200
 
 
-"""Elimina todas las notificaciones de novedades musicales del usuario logueado"""
-@notificacion_bp.route("/delete-novedades-musicales", methods=["DELETE"])
+"""Elimina una notificacion de nueva cancion"""
+@notificacion_bp.route("/delete-notificacion-cancion", methods=["DELETE"])
 @jwt_required()
 @tokenVersion_required()
 @roles_required("artista", "oyente")
-def delete_novedades_musicales():    
+def delete_notificacion_cancion():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Faltan campos en la petición."}), 400
+    
+    cancion_id = data.get("cancion")
+    if not cancion_id:
+        return jsonify({"error": "Faltan el id de la cancion de la notificacion."}), 400
+    
     correo = get_jwt_identity()
     with get_db() as db:
-        stmt_canciones = delete(notificacionCancion_table).where(notificacionCancion_table.c.Oyente_correo == correo)
-        stmt_albumes = delete(notificacionAlbum_table).where(notificacionAlbum_table.c.Oyente_correo == correo)
+        stmt = delete(notificacionCancion_table).where(and_(
+            (notificacionCancion_table.c.Oyente_correo == correo),
+            (notificacionCancion_table.c.Cancion_id == cancion_id)))
 
-        result_canciones = db.execute(stmt_canciones)
-        result_albumes = db.execute(stmt_albumes)
-        if result_canciones.rowcount == 0 and result_albumes.rowcount == 0:
-            return jsonify({"error": "No existen notificaciones de novedades musicales."}), 404
+        result = db.execute(stmt)
+        if result.rowcount == 0:
+            return jsonify({"error": "No existe la notificacion."}), 404
+        
+        try:
+            db.commit() 
+        except Exception as e:
+            db.rollback()
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+    
+    return jsonify(""), 204
+
+
+"""Elimina una notificacion de nuevo album"""
+@notificacion_bp.route("/delete-notificacion-album", methods=["DELETE"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista", "oyente")
+def delete_notificacion_album():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Faltan campos en la petición."}), 400
+    
+    album_id = data.get("album")
+    if not album_id:
+        return jsonify({"error": "Faltan el id de la album de la notificacion."}), 400
+    
+    correo = get_jwt_identity()
+    with get_db() as db:
+        stmt = delete(notificacionAlbum_table).where(and_(
+            (notificacionAlbum_table.c.Oyente_correo == correo),
+            (notificacionAlbum_table.c.Album_id == album_id)))
+
+        result = db.execute(stmt)
+        if result.rowcount == 0:
+            return jsonify({"error": "No existe la notificacion."}), 404
         
         try:
             db.commit() 
