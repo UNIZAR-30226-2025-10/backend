@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import select, or_, case, and_, not_
 from sqlalchemy.orm import selectinload
 from db.db import get_db
-from db.models import Cancion, Playlist, Album, Artista, Oyente, sigue_table, invitado_table, participante_table, EsParteDePlaylist, featuring_table
+from db.models import Cancion, Playlist, Album, Artista, Oyente, Sigue, invitado_table, participante_table, EsParteDePlaylist, featuring_table
 from utils.decorators import roles_required, tokenVersion_required
 import re
 
@@ -350,7 +350,7 @@ def search_invitados():
         stmt_perfiles = select(Oyente
             ).where(and_(
                 Oyente.correo.in_(  # Seguidor
-                    select(sigue_table.c.Seguidor_correo).where(sigue_table.c.Seguido_correo == correo)
+                    select(Sigue.Seguidor_correo).where(Sigue.Seguido_correo == correo)
                 ),
                 Oyente.correo.notin_(  # No participante
                     select(participante_table.c.Oyente_correo).where(participante_table.c.Playlist_id == playlist)
