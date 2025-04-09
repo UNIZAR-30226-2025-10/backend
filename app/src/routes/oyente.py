@@ -568,8 +568,8 @@ def change_follow():
         if not oyente:
             return jsonify({"error": "El oyente no existe."}), 404
         
-        stmt = select(exists(select(Sigue).where(and_(Sigue.Seguidor_correo == correo, Sigue.Seguido_correo == oyente.correo))))
-        siguiendo_entry = db.execute(stmt).scalar_one()
+        stmt = select(Sigue).where(and_(Sigue.Seguidor_correo == correo, Sigue.Seguido_correo == oyente.correo))
+        siguiendo_entry = db.execute(stmt).scalar_one_or_none()
         
         if siguiendo and not siguiendo_entry:
             # Si no lo sigo y siguiendo == True, seguirlo
