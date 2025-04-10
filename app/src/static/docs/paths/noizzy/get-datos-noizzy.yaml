@@ -24,8 +24,8 @@ get:
                 type: integer
                 description: ID del Noizzy
               fotoPerfil:
-                      type: string
-                      description: Foto de perfil del usuario propietario del noizzy
+                type: string
+                description: Foto de perfil del usuario propietario del noizzy
               fecha:
                 type: string
                 format: date-time
@@ -49,6 +49,9 @@ get:
                   id:
                     type: integer
                     description: ID de la canción asociada
+                  nombre:
+                    type: string
+                    description: Nombre de la canción
                   nombreArtisticoArtista:
                     type: string
                     description: Nombre artístico del artista
@@ -93,6 +96,9 @@ get:
                         id:
                           type: integer
                           description: ID de la canción asociada
+                        nombre:
+                          type: string
+                          description: Nombre de la canción
                         fotoPortada:
                           type: string
                           format: uri

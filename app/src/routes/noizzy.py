@@ -29,7 +29,7 @@ def get_datos_noizzy():
                       func.count(Like.Noizzy_id).label("num_likes"),
                       subquery_num_comentarios.label("num_comentarios"),
                       func.count(Like.Noizzy_id).filter(Like.Oyente_correo == correo).label("user_like_exists"),
-                      Artista.nombreArtistico, Coleccion.fotoPortada, Oyente
+                      Artista.nombreArtistico, Coleccion.fotoPortada, Oyente, Cancion.nombre
                 ).outerjoin(Like, Like.Noizzy_id == Noizzy.id
                 ).outerjoin(Cancion, Cancion.id == Noizzy.Cancion_id
                 ).outerjoin(Artista, Artista.correo == Cancion.Artista_correo
@@ -50,6 +50,7 @@ def get_datos_noizzy():
                 "like": True if noizzy[6] else False,
                 "cancion": {
                     "id": noizzy[3],
+                    "nombre": noizzy[10],
                     "nombreArtisticoArtista": noizzy[7],
                     "fotoPortada": noizzy[8]
                 } if noizzy[3] else None
@@ -197,7 +198,7 @@ def get_noizzys():
                       func.count(Like.Noizzy_id).label("num_likes"),
                       subquery_num_comentarios.label("num_comentarios"),
                       func.count(Like.Noizzy_id).filter(Like.Oyente_correo == correo).label("user_like_exists"),
-                      Artista.nombreArtistico, Coleccion.fotoPortada
+                      Artista.nombreArtistico, Coleccion.fotoPortada, Cancion.nombre
                ).outerjoin(Like, Like.Noizzy_id == Noizzy.id
                ).outerjoin(Cancion, Cancion.id == Noizzy.Cancion_id
                ).outerjoin(Artista, Artista.correo == Cancion.Artista_correo
@@ -217,6 +218,7 @@ def get_noizzys():
                 "like": True if row[6] else False,
                 "cancion": {
                     "id": row[3],
+                    "nombre": row[9],
                     "fotoPortada": row[8],
                     "nombreArtisticoArtista": row[7]
                 } if row[3] else None,
@@ -243,7 +245,7 @@ def get_mis_noizzys():
                       func.count(Like.Noizzy_id).label("num_likes"),
                       subquery_num_comentarios.label("num_comentarios"),
                       func.count(Like.Noizzy_id).filter(Like.Oyente_correo == correo).label("user_like_exists"),
-                      Artista.nombreArtistico, Coleccion.fotoPortada
+                      Artista.nombreArtistico, Coleccion.fotoPortada, Cancion.nombre
                ).outerjoin(Like, Like.Noizzy_id == Noizzy.id
                ).outerjoin(Cancion, Cancion.id == Noizzy.Cancion_id
                ).outerjoin(Artista, Artista.correo == Cancion.Artista_correo
@@ -263,6 +265,7 @@ def get_mis_noizzys():
                 "like": True if row[6] else False,
                 "cancion": {
                     "id": row[3],
+                    "nombre": row[9],
                     "fotoPortada": row[8],
                     "nombreArtisticoArtista": row[7]
                 } if row[3] else None,
