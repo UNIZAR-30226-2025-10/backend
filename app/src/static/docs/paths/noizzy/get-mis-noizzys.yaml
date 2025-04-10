@@ -77,6 +77,7 @@ get:
                 nombreUsuario: "usuarioEjemplo"
                 cancion:
                   id: 134
+                  nombre: "Canción Ejemplo"
                   fotoPortada: "https://example.com/portada.jpg"
                   nombreArtisticoArtista: "Artista Ejemplo"
     400:
