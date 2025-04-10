@@ -169,8 +169,6 @@ paths:
     $ref: "/static/docs/paths/noizzy/get-actividad-seguidos.yaml"
   /read-noizzys:
     $ref: "/static/docs/paths/noizzy/read-noizzys.yaml"
-  /delete-novedades-musicales:
-    $ref: "/static/docs/paths/notificaciones/delete-novedades-musicales.yaml"
   /get-interacciones:
     $ref: "/static/docs/paths/notificaciones/get-interacciones.yaml"
   /read-interacciones:

@@ -6,7 +6,7 @@ from db.db import get_db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import Blueprint, request, jsonify
 from sqlalchemy import select, and_, func, delete, insert, exists, literal, desc, case
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, Load
 from .websocket import socketio
 
 noizzy_bp = Blueprint('noizzy', __name__) 
@@ -24,56 +24,60 @@ def get_datos_noizzy():
     correo = get_jwt_identity()
     
     with get_db() as db:
-        subquery_num_comentarios = select(func.count(Noizzito.id)).where(Noizzito.Noizzy_id == Noizzy.id).scalar_subquery()
+        # Subquery para contar comentarios
+        noizzito_table = Noizzito.__table__
+        subquery_num_comentarios = select(func.count(noizzito_table.c.Noizzy_id)).where(noizzito_table.c.Noizzy_id == Noizzy.id).scalar_subquery()
+
+        # Subquery para contar likes totales
+        subquery_num_likes = select(func.count(Like.Noizzy_id)).where(Like.Noizzy_id == Noizzy.id).scalar_subquery()
+        
+        # Subquery para verificar si el usuario dio like
+        subquery_user_like = select(func.count(Like.Noizzy_id)).where((Like.Noizzy_id == Noizzy.id) & (Like.Oyente_correo == correo)).scalar_subquery()
+
+        # Consulta principal
         stmt = select(Noizzy.id, Noizzy.fecha, Noizzy.texto, Noizzy.Cancion_id,
-                      func.count(Like.Noizzy_id).label("num_likes"),
-                      subquery_num_comentarios.label("num_comentarios"),
-                      func.count(Like.Noizzy_id).filter(Like.Oyente_correo == correo).label("user_like_exists"),
-                      Artista.nombreArtistico, Coleccion.fotoPortada, Oyente, Cancion.nombre
-                ).outerjoin(Like, Like.Noizzy_id == Noizzy.id
-                ).outerjoin(Cancion, Cancion.id == Noizzy.Cancion_id
-                ).outerjoin(Artista, Artista.correo == Cancion.Artista_correo
-                ).outerjoin(Coleccion, Coleccion.id == Cancion.Album_id
-                ).outerjoin(Oyente, Oyente.correo == Noizzy.Oyente_correo
-                ).where(Noizzy.id == id
-                ).group_by(Noizzy.id, Cancion.id, Artista.nombreArtistico, Coleccion.fotoPortada)
+                subquery_num_likes.label("num_likes"),
+                subquery_num_comentarios.label("num_comentarios"),
+                subquery_user_like.label("user_like_exists"),
+                Artista.nombreArtistico, Coleccion.fotoPortada, Oyente, Cancion.nombre,
+            ).outerjoin(Cancion, Cancion.id == Noizzy.Cancion_id
+            ).outerjoin(Artista, Artista.correo == Cancion.Artista_correo
+            ).outerjoin(Coleccion, Coleccion.id == Cancion.Album_id
+            ).outerjoin(Oyente, Oyente.correo == Noizzy.Oyente_correo
+            ).where(Noizzy.id == id)
 
         noizzy = db.execute(stmt).first()
-        if noizzy:
-            result = {
-                "fotoPerfil": noizzy[9].fotoPerfil,
-                "nombreUsuario": noizzy[9].nombreUsuario if noizzy[9].tipo == "oyente" else noizzy[9].nombreArtistico,
-                "fecha": noizzy[1].strftime("%d %m %Y %H %M"),
-                "texto": noizzy[2],
-                "num_likes": noizzy[4],
-                "num_comentarios": noizzy[5],
-                "like": True if noizzy[6] else False,
-                "cancion": {
-                    "id": noizzy[3],
-                    "nombre": noizzy[10],
-                    "nombreArtisticoArtista": noizzy[7],
-                    "fotoPortada": noizzy[8]
-                } if noizzy[3] else None
-            }
-        else:
+        if not noizzy:
             return jsonify({"error": "Noizzy no encontrado."}), 404
         
-        subquery_num_comentarios = (select(func.count(Noizzito.id)).where(Noizzito.Noizzy_id == Noizzito.id).scalar_subquery())
+        result = {
+            "fotoPerfil": noizzy[9].fotoPerfil,
+            "nombreUsuario": noizzy[9].nombreUsuario if noizzy[9].tipo == "oyente" else noizzy[9].nombreArtistico,
+            "fecha": noizzy[1].strftime("%d %m %Y %H %M"),
+            "texto": noizzy[2],
+            "num_likes": noizzy[4],
+            "num_comentarios": noizzy[5],
+            "like": True if noizzy[6] else False,
+            "cancion": {
+                "id": noizzy[3],
+                "nombre": noizzy[10],
+                "nombreArtisticoArtista": noizzy[7],
+                "fotoPortada": noizzy[8]
+            } if noizzy[3] else None
+        }       
 
-        stmt_noizzitos = select(
-            Noizzito.id, Noizzito.fecha, Noizzito.texto,
-            func.count(Like.Noizzy_id).label("num_likes"),
-            subquery_num_comentarios.label("num_comentarios"),
-            func.count(Like.Noizzy_id).filter(Like.Oyente_correo == correo).label("user_like_exists"),
-            Noizzito.Cancion_id, Artista.nombreArtistico, Coleccion.fotoPortada, Oyente
-        ).outerjoin(Like, Like.Noizzy_id == Noizzito.id
-        ).outerjoin(Cancion, Cancion.id == Noizzito.Cancion_id
-        ).outerjoin(Artista, Artista.correo == Cancion.Artista_correo
-        ).outerjoin(Coleccion, Coleccion.id == Cancion.Album_id
-        ).outerjoin(Oyente, Oyente.correo == Noizzito.Oyente_correo
-        ).where(Noizzito.Noizzy_id == id
-        ).group_by(Noizzito.id, Cancion.id, Artista.nombreArtistico, Coleccion.fotoPortada
-        ).order_by(Noizzito.fecha.desc())
+        subquery_num_comentarios = select(func.count(noizzito_table.c.Noizzy_id)).where(noizzito_table.c.Noizzy_id == Noizzy.id).correlate(Noizzy).scalar_subquery()
+        stmt_noizzitos = select(Noizzito.id, Noizzito.fecha, Noizzito.texto, Noizzito.Cancion_id,
+                subquery_num_likes.label("num_likes"),
+                subquery_num_comentarios.label("num_comentarios"),
+                subquery_user_like.label("user_like_exists"),
+                Artista.nombreArtistico, Coleccion.fotoPortada, Oyente, Cancion.nombre,
+            ).outerjoin(Cancion, Cancion.id == Noizzito.Cancion_id
+            ).outerjoin(Artista, Artista.correo == Cancion.Artista_correo
+            ).outerjoin(Coleccion, Coleccion.id == Cancion.Album_id
+            ).outerjoin(Oyente, Oyente.correo == Noizzito.Oyente_correo
+            ).where(Noizzito.Noizzy_id == id
+            ).order_by(Noizzito.fecha.desc())
         
         noizzitos_result = db.execute(stmt_noizzitos).all()
         
@@ -84,14 +88,15 @@ def get_datos_noizzy():
                 "fecha": row[1].strftime("%d %m %y %H %M"),
                 "id": row[0],
                 "texto": row[2],
-                "like": True if row[5] else False,
+                "like": True if row[6] else False,
                 "cancion": {
-                    "id": row[6],
+                    "id": row[3],
                     "fotoPortada": row[8],
-                    "nombreArtisticoArtista": row[7]
-                } if row[6] else None,
-                "num_likes": row[3],
-                "num_comentarios": row[4]
+                    "nombreArtisticoArtista": row[7],
+                    "nombre": row[10]
+                } if row[3] else None,
+                "num_likes": row[4],
+                "num_comentarios": row[5]
             }
         for row in noizzitos_result]
 
@@ -121,21 +126,24 @@ def post_noizzito():
 
     correo = get_jwt_identity()
     with get_db() as db:
+        noizzy_entry = db.get(Noizzy, noizzy)
+        if not noizzy_entry:
+            return jsonify({"error": "No existe el noizzy."}), 404 
+        
         if not cancion:
             new_entry = Noizzito(Oyente_correo=correo, Noizzy_id=noizzy, tipo="noizzito", fecha=datetime.now(pytz.timezone('Europe/Madrid')),
-                             texto=texto, visto=False, Cancion_id=None)
+                             texto=texto, visto=(noizzy_entry.Oyente_correo == correo), Cancion_id=None)
         else:
             new_entry = Noizzito(Oyente_correo=correo, Noizzy_id=noizzy, tipo="noizzito", fecha=datetime.now(pytz.timezone('Europe/Madrid')),
-                             texto=texto, visto=False, Cancion_id=cancion)
+                             texto=texto, visto=(noizzy_entry.Oyente_correo == correo), Cancion_id=cancion)
         db.add(new_entry)
         try:
-            db.commit()
-            db.refresh(new_entry)           
+            db.commit()       
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
     
         # Websockets para notificacion en tiempo real
-        if correo != new_entry.noizzy.oyente.correo:
+        if correo != noizzy_entry.Oyente_correo:
             socketio.emit("nueva-interaccion-ws", {"nombreUsuario": new_entry.oyente.nombreUsuario,
                                                     "noizzy": new_entry.id,
                                                     "texto": new_entry.texto}
@@ -193,19 +201,26 @@ def get_noizzys():
         if not oyente:
             return jsonify({"error": "El oyente no existe."}), 404
 
-        subquery_num_comentarios = select(func.count(Noizzito.id)).where(Noizzito.Noizzy_id == Noizzy.id).scalar_subquery()
+        # Subquery para contar comentarios
+        noizzito_table = Noizzito.__table__
+        subquery_num_comentarios = select(func.count(noizzito_table.c.Noizzy_id)).where(noizzito_table.c.Noizzy_id == Noizzy.id).scalar_subquery()
+
+        # Subquery para contar likes totales
+        subquery_num_likes = select(func.count(Like.Noizzy_id)).where(Like.Noizzy_id == Noizzy.id).scalar_subquery()
+        
+        # Subquery para verificar si el usuario dio like
+        subquery_user_like = select(func.count(Like.Noizzy_id)).where((Like.Noizzy_id == Noizzy.id) & (Like.Oyente_correo == correo)).scalar_subquery()
+        
         stmt = select(Noizzy.id, Noizzy.fecha, Noizzy.texto, Noizzy.Cancion_id,
-                      func.count(Like.Noizzy_id).label("num_likes"),
-                      subquery_num_comentarios.label("num_comentarios"),
-                      func.count(Like.Noizzy_id).filter(Like.Oyente_correo == correo).label("user_like_exists"),
-                      Artista.nombreArtistico, Coleccion.fotoPortada, Cancion.nombre
-               ).outerjoin(Like, Like.Noizzy_id == Noizzy.id
-               ).outerjoin(Cancion, Cancion.id == Noizzy.Cancion_id
-               ).outerjoin(Artista, Artista.correo == Cancion.Artista_correo
-               ).outerjoin(Coleccion, Coleccion.id == Cancion.Album_id
-               ).where(and_(Noizzy.tipo == 'noizzy', Noizzy.Oyente_correo == oyente.correo)
-               ).group_by(Noizzy.id, Artista.nombreArtistico, Coleccion.fotoPortada
-               ).order_by(Noizzy.fecha.desc())
+                subquery_num_likes.label("num_likes"),
+                subquery_num_comentarios.label("num_comentarios"),
+                subquery_user_like.label("user_like_exists"),
+                Artista.nombreArtistico, Coleccion.fotoPortada, Cancion.nombre,
+            ).outerjoin(Cancion, Cancion.id == Noizzy.Cancion_id
+            ).outerjoin(Artista, Artista.correo == Cancion.Artista_correo
+            ).outerjoin(Coleccion, Coleccion.id == Cancion.Album_id
+            ).where(and_(Noizzy.tipo == 'noizzy', Noizzy.Oyente_correo == oyente.correo)
+            ).order_by(Noizzy.fecha.desc())
 
         noizzys = db.execute(stmt).all()
         noizzys_dict = [
@@ -239,20 +254,28 @@ def get_mis_noizzys():
     correo = get_jwt_identity()
     with get_db() as db:
         usuario_entry = db.get(Oyente, correo)
+        
+        # Subquery para contar comentarios
+        noizzito_table = Noizzito.__table__
+        subquery_num_comentarios = select(func.count(noizzito_table.c.Noizzy_id)).where(noizzito_table.c.Noizzy_id == Noizzy.id).scalar_subquery()
 
-        subquery_num_comentarios = select(func.count(Noizzito.id)).where(Noizzito.Noizzy_id == Noizzy.id).scalar_subquery()
+        # Subquery para contar likes totales
+        subquery_num_likes = select(func.count(Like.Noizzy_id)).where(Like.Noizzy_id == Noizzy.id).scalar_subquery()
+        
+        # Subquery para verificar si el usuario dio like
+        subquery_user_like = select(func.count(Like.Noizzy_id)).where((Like.Noizzy_id == Noizzy.id) & (Like.Oyente_correo == correo)).scalar_subquery()
+
+        # Consulta principal
         stmt = select(Noizzy.id, Noizzy.fecha, Noizzy.texto, Noizzy.Cancion_id,
-                      func.count(Like.Noizzy_id).label("num_likes"),
-                      subquery_num_comentarios.label("num_comentarios"),
-                      func.count(Like.Noizzy_id).filter(Like.Oyente_correo == correo).label("user_like_exists"),
-                      Artista.nombreArtistico, Coleccion.fotoPortada, Cancion.nombre
-               ).outerjoin(Like, Like.Noizzy_id == Noizzy.id
-               ).outerjoin(Cancion, Cancion.id == Noizzy.Cancion_id
-               ).outerjoin(Artista, Artista.correo == Cancion.Artista_correo
-               ).outerjoin(Coleccion, Coleccion.id == Cancion.Album_id
-               ).where(and_(Noizzy.tipo == 'noizzy', Noizzy.Oyente_correo == correo)
-               ).group_by(Noizzy.id, Artista.nombreArtistico, Coleccion.fotoPortada
-               ).order_by(Noizzy.fecha.desc())
+                subquery_num_likes.label("num_likes"),
+                subquery_num_comentarios.label("num_comentarios"),
+                subquery_user_like.label("user_like_exists"),
+                Artista.nombreArtistico, Coleccion.fotoPortada, Cancion.nombre,
+            ).outerjoin(Cancion, Cancion.id == Noizzy.Cancion_id
+            ).outerjoin(Artista, Artista.correo == Cancion.Artista_correo
+            ).outerjoin(Coleccion, Coleccion.id == Cancion.Album_id
+            ).where(and_(Noizzy.tipo == 'noizzy', Noizzy.Oyente_correo == correo)
+            ).order_by(Noizzy.fecha.desc())
 
         noizzys = db.execute(stmt).all()
         noizzys_dict = [
@@ -354,7 +377,7 @@ def change_like():
         
         if like and not like_entry:
             # Si no le he dado like y like == True, darle like
-            like_entry = Like(Oyente_correo=correo, Noizzy_id=noizzy, visto=False, fecha=datetime.now(pytz.timezone('Europe/Madrid')))
+            like_entry = Like(Oyente_correo=correo, Noizzy_id=noizzy, visto=(noizzy_entry.Oyente_correo == correo), fecha=datetime.now(pytz.timezone('Europe/Madrid')))
             db.add(like_entry)
 
         elif not like and like_entry:
@@ -373,12 +396,10 @@ def change_like():
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
         
         # Websockets para notificacion en tiempo real
-        if like and correo != like_entry.noizzy.oyente.correo:
+        if like and correo != noizzy_entry.Oyente_correo:
             socketio.emit("nueva-interaccion-ws", {"nombreUsuario": like_entry.oyente.nombreUsuario,
                                                     "noizzy": like_entry.noizzy.id,
-                                                    "texto": like_entry.noizzy.texto}
-                                                    , room=like_entry.noizzy.oyente.correo)
-        
+                                                    "texto": like_entry.noizzy.texto}, room=like_entry.noizzy.oyente.correo)
         
     return jsonify(""), 200
 
