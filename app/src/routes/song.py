@@ -455,7 +455,8 @@ def create_cancion():
                                                     "nombre": nueva_cancion.nombre,
                                                     "fotoPortada": nueva_cancion.album.fotoPortada,
                                                     "nombreArtisticoArtista": nueva_cancion.artista.nombreArtistico,
-                                                    "featuring": [f.nombreArtistico for f in nueva_cancion.featuring]}
+                                                    "featuring": [f.nombreArtistico for f in nueva_cancion.featuring],
+                                                    "tipo": "cancion"}
                                                     , room=seguidor.Seguidor_correo)
 
         return jsonify(""), 201

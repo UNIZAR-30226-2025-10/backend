@@ -129,7 +129,8 @@ def create_album():
                 socketio.emit("novedad-musical-ws", {"id": nuevo_album.id,
                                                     "nombre": nuevo_album.nombre,
                                                     "fotoPortada": nuevo_album.fotoPortada,
-                                                    "nombreArtisticoArtista": nuevo_album.artista.nombreArtistico}
+                                                    "nombreArtisticoArtista": nuevo_album.artista.nombreArtistico,
+                                                    "tipo": "album"}
                                                     , room=seguidor.Seguidor_correo)
 
     return jsonify({"message": "Álbum creado exitosamente."}), 201
