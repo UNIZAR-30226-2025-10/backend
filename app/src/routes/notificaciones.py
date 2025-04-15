@@ -60,7 +60,7 @@ def has_notificaciones():
         ).scalar()
 
         return jsonify({"invitaciones": invitado_playlist,
-                        "novedades-musicales": notif_album or notif_cancion,
+                        "novedadesMusicales": notif_album or notif_cancion,
                         "interacciones": like_no_visto or noizzito_no_visto,
                         "seguidores": seguidor_no_visto}), 200
 
@@ -310,7 +310,7 @@ def get_interacciones():
                     "tipo": "like"
                 })
 
-        return jsonify(resultado), 200
+        return jsonify({"resultado": resultado}), 200
 
 
 """Marca una notificaciones de nuevo seguidor del usuario logueado como leida"""

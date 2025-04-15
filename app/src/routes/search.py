@@ -475,41 +475,6 @@ def search_for_noizzy():
             ).limit(LIMITE)
         
         canciones = db.execute(stmt_canciones).scalars().all()
-        canciones_id = {c.id for c in canciones}
-
-        # Añadir canciones del artista buscado
-        if len(canciones) < LIMITE:
-            stmt_artistas = select(Cancion).join(Artista, Cancion.Artista_correo == Artista.correo
-                ).where(and_(or_(
-                    Artista.nombreArtistico.ilike(f'{termino}%'), 
-                    Artista.nombreUsuario.ilike(f'{termino_no_spaces}%')), 
-                    Cancion.id.notin_(canciones_id))
-                ).options(
-                    selectinload(Cancion.album),  
-                    selectinload(Cancion.artista)
-                ).order_by(
-                    case((Artista.nombreArtistico.ilike(f"{termino}%"), 1),  
-                    (Artista.nombreUsuario.ilike(f"{termino_no_spaces}%"), 2), else_=3),
-                    Cancion.reproducciones.desc()
-                ).limit(LIMITE - len(canciones))
-            
-            canciones += db.execute(stmt_artistas).scalars().all()    
-
-        # Añadir canciones del album buscado
-        if len(canciones) < LIMITE:
-            stmt_albumes = select(Cancion).join(Album, Cancion.Album_id == Album.id
-                ).where(and_(
-                    Album.nombre.ilike(f"%{termino}%"),
-                    Cancion.id.notin_(canciones_id))
-                ).options(
-                    selectinload(Cancion.album),  
-                    selectinload(Cancion.artista)
-                ).order_by(
-                    case((Album.nombre.ilike(f"{termino}%"), 1), else_=2),
-                    Cancion.reproducciones.desc()
-                ).limit(LIMITE - len(canciones))
-            
-            canciones += db.execute(stmt_albumes).scalars().all() 
 
         resultados = [{"fotoPortada":c.album.fotoPortada, "id": c.id, "nombre": c.nombre, 
                       "nombreArtisticoArtista":c.artista.nombreArtistico} for c in canciones]
