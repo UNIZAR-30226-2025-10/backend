@@ -6,7 +6,7 @@ from db.db import get_db
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import Blueprint, request, jsonify
 from sqlalchemy import select, and_, func, delete, insert, exists, literal, desc, case
-from sqlalchemy.orm import selectinload, Load
+from sqlalchemy.orm import selectinload, aliased
 from .websocket import socketio
 
 noizzy_bp = Blueprint('noizzy', __name__) 
@@ -35,15 +35,22 @@ def get_datos_noizzy():
         subquery_user_like = select(func.count(Like.Noizzy_id)).where((Like.Noizzy_id == Noizzy.id) & (Like.Oyente_correo == correo)).scalar_subquery()
 
         # Consulta principal
+        oyente_publicador = aliased(Oyente)
+        usuario_publicador = aliased(Usuario)
+        artista_publicador = aliased(Artista)  # artista que publicó el Noizzy, si lo es
+        artista_cancion = aliased(Artista)     # artista de la canción
         stmt = select(Noizzy.id, Noizzy.fecha, Noizzy.texto, Noizzy.Cancion_id,
                 subquery_num_likes.label("num_likes"),
                 subquery_num_comentarios.label("num_comentarios"),
                 subquery_user_like.label("user_like_exists"),
-                Artista.nombreArtistico, Coleccion.fotoPortada, Oyente, Cancion.nombre,
+                artista_cancion.nombreArtistico, Coleccion.fotoPortada, oyente_publicador.nombreUsuario,
+                oyente_publicador.fotoPerfil, Cancion.nombre, artista_publicador.nombreArtistico
             ).outerjoin(Cancion, Cancion.id == Noizzy.Cancion_id
-            ).outerjoin(Artista, Artista.correo == Cancion.Artista_correo
+            ).outerjoin(artista_cancion, artista_cancion.correo == Cancion.Artista_correo
             ).outerjoin(Coleccion, Coleccion.id == Cancion.Album_id
-            ).outerjoin(Oyente, Oyente.correo == Noizzy.Oyente_correo
+            ).outerjoin(oyente_publicador, oyente_publicador.correo == Noizzy.Oyente_correo
+            ).outerjoin(usuario_publicador, usuario_publicador.correo == oyente_publicador.correo
+            ).outerjoin(artista_publicador, artista_publicador.correo == oyente_publicador.correo
             ).where(Noizzy.id == id)
 
         noizzy = db.execute(stmt).first()
@@ -51,8 +58,8 @@ def get_datos_noizzy():
             return jsonify({"error": "Noizzy no encontrado."}), 404
         
         result = {
-            "fotoPerfil": noizzy[9].fotoPerfil,
-            "nombreUsuario": noizzy[9].nombreUsuario if noizzy[9].tipo == "oyente" else noizzy[9].nombreArtistico,
+            "fotoPerfil": noizzy[10],
+            "nombreUsuario": noizzy[9] if not noizzy[12] else noizzy[12],
             "fecha": noizzy[1].strftime("%d %m %Y %H %M"),
             "texto": noizzy[2],
             "num_likes": noizzy[4],
@@ -60,7 +67,7 @@ def get_datos_noizzy():
             "like": True if noizzy[6] else False,
             "cancion": {
                 "id": noizzy[3],
-                "nombre": noizzy[10],
+                "nombre": noizzy[11],
                 "nombreArtisticoArtista": noizzy[7],
                 "fotoPortada": noizzy[8]
             } if noizzy[3] else None
@@ -71,11 +78,14 @@ def get_datos_noizzy():
                 subquery_num_likes.label("num_likes"),
                 subquery_num_comentarios.label("num_comentarios"),
                 subquery_user_like.label("user_like_exists"),
-                Artista.nombreArtistico, Coleccion.fotoPortada, Oyente, Cancion.nombre,
-            ).outerjoin(Cancion, Cancion.id == Noizzito.Cancion_id
-            ).outerjoin(Artista, Artista.correo == Cancion.Artista_correo
+                artista_cancion.nombreArtistico, Coleccion.fotoPortada, oyente_publicador.nombreUsuario,
+                oyente_publicador.fotoPerfil, Cancion.nombre, artista_publicador.nombreArtistico
+            ).outerjoin(Cancion, Cancion.id == Noizzy.Cancion_id
+            ).outerjoin(artista_cancion, artista_cancion.correo == Cancion.Artista_correo
             ).outerjoin(Coleccion, Coleccion.id == Cancion.Album_id
-            ).outerjoin(Oyente, Oyente.correo == Noizzito.Oyente_correo
+            ).outerjoin(oyente_publicador, oyente_publicador.correo == Noizzy.Oyente_correo
+            ).outerjoin(usuario_publicador, usuario_publicador.correo == oyente_publicador.correo
+            ).outerjoin(artista_publicador, artista_publicador.correo == oyente_publicador.correo
             ).where(Noizzito.Noizzy_id == id
             ).order_by(Noizzito.fecha.desc())
         
@@ -83,8 +93,8 @@ def get_datos_noizzy():
         
         noizzitos = [
             {
-                "nombreUsuario": row[9].nombreUsuario if row[9].tipo == "oyente" else row[9].nombreArtistico,
-                "fotoPerfil": row[9].fotoPerfil,
+                "nombreUsuario": row[9] if not noizzy[12] else noizzy[12],
+                "fotoPerfil": row[10],
                 "fecha": row[1].strftime("%d %m %y %H %M"),
                 "id": row[0],
                 "texto": row[2],
@@ -93,7 +103,7 @@ def get_datos_noizzy():
                     "id": row[3],
                     "fotoPortada": row[8],
                     "nombreArtisticoArtista": row[7],
-                    "nombre": row[10]
+                    "nombre": row[11]
                 } if row[3] else None,
                 "num_likes": row[4],
                 "num_comentarios": row[5]
