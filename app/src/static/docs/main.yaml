@@ -181,6 +181,10 @@ paths:
     $ref: "/static/docs/paths/notificaciones/read-nuevo-seguidor.yaml"
   /get-nuevos-seguidores:
     $ref: "/static/docs/paths/notificaciones/get-nuevos-seguidores.yaml"
+  /read-like:
+    $ref: "/static/docs/paths/notificaciones/read-like.yaml"
+  /read-noizzito:
+    $ref: "/static/docs/paths/notificaciones/read-noizzito.yaml"
 
 components:
   securitySchemes:

@@ -1,0 +1,96 @@
+patch:
+  summary: Marcar notificación de like como leída
+  description: Marca como leída una notificación de like en un noizzy del usuario logueado.
+  security:
+    - bearerAuth: []
+  tags:
+    - Notificaciones
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            noizzy:
+              type: string
+              description: ID del noizzy que recibió el like.
+            nombreUsuario:
+              type: string
+              description: Nombre de usuario del oyente que dio like.
+          required:
+            - noizzy
+            - nombreUsuario
+        example:
+          noizzy: "123e4567-e89b-12d3-a456-426614174000"
+          nombreUsuario: "oyente123"
+  responses:
+    200:
+      description: Notificación marcada como leída exitosamente.
+      content:
+        application/json:
+          schema:
+            type: string
+          example: ""
+    400:
+      description: Faltan campos en la petición.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "Faltan campos en la petición."
+    403:
+      description: Usuario autenticado sin permisos para la accion.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "El noizzy no es tuyo."
+    404:
+      description: Recurso no encontrado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            no_usuario:
+              summary: Usuario no encontrado
+              value:
+                error: "No existe el usuario."
+            no_noizzy:
+              summary: Noizzy no encontrado
+              value:
+                error: "No existe el noizzy."
+            no_like:
+              summary: Like no encontrado
+              value:
+                error: "El usuario no le ha dado like al noizzy."
+            ya_leido:
+              summary: Ya leído
+              value:
+                error: "Ya has leido la notificacion del like."
+    500:
+      description: Error inesperado del servidor.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: string
+          example:
+            error: "Ha ocurrido un error inesperado."
+            details: "Mensaje del error"

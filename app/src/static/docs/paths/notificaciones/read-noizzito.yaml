@@ -1,0 +1,90 @@
+patch:
+  summary: Marcar notificación de noizzito como leída
+  description: Marca como leída una notificación de noizzito que responde a un noizzy del usuario logueado.
+  security:
+    - bearerAuth: []
+  tags:
+    - Notificaciones
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            noizzito:
+              type: string
+              description: ID del noizzito cuya notificación se va a marcar como leída.
+          required:
+            - noizzito
+        example:
+          noizzito: "456e7890-e89b-12d3-a456-426614174111"
+  responses:
+    200:
+      description: Notificación marcada como leída exitosamente.
+      content:
+        application/json:
+          schema:
+            type: string
+          example: ""
+    400:
+      description: Faltan campos en la petición.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            campos_faltantes:
+              summary: Campo noizzito faltante
+              value:
+                error: "Faltan el id del noizzito."
+            sin_datos:
+              summary: Sin cuerpo en la petición
+              value:
+                error: "Faltan campos en la petición."
+    403:
+      description: Usuario autenticado sin permisos para la accion.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          example:
+            error: "El noizzy al que responde no es tuyo."
+    404:
+      description: Recurso no encontrado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            noizzito_no_existe:
+              summary: Noizzito no encontrado
+              value:
+                error: "No existe el noizzito."
+            ya_leido:
+              summary: Ya leído
+              value:
+                error: "Ya has leido la notificacion del noizzito."
+    500:
+      description: Error inesperado del servidor.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: string
+          example:
+            error: "Ha ocurrido un error inesperado."
+            details: "Mensaje del error"

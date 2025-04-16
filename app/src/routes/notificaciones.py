@@ -370,3 +370,79 @@ def get_nuevos_seguidores():
         } for s in seguidores]
 
         return jsonify({"resultado": seguidores_dict}), 200
+    
+
+"""Marca una notificacion de like como leida"""
+@notificacion_bp.route("/read-like", methods=["PATCH"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista", "oyente")
+def read_like():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Faltan campos en la petición."}), 400
+    
+    noizzy_id = data.get("noizzy")
+    oyente_nombreUsuario = data.get("nombreUsuario")
+    if not noizzy_id or not oyente_nombreUsuario:
+        return jsonify({"error": "Faltan campos en la petición."}), 400
+    
+    correo = get_jwt_identity()
+    with get_db() as db:
+        oyente_entry = db.execute(select(Oyente).where(Oyente.nombreUsuario == oyente_nombreUsuario)).scalar_one_or_none()
+        if not oyente_entry:
+            return jsonify({"error": "No existe el usuario."}), 404
+
+        noizzy_entry = db.get(Noizzy, noizzy_id)
+        if not noizzy_entry:
+            return jsonify({"error": "No existe el noizzy."}), 404
+        if noizzy_entry.Oyente_correo != correo:
+            return jsonify({"error": "El noizzy no es tuyo."}), 403
+        
+        like_entry = db.get(Like, (oyente_entry.correo, noizzy_id))
+        if not like_entry:
+            return jsonify({"error": "El usuario no le ha dado like al noizzy."}), 404
+        if like_entry.visto:
+            return jsonify({"error": "Ya has leido la notificacion del like."}), 404
+        
+        like_entry.visto = True
+        try:
+            db.commit() 
+        except Exception as e:
+            db.rollback()
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+    
+    return jsonify(""), 200
+
+"""Marca una notificacion de noizzito como leida"""
+@notificacion_bp.route("/read-noizzito", methods=["PATCH"])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("artista", "oyente")
+def read_noizzito():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Faltan campos en la petición."}), 400
+    
+    noizzito_id = data.get("noizzito")
+    if not noizzito_id:
+        return jsonify({"error": "Faltan el id del noizzito."}), 400
+    
+    correo = get_jwt_identity()
+    with get_db() as db:
+        noizzito_entry = db.get(Noizzito, noizzito_id, options=[selectinload(Noizzito.noizzy)])
+        if not noizzito_entry:
+            return jsonify({"error": "No existe el noizzito."}), 404
+        if noizzito_entry.noizzy.Oyente_correo != correo:
+            return jsonify({"error": "El noizzy al que responde no es tuyo."}), 403
+        if noizzito_entry.visto:
+            return jsonify({"error": "Ya has leido la notificacion del noizzito."}), 404
+        
+        noizzito_entry.visto = True
+        try:
+            db.commit() 
+        except Exception as e:
+            db.rollback()
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+    
+    return jsonify(""), 200
