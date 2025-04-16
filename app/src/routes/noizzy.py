@@ -156,7 +156,8 @@ def post_noizzito():
         if correo != noizzy_entry.Oyente_correo:
             socketio.emit("nueva-interaccion-ws", {"nombreUsuario": new_entry.oyente.nombreUsuario,
                                                     "noizzy": new_entry.id,
-                                                    "texto": new_entry.texto}
+                                                    "texto": new_entry.texto,
+                                                    "tipo": "respuesta"}
                                                 , room=new_entry.noizzy.oyente.correo)
     
     return jsonify(""), 201
@@ -409,7 +410,8 @@ def change_like():
         if like and correo != noizzy_entry.Oyente_correo:
             socketio.emit("nueva-interaccion-ws", {"nombreUsuario": like_entry.oyente.nombreUsuario,
                                                     "noizzy": like_entry.noizzy.id,
-                                                    "texto": like_entry.noizzy.texto}, room=like_entry.noizzy.oyente.correo)
+                                                    "texto": like_entry.noizzy.texto,
+                                                    "tipo": "like"}, room=like_entry.noizzy.oyente.correo)
         
     return jsonify(""), 200
 

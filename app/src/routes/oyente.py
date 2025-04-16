@@ -631,7 +631,8 @@ def change_follow():
 
         if siguiendo:
             usuario_actual = db.get(Oyente, correo)
-            socketio.emit("nuevo-seguidor-ws", {"nombreUsuario": usuario_actual.nombreUsuario if usuario_actual.tipo == "oyente" else usuario_actual.nombreArtistico,
+            socketio.emit("nuevo-seguidor-ws", {"nombre": usuario_actual.nombreUsuario if usuario_actual.tipo == "oyente" else usuario_actual.nombreArtistico,
+                                                "nombreUsuario": usuario_actual.nombreUsuario,
                                                 "fotoPerfil": usuario_actual.fotoPerfil,
                                                 "tipo": usuario_actual.tipo}, room=oyente.correo)
 

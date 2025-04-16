@@ -130,7 +130,8 @@ def create_album():
                                                     "nombre": nuevo_album.nombre,
                                                     "fotoPortada": nuevo_album.fotoPortada,
                                                     "nombreArtisticoArtista": nuevo_album.artista.nombreArtistico,
-                                                    "tipo": "album"}
+                                                    "tipo": "album",
+                                                    "featuring": []}
                                                     , room=seguidor.Seguidor_correo)
 
     return jsonify({"message": "Álbum creado exitosamente."}), 201
