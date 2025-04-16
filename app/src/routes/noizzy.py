@@ -155,8 +155,9 @@ def post_noizzito():
         # Websockets para notificacion en tiempo real
         if correo != noizzy_entry.Oyente_correo:
             socketio.emit("nueva-interaccion-ws", {"nombreUsuario": new_entry.oyente.nombreUsuario,
-                                                    "noizzy": new_entry.id,
-                                                    "texto": new_entry.texto,
+                                                    "noizzy": noizzy,
+                                                    "noizzito": new_entry.id,
+                                                    "texto": noizzy_entry.texto,
                                                     "tipo": "respuesta"}
                                                 , room=new_entry.noizzy.oyente.correo)
     
@@ -410,6 +411,7 @@ def change_like():
         if like and correo != noizzy_entry.Oyente_correo:
             socketio.emit("nueva-interaccion-ws", {"nombreUsuario": like_entry.oyente.nombreUsuario,
                                                     "noizzy": like_entry.noizzy.id,
+                                                    "noizzito": None,
                                                     "texto": like_entry.noizzy.texto,
                                                     "tipo": "like"}, room=like_entry.noizzy.oyente.correo)
         
