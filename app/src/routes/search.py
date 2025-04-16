@@ -201,7 +201,8 @@ def search():
                     ).join(Cancion, EsParteDePlaylist.Cancion_id == Cancion.id
                     ).where(and_(
                         Cancion.Album_id == albumes[i].id,
-                        Playlist.id.notin_(playlists_id))
+                        Playlist.id.notin_(playlists_id),
+                        Playlist.privacidad == False)
                     ).options(selectinload(Playlist.oyente)
                     ).distinct(
                     ).order_by(Playlist.fecha.desc()
@@ -244,7 +245,8 @@ def search():
                     ).join(EsParteDePlaylist, EsParteDePlaylist.Playlist_id == Playlist.id
                     ).where(and_(
                         EsParteDePlaylist.Cancion_id == canciones[i].id,
-                        Playlist.id.notin_(playlists_id))
+                        Playlist.id.notin_(playlists_id),
+                        Playlist.privacidad == False)
                     ).options(selectinload(Playlist.oyente)
                     ).order_by(Playlist.fecha.desc()
                     ).limit(LIMITE - len(playlists))
