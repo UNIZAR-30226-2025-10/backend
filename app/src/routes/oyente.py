@@ -77,7 +77,7 @@ def get_datos_oyente():
                       func.count(Like.Noizzy_id).label("num_likes"),
                       subquery_num_comentarios.label("num_comentarios"),
                       func.count(Like.Noizzy_id).filter(Like.Oyente_correo == correo_actual).label("user_like_exists"),
-                      Artista.nombreArtistico, Coleccion.fotoPortada)
+                      Artista.nombreArtistico, Coleccion.fotoPortada, Cancion.nombre)
                 .outerjoin(Like, Like.Noizzy_id == Noizzy.id)
                 .outerjoin(Cancion, Cancion.id == Noizzy.Cancion_id)
                 .outerjoin(Artista, Artista.correo == Cancion.Artista_correo)
@@ -88,6 +88,8 @@ def get_datos_oyente():
         
         noizzy = db.execute(stmt).first()
         
+        print(noizzy)
+
         ultimo_noizzy_data = {
             "id": noizzy[0],
             "fecha": noizzy[1].strftime("%d %m %Y %H %M"),
@@ -98,9 +100,10 @@ def get_datos_oyente():
             "cancion": {
                 "id": noizzy[3],
                 "nombreArtisticoArtista": noizzy[7],
-                "fotoPortada": noizzy[8]
+                "fotoPortada": noizzy[8],
+                "nombre": noizzy[9]
             } if noizzy[3] else None
-        } if noizzy else None
+        } if noizzy and noizzy[0] else None
         
         return jsonify({
             "oyente": {
