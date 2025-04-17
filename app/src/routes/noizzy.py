@@ -24,6 +24,7 @@ def get_datos_noizzy():
     correo = get_jwt_identity()
     
     with get_db() as db:
+        oyente_actual = db.get(Oyente, correo)
         # Subquery para contar comentarios
         noizzito_table = Noizzito.__table__
         subquery_num_comentarios = select(func.count(noizzito_table.c.Noizzy_id)).where(noizzito_table.c.Noizzy_id == Noizzy.id).scalar_subquery()
@@ -54,12 +55,13 @@ def get_datos_noizzy():
             ).where(Noizzy.id == id)
 
         noizzy = db.execute(stmt).first()
-        if not noizzy:
+        if not noizzy or not noizzy[0]:
             return jsonify({"error": "Noizzy no encontrado."}), 404
         
         result = {
             "fotoPerfil": noizzy[10],
             "nombreUsuario": noizzy[9] if not noizzy[12] else noizzy[12],
+            "mio": noizzy[9] == oyente_actual.nombreUsuario,
             "fecha": noizzy[1].strftime("%d %m %Y %H %M"),
             "texto": noizzy[2],
             "num_likes": noizzy[4],
@@ -93,7 +95,8 @@ def get_datos_noizzy():
         
         noizzitos = [
             {
-                "nombreUsuario": row[9] if not noizzy[12] else noizzy[12],
+                "nombreUsuario": row[9] if not row[12] else row[12],
+                "mio": row[9] == oyente_actual.nombreUsuario,
                 "fotoPerfil": row[10],
                 "fecha": row[1].strftime("%d %m %y %H %M"),
                 "id": row[0],
