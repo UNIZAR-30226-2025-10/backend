@@ -178,7 +178,7 @@ def post_noizzito():
                 "fotoPerfil": usuario.fotoPerfil,
                 "id": new_entry.id,
                 "texto": new_entry.texto,
-                "fecha": new_entry.fecha,
+                "fecha": new_entry.fecha.strftime("%d %m %y %H %M"),
                 "cancion": {
                     "id": new_entry.cancion.id,
                     "nombre": new_entry.cancion.nombre,
@@ -398,7 +398,7 @@ def post_noizzy():
                 "fotoPerfil": usuario.fotoPerfil,
                 "id": noizzy.id,
                 "texto": noizzy.texto,
-                "fecha": noizzy.fecha,
+                "fecha": noizzy.fecha.strftime("%d %m %y %H %M"),
                 "cancion": {
                     "id": noizzy.cancion.id,
                     "nombre": noizzy.cancion.nombre,
