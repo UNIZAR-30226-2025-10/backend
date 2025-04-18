@@ -149,6 +149,9 @@ def post_noizzito():
         else:
             new_entry = Noizzito(Oyente_correo=correo, Noizzy_id=noizzy, tipo="noizzito", fecha=datetime.now(pytz.timezone('Europe/Madrid')),
                              texto=texto, visto=(noizzy_entry.Oyente_correo == correo), Cancion_id=cancion)
+        
+        usuario = db.get(Oyente, correo)
+
         db.add(new_entry)
         try:
             db.commit()       
@@ -158,11 +161,30 @@ def post_noizzito():
         # Websockets para notificacion en tiempo real
         if correo != noizzy_entry.Oyente_correo:
             socketio.emit("nueva-interaccion-ws", {"nombreUsuario": new_entry.oyente.nombreUsuario,
+                                                   "fotoPerfil": new_entry.oyente.fotoPerfil,
                                                     "noizzy": noizzy,
                                                     "noizzito": new_entry.id,
                                                     "texto": noizzy_entry.texto,
                                                     "tipo": "respuesta"}
                                                 , room=new_entry.noizzy.oyente.correo)
+            
+        stmt = (select(Oyente.correo)
+                .where(Oyente.sesionActiva == True))
+
+        activos = db.execute(stmt).scalars().all()    
+        
+        for activo in activos:
+            socketio.emit("actualizar-noizzito-ws", {"nombreUsuario": usuario.nombreUsuario if usuario.tipo == "oyente" else usuario.nombreArtistico,
+                "fotoPerfil": usuario.fotoPerfil,
+                "id": new_entry.id,
+                "texto": new_entry.texto,
+                "fecha": new_entry.fecha,
+                "cancion": {
+                    "id": new_entry.cancion.id,
+                    "nombre": new_entry.cancion.nombre,
+                    "fotoPortada": new_entry.cancion.album.fotoPortada,
+                    "nombreArtisticoArtista": new_entry.cancion.artista.nombreArtistico
+                } if new_entry.cancion else None}, room=activo) 
     
     return jsonify(""), 201
 
@@ -354,17 +376,35 @@ def post_noizzy():
         except Exception as e:
             return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
         
-        stmt = (select(Oyente)
+        stmt = (select(Oyente.correo)
             .join(Sigue, Oyente.correo == Sigue.Seguidor_correo)
-            .where(Sigue.Seguido_correo == correo))
+            .where(and_(Sigue.Seguido_correo == correo, Oyente.sesionActiva == True)))
 
         seguidores_oyentes = db.execute(stmt).scalars().all()
 
         for seguidor in seguidores_oyentes:
             # Emitir el evento de socket con la notificacion
-            socketio.emit("new-noizzy-ws", {"nombreUsuario": usuario.nombreUsuario,
+            socketio.emit("new-noizzy-ws", {"nombreUsuario": usuario.nombreUsuario if usuario.tipo == "oyente" else usuario.nombreArtistico,
                                             "fotoPerfil": usuario.fotoPerfil,
-                                            "tipo": usuario.tipo}, room=seguidor.correo)    
+                                            "tipo": usuario.tipo}, room=seguidor)
+
+        stmt = (select(Oyente.correo)
+                .where(Oyente.sesionActiva == True))
+
+        activos = db.execute(stmt).scalars().all()    
+        
+        for activo in activos:
+            socketio.emit("actualizar-noizzy-ws", {"nombreUsuario": usuario.nombreUsuario if usuario.tipo == "oyente" else usuario.nombreArtistico,
+                "fotoPerfil": usuario.fotoPerfil,
+                "id": noizzy.id,
+                "texto": noizzy.texto,
+                "fecha": noizzy.fecha,
+                "cancion": {
+                    "id": noizzy.cancion.id,
+                    "nombre": noizzy.cancion.nombre,
+                    "fotoPortada": noizzy.cancion.album.fotoPortada,
+                    "nombreArtisticoArtista": noizzy.cancion.artista.nombreArtistico
+                } if noizzy.cancion else None}, room=activo)  
 
     return jsonify(""), 201
             
@@ -415,6 +455,7 @@ def change_like():
         # Websockets para notificacion en tiempo real
         if like and correo != noizzy_entry.Oyente_correo:
             socketio.emit("nueva-interaccion-ws", {"nombreUsuario": like_entry.oyente.nombreUsuario,
+                                                   "fotoPerfil": like_entry.oyente.fotoPerfil,
                                                     "noizzy": like_entry.noizzy.id,
                                                     "noizzito": None,
                                                     "texto": like_entry.noizzy.texto,
