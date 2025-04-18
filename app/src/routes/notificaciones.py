@@ -282,6 +282,7 @@ def get_interacciones():
                     "nombreUsuario": respuestas[i].oyente.nombreUsuario,
                     "noizzy": respuestas[i].noizzy.id,
                     "texto": respuestas[i].noizzy.texto,
+                    "noizzito": respuestas[i].id,
                     "tipo": "respuesta"
                 })
                 i += 1
@@ -290,6 +291,7 @@ def get_interacciones():
                     "nombreUsuario": likes[j].oyente.nombreUsuario,
                     "noizzy": likes[j].noizzy.id,
                     "texto": likes[j].noizzy.texto,
+                    "noizzito": None,
                     "tipo": "like"
                 })
                 j += 1
@@ -299,6 +301,7 @@ def get_interacciones():
                     "nombreUsuario": r.oyente.nombreUsuario,
                     "noizzy": r.noizzy.id,
                     "texto": r.noizzy.texto,
+                    "noizzito": r.id,
                     "tipo": "respuesta"
                 })
 
@@ -307,6 +310,7 @@ def get_interacciones():
                     "nombreUsuario": l.oyente.nombreUsuario,
                     "noizzy": l.noizzy.id,
                     "texto": l.noizzy.texto,
+                    "noizzito": None,
                     "tipo": "like"
                 })
 
