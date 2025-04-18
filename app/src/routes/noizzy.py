@@ -343,6 +343,8 @@ def post_noizzy():
         if notificaciones:
             db.execute(insert(sin_leer_table), notificaciones)
 
+        usuario = db.get(Oyente, correo)
+
         try:
             db.commit()              
         except Exception as e:
@@ -356,9 +358,9 @@ def post_noizzy():
 
         for seguidor in seguidores_oyentes:
             # Emitir el evento de socket con la notificacion
-            socketio.emit("new-noizzy-ws", {"nombreUsuario": seguidor.nombreUsuario,
-                                            "fotoPerfil": seguidor.fotoPerfil,
-                                            "tipo": seguidor.tipo}, room=seguidor.correo)    
+            socketio.emit("new-noizzy-ws", {"nombreUsuario": usuario.nombreUsuario,
+                                            "fotoPerfil": usuario.fotoPerfil,
+                                            "tipo": usuario.tipo}, room=seguidor.correo)    
 
     return jsonify(""), 201
             
