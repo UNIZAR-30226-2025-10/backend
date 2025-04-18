@@ -363,7 +363,8 @@ def get_historial_colecciones():
                     h.coleccion.oyente.nombreUsuario if isinstance(h.coleccion, Playlist)
                     else h.coleccion.artista.nombreArtistico if isinstance(h.coleccion, Album)
                     else "Desconocido"
-                )
+                ),
+                "tipo": h.coleccion.tipo
             }
             for h in oyente_entry.historialColeccion[:30]
         ]

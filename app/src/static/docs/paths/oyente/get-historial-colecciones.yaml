@@ -26,12 +26,15 @@ get:
                       type: string
                     autor:
                       type: string
+                    tipo:
+                      type: string
           example:
             historial_colecciones:
                 id: "456"
                 nombre: "Mi Playlist"
                 fotoPortada: "url_playlist.jpg"
                 autor: "Usuario1"
+                tipo: "playlist"
     401:
       description: Usuario no autenticado
       content:
