@@ -176,6 +176,7 @@ def post_noizzito():
         for activo in activos:
             socketio.emit("actualizar-noizzito-ws", {"nombreUsuario": usuario.nombreUsuario if usuario.tipo == "oyente" else usuario.nombreArtistico,
                 "fotoPerfil": usuario.fotoPerfil,
+                "noizzy": noizzy,
                 "id": new_entry.id,
                 "texto": new_entry.texto,
                 "fecha": new_entry.fecha.strftime("%d %m %y %H %M"),
@@ -396,6 +397,7 @@ def post_noizzy():
         for activo in activos:
             socketio.emit("actualizar-noizzy-ws", {"nombreUsuario": usuario.nombreUsuario if usuario.tipo == "oyente" else usuario.nombreArtistico,
                 "fotoPerfil": usuario.fotoPerfil,
+                "mio": activo == correo,
                 "id": noizzy.id,
                 "texto": noizzy.texto,
                 "fecha": noizzy.fecha.strftime("%d %m %y %H %M"),
