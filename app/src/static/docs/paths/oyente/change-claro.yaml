@@ -1,0 +1,89 @@
+patch:
+  summary: Cambiar el modo claro/oscuro del oyente
+  description: Actualiza la preferencia de tema (claro u oscuro) del usuario autenticado en la base de datos.
+  security:
+    - BearerAuth: []
+  tags:
+    - Oyente
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            claro:
+              type: boolean
+              description: Indica si se desea activar el modo claro (`true`) o el modo oscuro (`false`).
+              example: true
+  responses:
+    200:
+      description: Preferencia de tema actualizada correctamente.
+      content:
+        application/json:
+          schema:
+            type: string
+            example: ""
+    400:
+      description: Datos incorrectos o faltantes en la solicitud.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Faltan campos en la peticion."
+    401:
+      description: Usuario no autenticado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Token inválido"
+    403:
+      description: Usuario autenticado sin permisos para la acción
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."
+    404:
+      description: El oyente no existe en la base de datos.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "El oyente no existe."
+    409:
+      description: El tema ya estaba configurado en ese modo.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Ya tienes el modo claro."
+    500:
+      description: Error inesperado en el servidor al intentar actualizar la base de datos.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Ha ocurrido un error inesperado."
+              details:
+                type: string
+                example: "Error de base de datos"

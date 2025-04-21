@@ -42,6 +42,7 @@ def login():
             return jsonify({"error": "Ya hay una sesion iniciada."}), 403
         
         usuario.sesionActiva = True
+        
         try:
             db.commit()
         except Exception as e:
@@ -50,7 +51,8 @@ def login():
 
         usuario_dict = {
             "fotoPerfil": usuario.fotoPerfil,
-            "volumen": usuario.volumen
+            "volumen": usuario.volumen,
+            "claro": usuario.claro
         } if usuario.tipo in ["oyente", "artista"] else None
         tipo = usuario.tipo
 
@@ -144,7 +146,7 @@ def register_oyente():
         contrasenyaHash = hash(contrasenya)           
         oyente = Oyente(correo=correo, nombreUsuario=nombreUsuario,
                             contrasenya=contrasenyaHash, fotoPerfil="DEFAULT",
-                            volumen=50, tokenVersion=1, sesionActiva=True)
+                            volumen=50, tokenVersion=1, sesionActiva=True, claro = True)
         fav_playlist = Playlist(nombre="Favoritos", fotoPortada="https://res.cloudinary.com/dftnw6kjf/image/upload/v1743687922/FAVORITOS.png", Oyente_correo=correo,
                                 privacidad=True, fecha=datetime.now(pytz.timezone('Europe/Madrid')))
         db.add(oyente) 
@@ -160,7 +162,8 @@ def register_oyente():
                                        expires_delta=False)
     return jsonify({"token": access_token, 
                     "oyente": {"fotoPerfil": oyente.fotoPerfil,
-                               "volumen": oyente.volumen}, 
+                               "volumen": oyente.volumen,
+                               "claro": oyente.claro}, 
                     "tipo": "oyente"}), 201 
 
 
@@ -238,7 +241,7 @@ def verify_artista():
         new_artist = Artista(correo=valid_user.correo, nombreUsuario=valid_user.nombreUsuario,
                              contrasenya=valid_user.contrasenya, fotoPerfil="DEFAULT",
                              volumen=50, nombreArtistico=valid_user.nombreArtistico, 
-                             biografia=None, tokenVersion=valid_user.tokenVersion, sesionActiva=True) 
+                             biografia=None, tokenVersion=valid_user.tokenVersion, sesionActiva=True, claro = True) 
         fav_playlist = Playlist(nombre="Favoritos", fotoPortada="https://res.cloudinary.com/dftnw6kjf/image/upload/v1743687922/FAVORITOS.png",
                                  Oyente_correo=valid_user.correo, privacidad=True, fecha=datetime.now(pytz.timezone('Europe/Madrid')))
 
@@ -260,7 +263,8 @@ def verify_artista():
                                        expires_delta=False)
     return jsonify({"token": access_token, 
                     "artista_valido": {"fotoPerfil": new_artist.fotoPerfil,
-                                       "volumen": new_artist.volumen}, 
+                                       "volumen": new_artist.volumen,
+                                       "claro": new_artist.claro}, 
                     "tipo": "artista"}), 201
 
 

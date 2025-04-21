@@ -64,7 +64,7 @@ def check_artista():
             valido_entry = Valido(correo=pendiente_entry.correo, nombreUsuario=pendiente_entry.nombreUsuario,
                                   contrasenya=pendiente_entry.contrasenya, 
                                   nombreArtistico=pendiente_entry.nombreArtistico, codigo=codigoHash,
-                                  tokenVersion=pendiente_entry.tokenVersion, sesionActiva=False)
+                                  tokenVersion=pendiente_entry.tokenVersion + 1, sesionActiva=False)
             db.add(valido_entry)
 
             mensaje = f"¡Enhorabuena! Has sido validado como artista en Noizz. Introduce el siguiente código en la app: {codigo}."

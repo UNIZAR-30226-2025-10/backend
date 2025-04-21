@@ -221,6 +221,7 @@ class Oyente(Usuario):
     correo: Mapped[str] = mapped_column(ForeignKey('Usuario.correo', ondelete="CASCADE"), primary_key=True)
     fotoPerfil: Mapped[str] = mapped_column(nullable=False)
     volumen: Mapped[int] = mapped_column(nullable=False)
+    claro: Mapped[bool] = mapped_column(nullable=False)
 
     # Parametros de herencia
     __mapper_args__ = {

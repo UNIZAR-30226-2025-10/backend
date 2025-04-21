@@ -67,6 +67,8 @@ paths:
     $ref: "/static/docs/paths/oyente/change-contrasenya.yaml"
   /change-follow:
     $ref: "/static/docs/paths/oyente/change-follow.yaml"
+  /change-claro:
+    $ref: "/static/docs/paths/oyente/change-claro.yaml"
   /get-datos-oyente:
     $ref: "/static/docs/paths/oyente/get-datos-oyente.yaml"
   /get-historial-artistas:

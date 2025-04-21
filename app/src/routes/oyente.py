@@ -508,6 +508,44 @@ def change_volumen():
     return jsonify(""), 200
 
 
+"""Cambia en la BD el tema claro-oscuro"""
+@oyente_bp.route('/change-claro', methods=['PATCH'])
+@jwt_required()
+@tokenVersion_required()
+@roles_required("oyente", "artista")
+def change_claro():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Datos incorrectos."}), 400
+    
+    correo = get_jwt_identity()
+    claro = data.get("claro")
+    if claro is None:
+        return jsonify({"error": "Faltan campos en la peticion."}), 400
+    
+    with get_db() as db:
+        oyente = db.get(Oyente, correo)
+        if not oyente:
+            return jsonify({"error": "El oyente no existe."}), 404
+        
+        if (oyente.claro and not claro) or (not oyente.claro and claro):
+            # Si es claro y claro == Falso, lo pongo oscuro; si es oscuro y claro == True, lo pongo claro
+            oyente.claro = claro
+
+        elif oyente.claro and claro:
+            return jsonify({"error": "Ya tienes el modo claro."}), 409
+        
+        elif not oyente.claro and not claro:
+            return jsonify({"error": "Ya tienes el modo oscuro."}), 409
+        
+        try:
+            db.commit()              
+        except Exception as e:
+            return jsonify({"error": "Ha ocurrido un error inesperado.", "details": str(e)}), 500
+
+    return jsonify(""), 200
+
+
 """Actualiza los datos de un oyente"""
 @oyente_bp.route('/change-datos-oyente', methods=['PUT'])
 @jwt_required()
