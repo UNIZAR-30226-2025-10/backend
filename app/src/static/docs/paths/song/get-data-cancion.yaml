@@ -1,0 +1,65 @@
+get:
+  summary: Obtener información de una canción
+  description: Devuelve el nombre, nombre artístico del artista y la portada del álbum de una canción dado su ID.
+  security:
+    - BearerAuth: []
+  tags:
+    - Canción
+  parameters:
+    - name: id
+      in: query
+      required: true
+      schema:
+        type: integer
+      description: ID de la canción a consultar
+  responses:
+    200:
+      description: Información de la canción obtenida correctamente.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              nombre:
+                type: string
+                description: Nombre de la canción
+              nombreArtisticoArtista:
+                type: string
+                description: Nombre artístico del artista
+              fotoPortada:
+                type: string
+                description: URL de la portada del álbum
+          example:
+            nombre: "Canción Ejemplo"
+            nombreArtisticoArtista: "Artista Famoso"
+            fotoPortada: "https://example.com/portada.jpg"
+    400:
+      description: No se proporcionó el ID de la canción.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Falta la cancion."
+    401:
+      description: La canción no existe.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "La canción no existe."
+    403:
+      description: Usuario autenticado sin permisos para la acción.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Acceso denegado."

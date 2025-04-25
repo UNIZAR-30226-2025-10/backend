@@ -103,6 +103,8 @@ paths:
     $ref: "/static/docs/paths/song/add-reproduccion.yaml"
   /get-estadisticas-cancion:
     $ref: "/static/docs/paths/song/get-estadisticas-cancion.yaml"
+  /get-data-cancion:
+    $ref: "/static/docs/paths/song/get-data-cancion.yaml"
   /create-cancion:
     $ref: "/static/docs/paths/song/create-cancion.yaml"
   /change-fav:

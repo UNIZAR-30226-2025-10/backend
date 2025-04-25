@@ -648,7 +648,7 @@ def get_tags():
 @jwt_required()
 @tokenVersion_required()
 @roles_required("oyente","artista")
-def get_cancion():
+def get_data_cancion():
     id = request.args.get("id")
     if not id:
         return jsonify({"error": "Falta la cancion."}), 400
