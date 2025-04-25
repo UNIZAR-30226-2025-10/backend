@@ -1,6 +1,38 @@
 put:
   summary: Actualiza el estado de like de un noizzy
-  description: Permite a un usuario autenticado dar o quitar like a un noizzy.
+  description: | 
+        Permite a un usuario autenticado dar o quitar like a un noizzy.
+
+        ### WebSocket:
+        Si el usuario da like, se emite un evento WebSocket `nueva-interaccion-ws` al usuario del noizzy con el que se interactúa.
+        - **Schema**:
+        ```json
+          {   
+            nombreUsuario             string
+                                      nombre de usuario del usuario que da like
+            fotoPerfil                string
+                                      link cloudinary de la foto de perfil del usuario que da like
+            noizzy                    integer
+                                      ID del noizzy con el que se interactúa
+            noizzito                  integer
+                                      None
+            texto                     string
+                                      texto del noizzy con el que se interactúa
+            tipo                      string
+                                      "like"
+          }
+        ```
+        - **Example Value**:
+        ```json
+          { 
+            "nombreUsuario":"usuario1",
+            "fotoPerfil": "https://example.com/usuario1.jpg",
+            "noizzy":87 ,
+            "noizzito": None,
+            "texto": "Texto del noizzy",
+            "tipo": "like"
+          }
+        ```
   security:
     - bearerAuth: []
   tags:

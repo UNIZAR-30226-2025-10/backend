@@ -31,17 +31,22 @@ get:
                   type: string
                   enum: ["respuesta", "like"]
                   description: Tipo de interacción.
+                noizzito:
+                  type: integer
+                  description: ID del noizzito si tipo == "respuesta"
           example:
             - fotoPerfil: "https://cloudinary.com/lucas123.jpg"
               nombreUsuario: "lucas123"
               noizzy: 87
               texto: "¡Buen tema!"
               tipo: "respuesta"
+              noizzito: 88
             - fotoPerfil: "https://cloudinary.com/sofia_m.jpg"
               nombreUsuario: "sofia_m"
               noizzy: 87
               texto: "¡Buen tema!"
               tipo: "like"
+              noizzito: None
     401:
       description: Usuario no autenticado.
       content:

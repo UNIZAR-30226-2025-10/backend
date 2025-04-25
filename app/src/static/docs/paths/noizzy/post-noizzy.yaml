@@ -1,6 +1,72 @@
 post:
   summary: Añade un noizzy al usuario logueado y avisa a sus seguidores
-  description: Permite a un usuario autenticado publicar un noizzy y notificar a sus seguidores.
+  description: |
+        Permite a un usuario autenticado publicar un noizzy y notificar a sus seguidores.
+        
+        ### WebSocket1:
+        Si se publica exitosamente, se emite un evento WebSocket `new-noizzy-ws` a los seguidores del usuario que publica el noizzy.
+        - **Schema**:
+        ```json
+          {   
+            nombreUsuario             string
+                                      nombre de usuario del usuario que publica el noizzy
+            fotoPerfil                string
+                                      link cloudinary de la foto de perfil del usuario que publica el noizzy
+            tipo                      string ∈ ["oyente", "artista"]
+                                      tipo del usuario que publica el noizzy
+          }
+        ```
+        - **Example Value**:
+        ```json
+          { 
+            "nombreUsuario":"usuario1",
+            "fotoPerfil": "https://example.com/usuario1.jpg",
+            "tipo": "oyente"
+          }
+        ```
+
+        ### WebSocket2:
+        Si se publica exitosamente, se emite un evento WebSocket `actualizar-noizzy-ws` a los usuarios logueados para actualizar la pagina sin recargar.
+        - **Schema**:
+        ```json
+          {   
+            nombreUsuario             string
+                                      nombre de usuario del usuario que da like
+            fotoPerfil                string
+                                      link cloudinary de la foto de perfil del usuario que da like
+            mio                       bool
+                                      si el usuario logueado es el mismo que publica el noizzy
+            id                        integer
+                                      ID del noizsy que se publica
+            texto                     string
+                                      texto del noizzy que se publica
+            fecha                     string
+                                      fecha de publicación del noizzy (dd mm aa HH:MM)
+            cancion
+            {
+              id                      integer
+                                      ID de la cancion que referencia el noizzy
+              nombre                  string
+                                      nombre de la cancion que referencia el noizzy
+              fotoPortada             string
+                                      link cloudinary de la foto de portada de la canción que referencia el noizzy
+              nombreArtisticoArtista  string
+                                      nombre artistico del artista de la canción que referencia el noizzy
+            }
+          }
+        ```
+        - **Example Value**:
+        ```json
+          { 
+            "nombreUsuario":"usuario1",
+            "fotoPerfil": "https://example.com/usuario1.jpg",
+            "noizzy":87,
+            "id": 88,
+            "texto": "Texto del noizzy",
+            "fecha": "15 10 2024 20:05",
+            "cancion": null
+          }
+        ```
   security:
     - bearerAuth: []
   tags:

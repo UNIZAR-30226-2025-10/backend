@@ -23,6 +23,9 @@ get:
               id:
                 type: integer
                 description: ID del Noizzy
+              mio:
+                type: boolean
+                description: Si el Noizzy pertenece al usuario logueado
               fotoPerfil:
                 type: string
                 description: Foto de perfil del usuario propietario del noizzy
@@ -67,6 +70,9 @@ get:
                     id:
                       type: integer
                       description: ID del Noizzito
+                    mio:
+                      type: boolean
+                      description: Si el noizzito pertenece al usuario logueado
                     fotoPerfil:
                       type: string
                       description: Foto de perfil del usuario propietario del noizzy
@@ -106,6 +112,45 @@ get:
                         nombreArtisticoArtista:
                           type: string
                           description: Nombre artístico del artista
+          example:
+            id: 123
+            mio: true
+            fotoPerfil: "https://example.com/perfil.jpg"
+            fecha: "2025-04-25T14:30:00Z"
+            texto: "¡Disfrutando esta canción increíble!"
+            num_likes: 42
+            num_comentarios: 5
+            like: true
+            cancion:
+              id: 789
+              nombre: "Noizzy Song"
+              nombreArtisticoArtista: "DJ Example"
+              fotoPortada: "https://example.com/portada.jpg"
+            noizzitos:
+              - id: 201
+                mio: false
+                fotoPerfil: "https://example.com/usuario1.jpg"
+                fecha: "2025-04-25T15:00:00Z"
+                texto: "¡También me encanta!"
+                nombreUsuario: "usuario123"
+                like: true
+                num_likes: 10
+                num_comentarios: 2
+                cancion:
+                  id: 789
+                  nombre: "Noizzy Song"
+                  fotoPortada: "https://example.com/portada.jpg"
+                  nombreArtisticoArtista: "DJ Example"
+              - id: 202
+                mio: false
+                fotoPerfil: "https://example.com/usuario2.jpg"
+                fecha: "2025-04-25T15:05:00Z"
+                texto: "Buen gusto!"
+                nombreUsuario: "musicalover"
+                like: false
+                num_likes: 3
+                num_comentarios: 0
+                cancion: null
     400:
       description: Faltan datos en la solicitud.
       content:

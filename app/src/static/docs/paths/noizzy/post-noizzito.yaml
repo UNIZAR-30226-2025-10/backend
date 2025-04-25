@@ -1,6 +1,86 @@
 post:
   summary: Añade un noizzito al usuario logueado
-  description: Permite a un usuario autenticado añadir un noizzito asociado a un noizzy.
+  description: |
+        Permite a un usuario autenticado añadir un noizzito asociado a un noizzy.
+
+        ### WebSocket1:
+        Si se añade exitosamente, se emite un evento WebSocket `nueva-interaccion-ws` al usuario del noizzy con el que se interactúa.
+        - **Schema**:
+        ```json
+          {   
+            nombreUsuario             string
+                                      nombre de usuario del usuario que da like
+            fotoPerfil                string
+                                      link cloudinary de la foto de perfil del usuario que da like
+            noizzy                    integer
+                                      ID del noizzy con el que se interactúa
+            noizzito                  integer
+                                      ID del noizzito añadido
+            texto                     string
+                                      texto del noizzy con el que se interactúa
+            tipo                      string
+                                      "respuesta"
+          }
+        ```
+        - **Example Value**:
+        ```json
+          { 
+            "nombreUsuario":"usuario1",
+            "fotoPerfil": "https://example.com/usuario1.jpg",
+            "noizzy":87 ,
+            "noizzito": 88,
+            "texto": "Texto del noizzy",
+            "tipo": "respuesta"
+          }
+        ```
+
+        ### WebSocket2:
+        Si se añade exitosamente, se emite un evento WebSocket `actualizar-noizzito-ws` a los usuarios logueados para actualizar la pagina sin recargar.
+        - **Schema**:
+        ```json
+          {   
+            nombreUsuario             string
+                                      nombre de usuario del usuario que da like
+            fotoPerfil                string
+                                      link cloudinary de la foto de perfil del usuario que da like
+            noizzy                    integer
+                                      ID del noizzy con el que se interactúa
+            id                        integer
+                                      ID del noizzito que se añade
+            texto                     string
+                                      texto del noizzito que se añade
+            fecha                     string
+                                      fecha de publicación del noizzito (dd mm aa HH:MM)
+            cancion
+            {
+              id                      integer
+                                      ID de la cancion que referencia el noizzito
+              nombre                  string
+                                      nombre de la cancion que referencia el noizzito
+              fotoPortada             string
+                                      link cloudinary de la foto de portada de la canción que referencia el noizzito
+              nombreArtisticoArtista  string
+                                      nombre artistico del artista de la canción que referencia el noizzito
+            }
+          }
+        ```
+        - **Example Value**:
+        ```json
+          { 
+            "nombreUsuario":"usuario1",
+            "fotoPerfil": "https://example.com/usuario1.jpg",
+            "noizzy":87,
+            "id": 88,
+            "texto": "Texto del noizzito",
+            "fecha": "19 05 2024 21:45",
+            "cancion": {
+                "id": 33,
+                "nombre": "Shake It Off",
+                "fotoPortada": "https://example.com/1989.jpg",
+                "nombreArtisticoArtista": "Taylor Swift"
+            }
+          }
+        ```
   security:
     - bearerAuth: []
   tags:
