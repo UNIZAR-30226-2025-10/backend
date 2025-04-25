@@ -13,10 +13,10 @@ post:
           type: object
           properties:
             id:
-              type: string
+              type: integer
               description: ID de la playlist a la cual el usuario desea unirse como participante
         example:
-          id: "85"
+          id: 85
   responses:
     201:
       description: Usuario participa en la playlist exitosamente.

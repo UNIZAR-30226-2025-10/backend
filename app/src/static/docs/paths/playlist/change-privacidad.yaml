@@ -1,16 +1,28 @@
 patch:
   summary: Cambiar privacidad de una playlist
-  description: Permite a un usuario cambiar la privacidad de una playlist si es su creador.
+  description: Permite a un usuario cambiar la privacidad de una playlist si es su creador. No se puede modificar la playlist especial "Favoritos".
   security:
-    - bearerAuth: []
+    - BearerAuth: []
   tags:
     - Playlist
   requestBody:
     required: true
     content:
       application/json:
+        schema:
+          type: object
+          properties:
+            id:
+              type: integer
+              description: ID de la playlist a modificar
+            privacidad:
+              type: boolean
+              description: Nueva privacidad de la playlist (true = privada, false = pública)
+          required:
+            - id
+            - privacidad
         example:
-          id: "12345"
+          id: 12345
           privacidad: true
   responses:
     200:
@@ -29,7 +41,8 @@ patch:
             properties:
               error:
                 type: string
-                example: "Faltan datos requeridos."
+            example:
+              error: "Faltan datos requeridos."
     401:
       description: Usuario no autenticado
       content:
@@ -41,7 +54,7 @@ patch:
                 type: string
                 example: "Token inválido"
     403:
-      description: Usuario autenticado sin permisos para la accion
+      description: Usuario autenticado sin permisos para la acción
       content:
         application/json:
           schema:
@@ -49,7 +62,7 @@ patch:
             properties:
               error:
                 type: string
-                example: "Acceso denegado."
+                example: "No tienes permiso para modificar esta playlist."
     404:
       description: Recurso no encontrado
       content:

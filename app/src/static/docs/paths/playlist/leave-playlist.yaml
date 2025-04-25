@@ -13,10 +13,10 @@ delete:
           type: object
           properties:
             playlist:
-              type: string
+              type: integer
               description: ID de la playlist de la cual el usuario quiere salir
         example:
-          playlist: "85"
+          playlist: 4
   responses:
     204:
       description: Participante eliminado exitosamente.

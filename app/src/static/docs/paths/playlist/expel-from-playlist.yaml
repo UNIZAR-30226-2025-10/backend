@@ -16,11 +16,11 @@ delete:
               type: string
               description: Nombre de usuario del participante a expulsar
             playlist:
-              type: string
+              type: integer
               description: ID de la playlist de la cual el usuario será expulsado
         example:
           nombreUsuario: "usuario123"
-          playlist: "85"
+          playlist: 4
   responses:
     204:
       description: Participante eliminado exitosamente.

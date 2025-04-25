@@ -16,11 +16,11 @@ post:
               type: string
               description: Nombre de usuario del invitado
             playlist:
-              type: string
+              type: integer
               description: ID de la playlist
         example:
           nombreUsuario: "usuario123"
-          playlist: "85"
+          playlist: 4
   responses:
     201:
       description: Usuario invitado a la playlist exitosamente.

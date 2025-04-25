@@ -13,7 +13,7 @@ put:
           type: object
           properties:
             id:
-              type: string
+              type: integer
               description: ID de la playlist a modificar
             nuevaFoto:
               type: string
@@ -22,11 +22,11 @@ put:
               type: string
               description: El nuevo nombre para la playlist
         example:
-          id: "85"
+          id: 85
           nuevaFoto: "https://example.com/nueva_foto.jpg"
           nuevoNombre: "Mi nueva playlist"
   responses:
-    201:
+    200:
       description: Playlist modificada exitosamente.
       content:
         application/json:

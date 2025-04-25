@@ -13,14 +13,14 @@ delete:
           type: object
           properties:
             cancion:
-              type: string
+              type: integer
               description: ID de la canción a eliminar
             playlist:
-              type: string
+              type: integer
               description: ID de la playlist
         example:
-          cancion: "cancion1"
-          playlist: "85"
+          cancion: 2
+          playlist: 3
   responses:
     204:
       description: Canción eliminada exitosamente de la playlist.

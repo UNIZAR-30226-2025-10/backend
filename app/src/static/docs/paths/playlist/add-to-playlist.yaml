@@ -13,14 +13,14 @@ post:
           type: object
           properties:
             cancion:
-              type: string
+              type: integer
               description: ID de la canción a añadir
             playlist:
-              type: string
+              type: integer
               description: ID de la playlist
         example:
-          cancion: "cancion1"
-          playlist: "85"
+          cancion: 3
+          playlist: 2
   responses:
     201:
       description: Canción añadida exitosamente a la playlist.

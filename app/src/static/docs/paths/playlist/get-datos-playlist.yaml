@@ -70,6 +70,8 @@ get:
                     fecha: 
                       type: string
                       description: "dd mm aaaa"
+                    album:
+                      type: string
               rol:
                 type: string
                 description: rol in [creador, participante, nada]
@@ -93,6 +95,7 @@ get:
                 nombreUsuarioArtista: "artista1"
                 fotoPortada: "https://example.com/portada1.jpg"
                 fecha: "15 03 2025"
+                album: "Album 1"
               - id: 51
                 nombre: "Canción 2"
                 nombreArtisticoArtista: "Artista 2"
@@ -103,7 +106,7 @@ get:
                 nombreUsuarioArtista: "artista2"
                 fotoPortada: "https://example.com/portada2.jpg"
                 fecha: "09 02 2025"
-            
+                album: "Album 1"            
             rol: "creador"
     400:
       description: Datos incorrectos o faltantes en la solicitud.

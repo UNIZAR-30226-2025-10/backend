@@ -13,10 +13,10 @@ delete:
           type: object
           properties:
             id:
-              type: string
+              type: integer
               description: ID de la playlist a eliminar
         example:
-          id: "85"
+          id: 2
   responses:
     204:
       description: Playlist eliminada exitosamente.
