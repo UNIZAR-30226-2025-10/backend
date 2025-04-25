@@ -105,7 +105,8 @@ def switch_session():
 
         usuario_dict = {
             "fotoPerfil": usuario.fotoPerfil,
-            "volumen": usuario.volumen
+            "volumen": usuario.volumen,
+            "claro": usuario.claro
         } if usuario.tipo in ["oyente", "artista"] else None
         tipo = usuario.tipo
 
