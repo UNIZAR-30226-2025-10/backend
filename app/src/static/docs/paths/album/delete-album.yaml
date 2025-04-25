@@ -5,18 +5,13 @@ delete:
     - bearerAuth: []
   tags:
     - Álbum
-  requestBody:
-    required: true
-    content:
-      application/json:
-        schema:
-          type: object
-          properties:
-            id:
-              type: integer
-              description: ID del álbum a eliminar
-        example:
-          id: 34
+  parameters:
+    - name: id
+      in: query
+      required: true
+      description: ID del álbum a eliminar
+      schema:
+        type: integer
   responses:
     200:
       description: Álbum eliminado exitosamente.

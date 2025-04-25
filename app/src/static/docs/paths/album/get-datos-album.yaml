@@ -18,13 +18,12 @@ get:
       content:
         application/json:
           example:
-            album:
-              nombre: "album 1"
-              fotoPortada: "<link-cloudinary>"
-              fechaPublicacion: "24/12/2024"
-              duracion: 30000
-              nombreArtisticoArtista: "artista 1"
-              favs: 36
+            nombre: "album 1"
+            fotoPortada: "<link-cloudinary>"
+            fechaPublicacion: "24/12/2024"
+            duracion: 30000
+            nombreArtisticoArtista: "artista 1"
+            favs: 36
             canciones:
               - id: "1"
                 nombre: "dragon"
