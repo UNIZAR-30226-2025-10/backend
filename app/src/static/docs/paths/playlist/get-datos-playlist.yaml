@@ -11,7 +11,7 @@ get:
       description: ID de la playlist
       required: true
       schema:
-        type: string
+        type: integer
   responses:
     200:
       description: Datos de la playlist obtenidos correctamente
