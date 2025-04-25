@@ -26,7 +26,7 @@ get:
                       type: string
           example:
             playlists:
-                id: "789"
+              - id: "789"
                 fotoPortada: "url_playlist.jpg"
                 nombre: "Mi Playlist"
     401:

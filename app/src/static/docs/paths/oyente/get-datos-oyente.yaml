@@ -63,6 +63,8 @@ get:
                       fotoPortada:
                         type: string
                         description: URL de la portada del álbum
+                      nombre:
+                        type: string
           example:
             oyente:
               nombreUsuario: "juan123"

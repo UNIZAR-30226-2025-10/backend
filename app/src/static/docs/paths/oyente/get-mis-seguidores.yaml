@@ -24,11 +24,14 @@ get:
                       type: string
                     tipo:
                       type: string
+                    followBack:
+                      type: boolean
           example:
             seguidores:
-                nombreUsuario: "Nombre Usuario"
+              - nombreUsuario: "Nombre Usuario"
                 fotoPerfil: "url_foto.jpg"
                 tipo: "oyente"
+                followBack: true
     401:
       description: Usuario no autenticado
       content:

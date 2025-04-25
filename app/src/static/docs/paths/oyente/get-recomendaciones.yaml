@@ -24,11 +24,14 @@ get:
                       type: string
                     nombre:
                       type: string
+                    nombreArtisticoArtista:
+                      type: string
           example:
             canciones_recomendadas:
-                id: "101"
+              - id: "101"
                 fotoPortada: "url_album.jpg"
                 nombre: "Canción Recomendada"
+                nombreArtisticoArtista: "Artista"
     400:
       description: Datos inválidos o faltantes
       content:

@@ -20,7 +20,7 @@ get:
                   properties:
                     id:
                       type: integer
-                    nombreArtista:
+                    nombreArtisticoArtista:
                       type: string
                     nombre:
                       type: string
@@ -28,10 +28,14 @@ get:
                       type: string
           example:
             historial_canciones:
-                id: "123"
-                nombreArtista: "Artista1"
+              - id: "123"
+                nombreArtisticoArtista: "Artista1"
                 nombre: "Canción1"
-                fotoPortada: "url_imagen.jpg"
+                fotoPortada: "https://example.com/imagen1.jpg"
+              - id: "124"
+                nombreArtisticoArtista: "Artista2"
+                nombre: "Canción2"
+                fotoPortada: "https://example.com/imagen2.jpg"
     401:
       description: Usuario no autenticado
       content:

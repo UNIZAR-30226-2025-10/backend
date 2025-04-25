@@ -26,9 +26,12 @@ get:
                       type: string
           example:
             historial_artistas:
-                nombreUsuario: "Artista1"
-                nombreArtistico: "Artista1"
-                fotoPerfil: "url_foto.jpg"
+              - nombreUsuario: "Artista1"
+                nombreArtistico: "Artista Uno"
+                fotoPerfil: "https://example.com/foto1.jpg"
+              - nombreUsuario: "Artista2"
+                nombreArtistico: "Artista Dos"
+                fotoPerfil: "https://example.com/foto2.jpg"
     401:
       description: Usuario no autenticado
       content:

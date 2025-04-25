@@ -26,7 +26,7 @@ get:
                       type: string
           example:
             seguidos:
-                nombreUsuario: "Nombre Usuario"
+              - nombreUsuario: "Nombre Usuario"
                 fotoPerfil: "url_foto.jpg"
                 tipo: "artista"
     401:

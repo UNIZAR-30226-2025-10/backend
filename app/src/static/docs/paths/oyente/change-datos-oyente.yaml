@@ -20,7 +20,7 @@ put:
               description: Nuevo nombre de usuario
         example:
           fotoPerfil: "<link-cloudinary>"
-          nombreUsuario: "user123"
+          nombre: "user123"
   responses:
     200:
       description: Datos del oyente actualizados exitosamente.
@@ -28,7 +28,8 @@ put:
         application/json:
           schema:
             type: string
-            example: ""
+            example:
+              message: "Datos del oyente actualizados exitosamente."
     400:
       description: Datos incorrectos o faltantes en la solicitud.
       content:

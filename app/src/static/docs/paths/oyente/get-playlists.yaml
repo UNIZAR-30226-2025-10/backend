@@ -4,7 +4,14 @@ get:
   security:
     - BearerAuth: []
   tags:
-      - Oyente
+    - Oyente
+  parameters:
+    - name: nombreUsuario
+      in: query
+      required: true
+      schema:
+        type: string
+      description: Nombre de usuario del oyente
   responses:
     200:
       description: Lista de playlists públicas del usuario.
@@ -27,13 +34,16 @@ get:
                     nombre:
                       type: string
           example:
-            n_playlists: "1"
+            n_playlists: 2
             playlists:
-                id: "789"
-                fotoPortada: "url_playlist.jpg"
+              - id: 789
+                fotoPortada: "https://example.com/playlist1.jpg"
                 nombre: "Mi Playlist"
-    401:
-      description: Usuario no autenticado
+              - id: 790
+                fotoPortada: "https://example.com/playlist2.jpg"
+                nombre: "Otra Playlist"
+    400:
+      description: Datos faltantes en la solicitud.
       content:
         application/json:
           schema:
@@ -41,9 +51,19 @@ get:
             properties:
               error:
                 type: string
-                example: "Token inválido"
+                example: "Falta el nombreUsuario del usuario."
+    401:
+      description: Usuario no autenticado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "El oyente no existe."
     403:
-      description: Usuario autenticado sin permisos para la accion
+      description: Usuario autenticado sin permisos para la acción
       content:
         application/json:
           schema:
