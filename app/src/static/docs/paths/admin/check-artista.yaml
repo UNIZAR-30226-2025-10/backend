@@ -32,11 +32,8 @@ post:
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              okay:
-                type: string
-                example: "Todo ha ido bien."
+              type: string
+              example: ""
     400:
       description: Datos inválidos o faltantes
       content:
