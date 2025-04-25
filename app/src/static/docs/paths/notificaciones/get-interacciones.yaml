@@ -15,6 +15,9 @@ get:
             items:
               type: object
               properties:
+                fotoPerfil:
+                  type: string
+                  description: URL de la foto de perfil del usuario que generó la interacción.
                 nombreUsuario:
                   type: string
                   description: Nombre de usuario que generó la interacción.
@@ -29,11 +32,13 @@ get:
                   enum: ["respuesta", "like"]
                   description: Tipo de interacción.
           example:
-            - nombreUsuario: "lucas123"
+            - fotoPerfil: "https://cloudinary.com/lucas123.jpg"
+              nombreUsuario: "lucas123"
               noizzy: 87
               texto: "¡Buen tema!"
               tipo: "respuesta"
-            - nombreUsuario: "sofia_m"
+            - fotoPerfil: "https://cloudinary.com/sofia_m.jpg"
+              nombreUsuario: "sofia_m"
               noizzy: 87
               texto: "¡Buen tema!"
               tipo: "like"

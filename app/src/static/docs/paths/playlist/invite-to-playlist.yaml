@@ -1,6 +1,31 @@
 post:
   summary: Añadir un usuario como invitado a una playlist
-  description: Permite a un usuario añadir a otro usuario (que no sea ni creador ni participante) como invitado a una playlist, si es su creador.
+  description: |
+        Permite a un usuario añadir a otro usuario (que no sea ni creador ni participante) como invitado a una playlist, si es su creador.
+        ### WebSocket:
+        Si la invitación es exitosa, se emite un evento WebSocket `invite-to-playlist-ws` al usuario invitado si esta logueado.
+        - **Schema**:
+        ```json
+          {   
+            nombre                    string
+                                      nombre (nombre de usuario o nombre artistico) del usuario logueado
+            nombreUsuario             string
+                                      nombre de usuario del usuario logueado
+            fotoPerfil                string
+                                      link cloudinary de la foto de perfil del usuario logueado
+            tipo                      string ∈ ["oyente", "artista"]
+                                      tipo del usuario logueado
+          }
+        ```
+        - **Example Value**:
+        ```json
+          {
+            "nombre":"usuario1",
+            "nombreUsuario":"usuario1",
+            "fotoPortada": "https://example.com/usuario1.jpg",
+            "tipo": "oyente"
+          }
+        ```
   security:
     - bearerAuth: []
   tags:

@@ -1,0 +1,32 @@
+get:
+  summary: Documentación de conexión WebSocket
+  description: |
+    Esta ruta ficticia describe cómo funciona el WebSocket en Noizz.
+
+    ### Headers requeridos:
+    - `Authorization: Bearer <jwt_token>`
+
+    ### Comportamiento:
+    - El servidor valida el token al conectarse.
+    - Si es válido, el usuario entra en una "room" identificada por su correo.
+    - El servidor emite eventos a determinadas "room"s.
+
+    ### Ejemplo de conexión desde el cliente (JavaScript):
+    ```js
+    const socket = io("wss://api-noizz.onrender.com", {
+      extraHeaders: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    socket.on("evento-ws", (data) => {
+      ...
+    }); 
+    ```
+  security:
+    - bearerAuth: []
+  tags:
+    - Websockets
+  responses:
+    False:
+      description: Error al conectar el WebSocket o Falta token

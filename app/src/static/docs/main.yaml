@@ -2,11 +2,36 @@ openapi: 3.0.0
 info:
   title: API de Noizz
   version: 1.0.0
-  description: API de la aplicacion de reproduccion de musica Noizz
+  description: |
+    API de la aplicacion de reproduccion de musica Noizz
+
+    ---
+
+    **WebSockets**:
+
+    Algunas peticiones HTTP emiten eventos WebSocket que el cliente puede escuchar:
+
+      - **Álbum y Canción**:
+
+        - `novedad-musical-ws`: Se emite a los seguidores de un artista cuando saca un nuevo álbumo una nueva canción para Notificaciones.
+    
+      - **Noizzy**:
+
+        - `new-noizzy-ws`: Se emite a los seguidores de un usuario cuando postea un nuevo noizzy para Notificaciones.
+        - `actualizar-noizzy-ws`: Se emite a los usuarios logueados cuando un usuario postea un nuevo noizzy para actualizar sin recargar.
+        - `nueva-interaccion-ws`: Se emite a un usuario cuando otro comenta o da like a uno de sus noizzys para Notificaciones.
+        - `actualizar-noizzito-ws`: Se emite a los usuarios logueados cuando un usuario comenta en un noizzy para actualizar sin recargar.
+    
+      - **Oyente**:
+
+        - `nuevo-seguidor-ws`: Se emite a un usuario cuando otro empieza a seguirlo para Notificaciones.
+    
+      - **Playlist**:
+
+        - `invite-to-playlist-ws`: Se emite a un usuario cuando es invitado a participar en una playlist para Notificaciones.
 
 servers:
   - url: http://api-noizz.onrender.com
-    description: Servidor local
 
 paths:
   /login:
@@ -19,32 +44,8 @@ paths:
     $ref: "/static/docs/paths/auth/register-oyente.yaml"
   /register-artista:
     $ref: "/static/docs/paths/auth/register-artista.yaml"
-  /get-pendientes:
-    $ref: "/static/docs/paths/admin/get-pendientes.yaml"
-  /check-artista:
-    $ref: "/static/docs/paths/admin/check-artista.yaml"
   /verify-artista:
     $ref: "/static/docs/paths/auth/verify-artista.yaml"
-  /change-datos-artista:
-    $ref: "/static/docs/paths/artista/change-datos-artista.yaml"
-  /get-albumes:
-    $ref: "/static/docs/paths/artista/get-albumes.yaml"
-  /get-mis-canciones:
-    $ref: "/static/docs/paths/artista/get-mis-canciones.yaml"
-  /get-mis-albumes:
-    $ref: "/static/docs/paths/artista/get-mis-albumes.yaml"
-  /get-mis-datos-artista:
-    $ref: "/static/docs/paths/artista/get-mis-datos-artista.yaml"
-  /get-numero-canciones-favoritas:
-    $ref: "/static/docs/paths/artista/get-numero-canciones-favoritas.yaml"
-  /get-canciones:
-    $ref: "/static/docs/paths/artista/get-canciones.yaml"
-  /get-canciones-populares:
-    $ref: "/static/docs/paths/artista/get-canciones-populares.yaml"
-  /get-canciones-favoritas:
-    $ref: "/static/docs/paths/artista/get-canciones-favoritas.yaml"
-  /get-datos-artista:
-    $ref: "/static/docs/paths/artista/get-datos-artista.yaml"
   /delete-account:
     $ref: "/static/docs/paths/auth/delete-account.yaml"
   /forgot-password:
@@ -53,106 +54,130 @@ paths:
     $ref: "/static/docs/paths/auth/verify-codigo.yaml"
   /reset-password:
     $ref: "/static/docs/paths/auth/reset-password.yaml"
+  /get-pendientes:
+    $ref: "/static/docs/paths/admin/get-pendientes.yaml"
+  /check-artista:
+    $ref: "/static/docs/paths/admin/check-artista.yaml"
+  /get-datos-artista:
+    $ref: "/static/docs/paths/artista/get-datos-artista.yaml"
+  /get-mis-datos-artista:
+    $ref: "/static/docs/paths/artista/get-mis-datos-artista.yaml"
+  /change-datos-artista:
+    $ref: "/static/docs/paths/artista/change-datos-artista.yaml"
+  /get-albumes:
+    $ref: "/static/docs/paths/artista/get-albumes.yaml"
+  /get-mis-albumes:
+    $ref: "/static/docs/paths/artista/get-mis-albumes.yaml"
+  /get-canciones:
+    $ref: "/static/docs/paths/artista/get-canciones.yaml"
+  /get-mis-canciones:
+    $ref: "/static/docs/paths/artista/get-mis-canciones.yaml"
+  /get-canciones-populares:
+    $ref: "/static/docs/paths/artista/get-canciones-populares.yaml"
+  /get-canciones-favoritas:
+    $ref: "/static/docs/paths/artista/get-canciones-favoritas.yaml"
+  /get-numero-canciones-favoritas:
+    $ref: "/static/docs/paths/artista/get-numero-canciones-favoritas.yaml"
+  /create-album:
+    $ref: "/static/docs/paths/album/create-album.yaml" 
   /get-datos-album:
     $ref: "/static/docs/paths/album/get-datos-album.yaml"
+  /change-album:
+    $ref: "/static/docs/paths/album/change-album.yaml"  
   /delete-album:
     $ref: "/static/docs/paths/album/delete-album.yaml"
-  /change-album:
-    $ref: "/static/docs/paths/album/change-album.yaml"
-  /create-album:
-    $ref: "/static/docs/paths/album/create-album.yaml"
   /get-estadisticas-album:
     $ref: "/static/docs/paths/album/get-estadisticas-album.yaml"
   /get-estadisticas-album-favs:
     $ref: "/static/docs/paths/album/get-estadisticas-album-favs.yaml"
-  /change-contrasenya:
-    $ref: "/static/docs/paths/oyente/change-contrasenya.yaml"
-  /change-follow:
-    $ref: "/static/docs/paths/oyente/change-follow.yaml"
-  /change-volumen:
-    $ref: "/static/docs/paths/oyente/change-volumen.yaml"
-  /change-claro:
-    $ref: "/static/docs/paths/oyente/change-claro.yaml"
   /get-datos-oyente:
     $ref: "/static/docs/paths/oyente/get-datos-oyente.yaml"
   /get-mis-datos-oyente:
     $ref: "/static/docs/paths/oyente/get-mis-datos-oyente.yaml"
-  /get-historial-artistas:
-    $ref: "/static/docs/paths/oyente/get-historial-artistas.yaml"
   /change-datos-oyente:
     $ref: "/static/docs/paths/oyente/change-datos-oyente.yaml"
-  /get-historial-canciones:
-    $ref: "/static/docs/paths/oyente/get-historial-canciones.yaml"
-  /get-historial-colecciones:
-    $ref: "/static/docs/paths/oyente/get-historial-colecciones.yaml"
-  /get-mis-playlists:
-    $ref: "/static/docs/paths/oyente/get-mis-playlists.yaml"
-  /get-playlists:
-    $ref: "/static/docs/paths/oyente/get-playlists.yaml"
-  /get-recomendaciones:
-    $ref: "/static/docs/paths/oyente/get-recomendaciones.yaml"
-  /get-mis-seguidos:
-    $ref: "/static/docs/paths/oyente/get-mis-seguidos.yaml"
+  /change-contrasenya:
+    $ref: "/static/docs/paths/oyente/change-contrasenya.yaml"
+  /change-volumen:
+    $ref: "/static/docs/paths/oyente/change-volumen.yaml"
+  /change-claro:
+    $ref: "/static/docs/paths/oyente/change-claro.yaml"
+  /change-follow:
+    $ref: "/static/docs/paths/oyente/change-follow.yaml"
+  /get-seguidores:
+    $ref: "/static/docs/paths/oyente/get-seguidores.yaml"
   /get-mis-seguidores:
     $ref: "/static/docs/paths/oyente/get-mis-seguidores.yaml"
   /get-seguidos:
     $ref: "/static/docs/paths/oyente/get-seguidos.yaml"
-  /get-seguidores:
-    $ref: "/static/docs/paths/oyente/get-seguidores.yaml"
-  /add-reproduccion:
-    $ref: "/static/docs/paths/song/add-reproduccion.yaml"
-  /get-estadisticas-cancion:
-    $ref: "/static/docs/paths/song/get-estadisticas-cancion.yaml"
-  /get-data-cancion:
-    $ref: "/static/docs/paths/song/get-data-cancion.yaml"
+  /get-mis-seguidos:
+    $ref: "/static/docs/paths/oyente/get-mis-seguidos.yaml"
+  /get-historial-artistas:
+    $ref: "/static/docs/paths/oyente/get-historial-artistas.yaml"
+  /get-historial-canciones:
+    $ref: "/static/docs/paths/oyente/get-historial-canciones.yaml"
+  /get-historial-colecciones:
+    $ref: "/static/docs/paths/oyente/get-historial-colecciones.yaml"
+  /get-playlists:
+    $ref: "/static/docs/paths/oyente/get-playlists.yaml"    
+  /get-mis-playlists:
+    $ref: "/static/docs/paths/oyente/get-mis-playlists.yaml"
+  /get-recomendaciones:
+    $ref: "/static/docs/paths/oyente/get-recomendaciones.yaml"
   /create-cancion:
     $ref: "/static/docs/paths/song/create-cancion.yaml"
-  /change-fav:
-    $ref: "/static/docs/paths/song/change-fav.yaml"
-  /change-progreso:
-    $ref: "/static/docs/paths/song/change-progreso.yaml"
   /delete-cancion:
     $ref: "/static/docs/paths/song/delete-cancion.yaml"
   /get-cancion-actual:
     $ref: "/static/docs/paths/song/get-cancion-actual.yaml"
-  /change-modo:
-    $ref: "/static/docs/paths/song/change-modo.yaml"
-  /get-tags:
-    $ref: "/static/docs/paths/song/get-tags.yaml"
-  /get-estadisticas-favs:
-    $ref: "/static/docs/paths/song/get-estadisticas-favs.yaml"
-  /get-estadisticas-playlists:
-    $ref: "/static/docs/paths/song/get-estadisticas-playlists.yaml"
+  /get-data-cancion:
+    $ref: "/static/docs/paths/song/get-data-cancion.yaml"  
   /put-cancion-sola:
     $ref: "/static/docs/paths/song/put-cancion-sola.yaml"
   /put-cancion-coleccion:
     $ref: "/static/docs/paths/song/put-cancion-coleccion.yaml"
-  /accept-invitacion:
-    $ref: "/static/docs/paths/playlist/accept-invitacion.yaml"
-  /add-to-playlist:
-    $ref: "/static/docs/paths/playlist/add-to-playlist.yaml"
+  /add-reproduccion:
+    $ref: "/static/docs/paths/song/add-reproduccion.yaml" 
+  /change-progreso:
+    $ref: "/static/docs/paths/song/change-progreso.yaml"  
+  /change-modo:
+    $ref: "/static/docs/paths/song/change-modo.yaml"  
+  /change-fav:
+    $ref: "/static/docs/paths/song/change-fav.yaml"  
+  /get-estadisticas-cancion:
+    $ref: "/static/docs/paths/song/get-estadisticas-cancion.yaml"
+  /get-estadisticas-playlists:
+    $ref: "/static/docs/paths/song/get-estadisticas-playlists.yaml"
+  /get-estadisticas-favs:
+    $ref: "/static/docs/paths/song/get-estadisticas-favs.yaml"
+  /get-tags:
+    $ref: "/static/docs/paths/song/get-tags.yaml"
+  /create-playlist:
+    $ref: "/static/docs/paths/playlist/create-playlist.yaml"
+  /get-datos-playlist:
+    $ref: "/static/docs/paths/playlist/get-datos-playlist.yaml"
   /change-playlist:
     $ref: "/static/docs/paths/playlist/change-playlist.yaml"
   /change-privacidad:
     $ref: "/static/docs/paths/playlist/change-privacidad.yaml"
-  /create-playlist:
-    $ref: "/static/docs/paths/playlist/create-playlist.yaml"
-  /delete-from-playlist:
-    $ref: "/static/docs/paths/playlist/delete-from-playlist.yaml"
-  /delete-invitacion:
-    $ref: "/static/docs/paths/playlist/delete-invitacion.yaml"
   /delete-playlist:
     $ref: "/static/docs/paths/playlist/delete-playlist.yaml"
-  /expel-from-playlist:
-    $ref: "/static/docs/paths/playlist/expel-from-playlist.yaml"
-  /get-datos-playlist:
-    $ref: "/static/docs/paths/playlist/get-datos-playlist.yaml"
+  /add-to-playlist:
+    $ref: "/static/docs/paths/playlist/add-to-playlist.yaml"
+  /delete-from-playlist:
+    $ref: "/static/docs/paths/playlist/delete-from-playlist.yaml"
   /invite-to-playlist:
     $ref: "/static/docs/paths/playlist/invite-to-playlist.yaml"
+  /get-invitaciones:
+    $ref: "/static/docs/paths/playlist/get-invitaciones.yaml"    
+  /accept-invitacion:
+    $ref: "/static/docs/paths/playlist/accept-invitacion.yaml"
+  /delete-invitacion:
+    $ref: "/static/docs/paths/playlist/delete-invitacion.yaml"
   /leave-playlist:
     $ref: "/static/docs/paths/playlist/leave-playlist.yaml"
-  /get-invitaciones:
-    $ref: "/static/docs/paths/playlist/get-invitaciones.yaml"
+  /expel-from-playlist:
+    $ref: "/static/docs/paths/playlist/expel-from-playlist.yaml"
   /search:
     $ref: "/static/docs/paths/search/search.yaml"
   /search-invitados:
@@ -161,40 +186,48 @@ paths:
     $ref: "/static/docs/paths/search/search-for-playlist.yaml"
   /search-for-noizzy:
     $ref: "/static/docs/paths/search/search-for-noizzy.yaml"
+  /post-noizzy:
+    $ref: "/static/docs/paths/noizzy/post-noizzy.yaml"
+  /post-noizzito:
+    $ref: "/static/docs/paths/noizzy/post-noizzito.yaml"
+  /get-noizzys:
+    $ref: "/static/docs/paths/noizzy/get-noizzys.yaml" 
+  /get-mis-noizzys:
+    $ref: "/static/docs/paths/noizzy/get-mis-noizzys.yaml"
+  /get-datos-noizzy:
+    $ref: "/static/docs/paths/noizzy/get-datos-noizzy.yaml"
   /change-like:
     $ref: "/static/docs/paths/noizzy/change-like.yaml"
   /delete-noizzy:
     $ref: "/static/docs/paths/noizzy/delete-noizzy.yaml"
-  /get-datos-noizzy:
-    $ref: "/static/docs/paths/noizzy/get-datos-noizzy.yaml"
-  /get-mis-noizzys:
-    $ref: "/static/docs/paths/noizzy/get-mis-noizzys.yaml"
-  /get-noizzys:
-    $ref: "/static/docs/paths/noizzy/get-noizzys.yaml"
-  /post-noizzito:
-    $ref: "/static/docs/paths/noizzy/post-noizzito.yaml"
-  /post-noizzy:
-    $ref: "/static/docs/paths/noizzy/post-noizzy.yaml"
   /get-actividad-seguidos:
     $ref: "/static/docs/paths/noizzy/get-actividad-seguidos.yaml"
   /read-noizzys:
     $ref: "/static/docs/paths/noizzy/read-noizzys.yaml"
+  /has-notificaciones:
+    $ref: "/static/docs/paths/notificaciones/has-notificaciones.yaml"
+  /get-novedades-musicales:
+    $ref: "/static/docs/paths/notificaciones/get-novedades-musicales.yaml"  
+  /delete-notificacion-album:
+    $ref: "/static/docs/paths/notificaciones/delete-notificacion-album.yaml"
+  /delete-notificacion-cancion:
+    $ref: "/static/docs/paths/notificaciones/delete-notificacion-cancion.yaml"    
   /get-interacciones:
     $ref: "/static/docs/paths/notificaciones/get-interacciones.yaml"
   /read-interacciones:
     $ref: "/static/docs/paths/notificaciones/read-interacciones.yaml"
-  /has-notificaciones:
-    $ref: "/static/docs/paths/notificaciones/has-notificaciones.yaml"
-  /get-novedades-musicales:
-    $ref: "/static/docs/paths/notificaciones/get-novedades-musicales.yaml"
-  /read-nuevo-seguidor:
-    $ref: "/static/docs/paths/notificaciones/read-nuevo-seguidor.yaml"
-  /get-nuevos-seguidores:
-    $ref: "/static/docs/paths/notificaciones/get-nuevos-seguidores.yaml"
   /read-like:
     $ref: "/static/docs/paths/notificaciones/read-like.yaml"
   /read-noizzito:
     $ref: "/static/docs/paths/notificaciones/read-noizzito.yaml"
+  /get-nuevos-seguidores:
+    $ref: "/static/docs/paths/notificaciones/get-nuevos-seguidores.yaml"  
+  /read-nuevo-seguidor:
+    $ref: "/static/docs/paths/notificaciones/read-nuevo-seguidor.yaml"
+  /connect:
+    $ref: "/static/docs/paths/websocket/connect.yaml"
+  /disconnect:
+    $ref: "/static/docs/paths/websocket/disconnect.yaml"
 
 components:
   securitySchemes:

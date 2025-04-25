@@ -1,0 +1,14 @@
+get:
+  summary: Documentación de conexión WebSocket
+  description: |
+    Esta ruta ficticia describe cómo funciona el WebSocket en Noizz.
+
+    ### Headers requeridos:
+    - `Authorization: Bearer <jwt_token>`
+
+    ### Comportamiento:
+    - El usuario sale de la "room" identificada por su correo.
+  security:
+    - bearerAuth: []
+  tags:
+    - Websockets

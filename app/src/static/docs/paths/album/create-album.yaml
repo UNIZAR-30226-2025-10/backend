@@ -1,6 +1,39 @@
 post:
   summary: Crea un álbum del artista logueado con mínimo 1 canción
-  description: Permite a un artista logueado crear un nuevo álbum. Puede notificar a sus seguidores si se indica.
+  description: |
+        Permite a un artista logueado crear un nuevo álbum. Puede notificar a sus seguidores si se indica.
+
+        ### WebSocket:
+        Si la creación es exitosa y se indica, se emite un evento WebSocket `novedad-musical-ws` a los seguidores del artista logueado.
+        - **Schema**:
+        ```json
+          {   
+            id                        integer
+                                      ID del album
+            nombre                    string
+                                      nombre del album
+            fotoPortada               string
+                                      link cloudinary de la portada del album
+            nombreArtisticoArtista    string
+                                      nombre artístico del artista del album
+            tipo                      string
+                                      "album"
+            featuring                 [string]
+                                      []
+          }
+        ```
+        - **Example Value**:
+        ```json
+          {   
+            "id": 4,
+            "nombre":"Reputation",
+            "fotoPortada": "https://example.com/reputation.jpg",
+            "nombreArtisticoArtista": "Taylor Swift",
+            "tipo": "album",
+            "featuring": []
+          }
+        ```
+
   security:
     - bearerAuth: []
   tags:

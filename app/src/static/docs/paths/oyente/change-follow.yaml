@@ -1,6 +1,32 @@
 put:
   summary: Seguir o dejar de seguir a un usuario
-  description: Permite a un usuario autenticado seguir o dejar de seguir a otro usuario, proporcionando su nombre de usuario y el estado deseado (`siguiendo`).
+  description: |
+        Permite a un usuario autenticado seguir o dejar de seguir a otro usuario, proporcionando su nombre de usuario y el estado deseado (`siguiendo`).
+
+        ### WebSocket:
+        Si el usuario logueado sigue a otro, se emite un evento WebSocket `nuevo-seguidor-ws` a dicho usuario si está logueado.
+        - **Schema**:
+        ```json
+          {   
+            nombre                    string
+                                      nombre (nombre de usuario o nombre artistico) del usuario logueado
+            nombreUsuario             string
+                                      nombre de usuario del usuario logueado
+            fotoPerfil                string
+                                      link cloudinary de la foto de perfil del usuario logueado
+            tipo                      string ∈ ["oyente", "artista"]
+                                      tipo del usuario logueado
+          }
+        ```
+        - **Example Value**:
+        ```json
+          {
+            "nombre":"usuario1",
+            "nombreUsuario":"usuario1",
+            "fotoPortada": "https://example.com/usuario1.jpg",
+            "tipo": "oyente"
+          }
+        ```
   security:
     - bearerAuth: []
   tags:
@@ -17,7 +43,7 @@ put:
               description: Nombre de usuario del usuario a seguir o dejar de seguir
             siguiendo:
               type: boolean
-              description: `true` para seguir, `false` para dejar de seguir
+              description: true para seguir, false para dejar de seguir
           required:
             - nombreUsuario
             - siguiendo

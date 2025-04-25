@@ -1,6 +1,37 @@
 post:
   summary: Añadir una nueva canción
-  description: Permite a un artista añadir una nueva canción, asociarla a un álbum, agregar colaboraciones y etiquetas. Opcionalmente puede notificar a sus seguidores.
+  description: |
+        Permite a un artista añadir una nueva canción, asociarla a un álbum, agregar colaboraciones y etiquetas. Opcionalmente puede notificar a sus seguidores.
+        ### WebSocket:
+        Si la creación es exitosa, se emite un evento WebSocket `novedad-musical-ws` a los seguidores del artista logueado.
+        - **Schema**:
+        ```json
+          {   
+            id                        integer
+                                      ID de la cancion
+            nombre                    string
+                                      nombre de la cancion
+            fotoPortada               string
+                                      link cloudinary de la portada de la cancion
+            nombreArtisticoArtista    string
+                                      nombre artístico del artista de la cancion
+            tipo                      string
+                                      "cancion"
+            featuring                 [string]
+                                      lista con el nombre artistico de los artistas featuring de la cancion
+          }
+        ```
+        - **Example Value**:
+        ```json
+          {   
+            "id": 30,
+            "nombre": "Shake It Off",
+            "fotoPortada": "https://example.com/1989.jpg",
+            "nombreArtisticoArtista": "Taylor Swift",
+            "tipo": "cancion",
+            "featuring": []
+          }
+        ```
   security:
     - BearerAuth: []
   tags:

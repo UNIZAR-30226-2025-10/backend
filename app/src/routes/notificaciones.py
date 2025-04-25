@@ -279,6 +279,7 @@ def get_interacciones():
         while i < len(respuestas) and j < len(likes):
             if respuestas[i].fecha > likes[j].fecha:
                 resultado.append({
+                    "fotoPerfil": respuestas[i].oyente.fotoperfil,
                     "nombreUsuario": respuestas[i].oyente.nombreUsuario,
                     "noizzy": respuestas[i].noizzy.id,
                     "texto": respuestas[i].noizzy.texto,
@@ -288,6 +289,7 @@ def get_interacciones():
                 i += 1
             else:
                 resultado.append({
+                    "fotoPerfil": likes[j].oyente.fotoperfil,
                     "nombreUsuario": likes[j].oyente.nombreUsuario,
                     "noizzy": likes[j].noizzy.id,
                     "texto": likes[j].noizzy.texto,
@@ -298,6 +300,7 @@ def get_interacciones():
 
         for r in respuestas[i:]:
             resultado.append({
+                    "fotoPerfil": r.oyente.fotoperfil,
                     "nombreUsuario": r.oyente.nombreUsuario,
                     "noizzy": r.noizzy.id,
                     "texto": r.noizzy.texto,
@@ -307,6 +310,7 @@ def get_interacciones():
 
         for l in likes[j:]:
             resultado.append({
+                    "fotoPerfil": l.oyente.fotoperfil,
                     "nombreUsuario": l.oyente.nombreUsuario,
                     "noizzy": l.noizzy.id,
                     "texto": l.noizzy.texto,
