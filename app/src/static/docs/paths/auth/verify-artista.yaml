@@ -37,6 +37,9 @@ post:
                   volumen:
                     type: number
                     description: Nivel de volumen del artista.
+                  claro:
+                    type: bool
+                    description: Tema del usuario (claro o oscuro).
               tipo:
                 type: string
                 description: Tipo de usuario (artista).

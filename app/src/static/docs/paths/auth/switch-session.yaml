@@ -1,6 +1,6 @@
 post:
-  summary: Crea una cuenta de oyente
-  description: Permite a un usuario registrarse como oyente en la aplicación.
+  summary: Cierra sesión actual y abre una nueva
+  description: Finaliza la sesión actual y genera un nuevo token para el usuario, siempre que la sesión esté activa. Requiere correo o nombre de usuario y la contraseña.
   tags:
     - Autenticación
   requestBody:
@@ -13,21 +13,19 @@ post:
             correo:
               type: string
               format: email
-              description: Correo electrónico del usuario.
+              description: Correo electrónico del usuario (opcional si se proporciona nombreUsuario).
             nombreUsuario:
               type: string
-              description: Nombre de usuario del oyente.
+              description: Nombre de usuario del usuario (opcional si se proporciona correo).
             contrasenya:
               type: string
               format: password
               description: Contraseña del usuario.
           required:
-            - correo
-            - nombreUsuario
             - contrasenya
   responses:
-    201:
-      description: Registro exitoso.
+    200:
+      description: Sesión reiniciada con éxito y nuevo token generado.
       content:
         application/json:
           schema:
@@ -35,22 +33,20 @@ post:
             properties:
               token:
                 type: string
-                description: Token de acceso generado para autenticación.
-              oyente:
+                description: Nuevo token de acceso generado para autenticación.
+              usuario:
                 type: object
+                nullable: true
                 properties:
                   fotoPerfil:
                     type: string
-                    description: URL de la foto de perfil del oyente.
+                    description: URL de la foto de perfil del usuario.
                   volumen:
                     type: number
-                    description: Nivel de volumen del oyente.
-                  claro:
-                    type: bool
-                    description: Tema del usuario (claro o oscuro).
+                    description: Nivel de volumen del usuario.
               tipo:
                 type: string
-                description: Tipo de usuario (oyente).
+                description: Tipo de usuario (oyente, artista, pendiente, valido o admin).
     400:
       description: Datos incorrectos o faltantes en la solicitud.
       content:
@@ -60,9 +56,9 @@ post:
             properties:
               error:
                 type: string
-                example: "Faltan campos."
-    409:
-      description: Conflicto por estado actual del recurso.
+                example: "Falta la contraseña."
+    401:
+      description: Credenciales incorrectas.
       content:
         application/json:
           schema:
@@ -70,9 +66,19 @@ post:
             properties:
               error:
                 type: string
-                example: "El correo ya está en uso."
+                example: "Contraseña incorrecta."
+    403:
+      description: La sesión no está activa y no se puede reiniciar.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "La sesion no ha sido iniciada."
     500:
-      description: Error inesperado en el servidor.
+      description: Error inesperado del servidor.
       content:
         application/json:
           schema:
@@ -81,3 +87,6 @@ post:
               error:
                 type: string
                 example: "Ha ocurrido un error inesperado."
+              details:
+                type: string
+                example: "Detalle del error interno."

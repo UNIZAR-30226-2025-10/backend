@@ -13,6 +13,8 @@ paths:
     $ref: "/static/docs/paths/auth/login.yaml"
   /logout:
     $ref: "/static/docs/paths/auth/logout.yaml"
+  /switch-session:
+    $ref: "/static/docs/paths/auth/switch-session.yaml"
   /register-oyente:
     $ref: "/static/docs/paths/auth/register-oyente.yaml"
   /register-artista:
