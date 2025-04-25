@@ -14,40 +14,54 @@ get:
             type: object
             properties:
               cancion:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  audio:
-                    type: string
-                  nombre:
-                    type: string
-                  nombreArtisticoArtista:
-                    type: string
-                  nombreUsuarioArtista:
-                    type: string
-                  progreso:
-                    type: integer
-                    description: Progreso de la canción en segundos
-                  fav:
-                    type: boolean
-                    description: Si la cancion esta en Favoritos = true
-                  fotoPortada:
-                    type: string
+                anyOf:
+                  - type: object
+                    properties:
+                      id:
+                        type: integer
+                      audio:
+                        type: string
+                      nombre:
+                        type: string
+                      nombreArtisticoArtista:
+                        type: string
+                      nombreUsuarioArtista:
+                        type: string
+                      progreso:
+                        type: integer
+                        description: Progreso de la canción en segundos
+                      fav:
+                        type: boolean
+                        description: Si la canción está en Favoritos
+                      featuring:
+                        type: array
+                        items:
+                          type: string
+                        description: Lista de nombres artísticos de artistas en featuring
+                      fotoPortada:
+                        type: string
+                  - type: "null"
               coleccion:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                  orden: 
-                    type: array
-                    items:
-                      type: integer
-                  index:
-                    type: integer
-                  modo: 
-                    type: string
-                    description: modo in ["aleatorio", "enOrden"]
+                anyOf:
+                  - type: object
+                    properties:
+                      id:
+                        type: integer
+                      orden: 
+                        type: array
+                        items:
+                          type: integer
+                      index:
+                        type: integer
+                      modo: 
+                        type: string
+                        description: Modo de reproducción (aleatorio o enOrden)
+                      ordenNatural:
+                        type: array
+                        items:
+                          type: integer
+                        description: Orden natural de las canciones si el modo es aleatorio
+                  - type: "null"
           example:
             cancion:
               id: 123
@@ -57,10 +71,12 @@ get:
               nombreUsuarioArtista: "UsuarioArtista"
               progreso: 120
               fav: true
+              featuring: ["Artista1", "Artista2"]
               fotoPortada: "url_portada.jpg"
             coleccion:
               id: 456
               orden: [123, 124, 125]
+              ordenNatural: [125, 123, 124]
               index: 1
               modo: "aleatorio"
     401:
@@ -74,7 +90,7 @@ get:
                 type: string
                 example: "Token inválido"
     403:
-      description: Usuario autenticado sin permisos para la accion
+      description: Usuario autenticado sin permisos para la acción
       content:
         application/json:
           schema:

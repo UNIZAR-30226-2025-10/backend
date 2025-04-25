@@ -1,6 +1,6 @@
 put:
   summary: Reproducir una canción sola
-  description: Inicia la reproducción de una canción específica, eliminando cualquier colección en curso.
+  description: Inicia la reproducción de una canción específica para el usuario, eliminando cualquier colección en curso si existiera.
   security:
     - BearerAuth: []
   tags:
@@ -14,7 +14,9 @@ put:
           properties:
             id:
               type: integer
-              description: ID de la cancion a reproducir
+              description: ID de la canción a reproducir
+          required:
+            - id
         example:
           id: 123
   responses:
@@ -27,14 +29,22 @@ put:
             properties:
               audio: 
                 type: string
+                description: URL del archivo de audio de la canción
               nombreUsuarioArtista:
                 type: string
+                description: Nombre de usuario del artista principal
+              featuring:
+                type: array
+                items:
+                  type: string
+                description: Lista de artistas que participan en la canción (featurings)
               fav:
                 type: boolean
-                description: Si la canción esta en Favoritos = true
+                description: Indica si la canción está en favoritos
           example:
-            audio: "url_audio.mp3"
+            audio: "https://cloudinary.com/audio.mp3"
             nombreUsuarioArtista: "UsuarioArtista"
+            featuring: ["Artista1", "Artista2"]
             fav: true
     400:
       description: Datos no válidos o faltantes en la petición
@@ -45,7 +55,13 @@ put:
             properties:
               error:
                 type: string
-                example: "Datos incorrectos."
+            examples:
+              sinDatos:
+                value:
+                  error: "Datos incorrectos."
+              sinId:
+                value:
+                  error: "Faltan campos en la peticion."
     401:
       description: Usuario no autenticado
       content:
@@ -57,7 +73,7 @@ put:
                 type: string
                 example: "Token inválido"
     403:
-      description: Usuario autenticado sin permisos para la accion
+      description: Usuario autenticado sin permisos para la acción
       content:
         application/json:
           schema:

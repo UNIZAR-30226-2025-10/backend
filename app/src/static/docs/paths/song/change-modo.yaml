@@ -1,6 +1,6 @@
 patch:
-  summary: Cambiar el modo de reproduccion de la canción actual
-  description: Permite actualizar el modo de reproducción de la canción que el usuario está escuchando.
+  summary: Cambiar el modo de reproducción de la canción actual
+  description: Permite actualizar el modo de reproducción de la canción que el usuario está escuchando actualmente en una colección.
   security:
     - BearerAuth: []
   tags:
@@ -14,9 +14,24 @@ patch:
           properties:
             modo:
               type: string
-              description: modo in ["aleatorio", "enOrden"]
+              description: Modo de reproducción ("aleatorio" o "enOrden")
+              enum: ["aleatorio", "enOrden"]
+            orden:
+              type: array
+              items:
+                type: integer
+              description: Lista de IDs de canciones en el orden actual
+            index:
+              type: integer
+              description: Índice actual en la lista de reproducción
+          required:
+            - modo
+            - orden
+            - index
         example:
           modo: "aleatorio"
+          orden: [101, 102, 103]
+          index: 0
   responses:
     200:
       description: Modo actualizado correctamente.
@@ -34,7 +49,23 @@ patch:
             properties:
               error:
                 type: string
-                example: "Datos incorrectos."
+            examples:
+              datosIncorrectos:
+                summary: Datos ausentes
+                value:
+                  error: "Datos incorrectos."
+              modoFaltante:
+                summary: Modo faltante
+                value:
+                  error: "Falta el modo de la cancion."
+              modoInvalido:
+                summary: Modo inválido
+                value:
+                  error: "Modo incorrecto."
+              indexInvalido:
+                summary: Índice fuera de rango
+                value:
+                  error: "Index no valido."
     401:
       description: Usuario no autenticado
       content:
@@ -46,7 +77,7 @@ patch:
                 type: string
                 example: "Token inválido"
     403:
-      description: Usuario autenticado sin permisos para la accion
+      description: Usuario autenticado sin permisos para la acción
       content:
         application/json:
           schema:
@@ -64,7 +95,7 @@ patch:
             properties:
               error:
                 type: string
-                example: "El usuario no esta reproduciendo ninguna cancion en una coleccion." 
+                example: "El usuario no esta reproduciendo ninguna cancion en una coleccion."
     500:
       description: Error interno del servidor
       content:
@@ -78,4 +109,3 @@ patch:
               details:
                 type: string
                 example: "Error de base de datos"
-

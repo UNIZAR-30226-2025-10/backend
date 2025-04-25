@@ -1,8 +1,8 @@
 post:
-  summary: Añade una canción del artista logueado
-  description: Permite a un artista añadir una nueva canción a su cuenta.
+  summary: Añadir una nueva canción
+  description: Permite a un artista añadir una nueva canción, asociarla a un álbum, agregar colaboraciones y etiquetas. Opcionalmente puede notificar a sus seguidores.
   security:
-    - bearerAuth: []
+    - BearerAuth: []
   tags:
     - Canción
   requestBody:
@@ -15,35 +15,39 @@ post:
             nombre:
               type: string
               description: Nombre de la canción
-            etiquetas:
-              type: array
-              items:
-                type: string
-              description: Etiquetas de la canción (mínimo 1, máximo 3)
-            featuring:
-              type: array
-              items:
-                type: string
-              description: Nombre de usuario de los artistas que colaboran en la canción
-            audio:
-              type: string
-              description: URL del audio en Cloudinary
             duracion:
               type: integer
-              description: Duración de la canción en segundos
-            album:
+              description: Duración en segundos
+            audio_url:
+              type: string
+              description: URL del archivo de audio en Cloudinary
+            album_id:
               type: integer
-              description: ID del álbum al que pertenece la canción
+              description: ID del álbum al que se asociará la canción
+            tags:
+              type: array
+              items:
+                type: integer
+              description: IDs de los géneros musicales (entre 1 y 3)
+            artistasFt:
+              type: array
+              items:
+                type: string
+              description: Lista de nombres artísticos de artistas en colaboración (featuring)
+            notificar:
+              type: boolean
+              description: Indica si se debe notificar a los seguidores
         example:
-          nombre: "hola"
-          etiquetas: ["pop", "soft", "chill"]
-          featuring: ["nombreUsuario1"]
-          audio: "https://res.cloudinary.com/dftnw6kjf/video/upload/v1616161616/sample.mp3"
-          duracion: 180
-          album: 1
+          nombre: "Mi nueva canción"
+          duracion: 200
+          audio_url: "https://res.cloudinary.com/dftnw6kjf/video/upload/v1616161616/sample.mp3"
+          album_id: 1
+          tags: [1, 2]
+          artistasFt: ["Colaborador1", "Colaborador2"]
+          notificar: true
   responses:
-    200:
-      description: Canción añadida exitosamente.
+    201:
+      description: Canción creada exitosamente.
       content:
         application/json:
           schema:
@@ -58,9 +62,9 @@ post:
             properties:
               error:
                 type: string
-                example: "Datos incorrectos."
+                example: "Faltan datos de la canción."
     401:
-      description: Usuario no autenticado
+      description: Usuario no autenticado o canción/albúm inexistente.
       content:
         application/json:
           schema:
@@ -70,7 +74,7 @@ post:
                 type: string
                 example: "Token inválido"
     403:
-      description: Usuario autenticado sin permisos para la accion
+      description: Usuario autenticado sin permisos para la acción.
       content:
         application/json:
           schema:
@@ -79,8 +83,18 @@ post:
               error:
                 type: string
                 example: "Acceso denegado."
+    404:
+      description: Recurso no encontrado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "El artista 'ColaboradorX' no existe."
     500:
-      description: Error interno del servidor
+      description: Error interno del servidor.
       content:
         application/json:
           schema:

@@ -43,12 +43,18 @@ put:
                 type: string
               nombreUsuarioArtista:
                 type: string
+              featuring:
+                type: array
+                items:
+                  type: string
+                description: Lista de artistas que participan en la canción (featurings)
               fav:
                 type: boolean
                 description: Si la canción esta en Favoritos = true
           example:
             audio: "url_audio.mp3"
             nombreUsuarioArtista: "UsuarioArtista"
+            featuring: ["Artista1", "Artista2"]
             fav: true
     400:
       description: Datos no válidos o faltantes en la petición

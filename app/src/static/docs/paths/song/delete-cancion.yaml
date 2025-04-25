@@ -1,22 +1,17 @@
 delete:
   summary: Borra una canción del artista logueado
-  description: Permite a un artista logueado borrar una canción de su cuenta.
+  description: Permite a un artista logueado borrar una canción de su cuenta, dado su ID.
   security:
-    - bearerAuth: []
+    - BearerAuth: []
   tags:
     - Canción
-  requestBody:
-    required: true
-    content:
-      application/json:
-        schema:
-          type: object
-          properties:
-            id:
-              type: integer
-              description: ID de la canción a borrar
-        example:
-          id: 35
+  parameters:
+    - name: id
+      in: query
+      required: true
+      schema:
+        type: integer
+      description: ID de la canción a borrar
   responses:
     204:
       description: Canción borrada exitosamente.
@@ -26,7 +21,7 @@ delete:
             type: string
             example: ""
     400:
-      description: Datos incorrectos o faltantes en la solicitud.
+      description: Faltan parámetros requeridos en la solicitud.
       content:
         application/json:
           schema:
@@ -46,7 +41,7 @@ delete:
                 type: string
                 example: "Token inválido"
     403:
-      description: Usuario autenticado sin permisos para la accion
+      description: Usuario autenticado sin permisos para la acción
       content:
         application/json:
           schema:
@@ -74,7 +69,4 @@ delete:
             properties:
               error:
                 type: string
-                example: "Ha ocurrido un error inesperado."
-              details:
-                type: string
-                example: "Error de base de datos"
+                example: "Error al borrar la canción: error_detallado"
