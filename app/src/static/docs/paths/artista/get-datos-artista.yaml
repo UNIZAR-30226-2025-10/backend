@@ -76,17 +76,6 @@ get:
               numSeguidores: 30
               siguiendo: true
               fotoPerfil: "https://cloudinary.com/imagen-perfil.jpg"
-            ultimoNoizzy:
-              id: 35
-              fecha: "20/03/2025 19:07"
-              texto: "Escucha mi nueva canción"
-              num_likes: 25
-              num_comentarios: 5
-              like: false
-              cancion:
-                id: 12
-                nombreArtisticoArtista: "Cepeda"
-                fotoPortada: "https://cloudinary.com/album-cover.jpg"
     400:
       description: Datos faltantes en la solicitud.
       content:

@@ -35,7 +35,7 @@ get:
                 fotoPortada: "https://cloudinary.com/mi-foto.jpg"
               - id: 2
                 nombre: "Otra canción"
-                fotoPortada: null
+                fotoPortada: "https://cloudinary.com/mi-foto.jpg"
     401:
       description: No autorizado.
       content:
