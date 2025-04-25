@@ -46,7 +46,7 @@ post:
                     type: number
                     description: Nivel de volumen del oyente.
                   claro:
-                    type: bool
+                    type: boolean
                     description: Tema del usuario (claro o oscuro).
               tipo:
                 type: string
