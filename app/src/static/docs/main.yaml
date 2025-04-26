@@ -78,18 +78,6 @@ paths:
     $ref: "/static/docs/paths/artista/get-canciones-favoritas.yaml"
   /get-numero-canciones-favoritas:
     $ref: "/static/docs/paths/artista/get-numero-canciones-favoritas.yaml"
-  /create-album:
-    $ref: "/static/docs/paths/album/create-album.yaml" 
-  /get-datos-album:
-    $ref: "/static/docs/paths/album/get-datos-album.yaml"
-  /change-album:
-    $ref: "/static/docs/paths/album/change-album.yaml"  
-  /delete-album:
-    $ref: "/static/docs/paths/album/delete-album.yaml"
-  /get-estadisticas-album:
-    $ref: "/static/docs/paths/album/get-estadisticas-album.yaml"
-  /get-estadisticas-album-favs:
-    $ref: "/static/docs/paths/album/get-estadisticas-album-favs.yaml"
   /get-datos-oyente:
     $ref: "/static/docs/paths/oyente/get-datos-oyente.yaml"
   /get-mis-datos-oyente:
@@ -124,6 +112,14 @@ paths:
     $ref: "/static/docs/paths/oyente/get-mis-playlists.yaml"
   /get-recomendaciones:
     $ref: "/static/docs/paths/oyente/get-recomendaciones.yaml"
+  /search:
+    $ref: "/static/docs/paths/search/search.yaml"
+  /search-invitados:
+    $ref: "/static/docs/paths/search/search-invitados.yaml"
+  /search-for-playlist:
+    $ref: "/static/docs/paths/search/search-for-playlist.yaml"
+  /search-for-noizzy:
+    $ref: "/static/docs/paths/search/search-for-noizzy.yaml"
   /create-cancion:
     $ref: "/static/docs/paths/song/create-cancion.yaml"
   /delete-cancion:
@@ -152,6 +148,18 @@ paths:
     $ref: "/static/docs/paths/song/get-estadisticas-favs.yaml"
   /get-tags:
     $ref: "/static/docs/paths/song/get-tags.yaml"
+  /create-album:
+    $ref: "/static/docs/paths/album/create-album.yaml" 
+  /get-datos-album:
+    $ref: "/static/docs/paths/album/get-datos-album.yaml"
+  /change-album:
+    $ref: "/static/docs/paths/album/change-album.yaml"  
+  /delete-album:
+    $ref: "/static/docs/paths/album/delete-album.yaml"
+  /get-estadisticas-album:
+    $ref: "/static/docs/paths/album/get-estadisticas-album.yaml"
+  /get-estadisticas-album-favs:
+    $ref: "/static/docs/paths/album/get-estadisticas-album-favs.yaml"
   /create-playlist:
     $ref: "/static/docs/paths/playlist/create-playlist.yaml"
   /get-datos-playlist:
@@ -178,14 +186,6 @@ paths:
     $ref: "/static/docs/paths/playlist/leave-playlist.yaml"
   /expel-from-playlist:
     $ref: "/static/docs/paths/playlist/expel-from-playlist.yaml"
-  /search:
-    $ref: "/static/docs/paths/search/search.yaml"
-  /search-invitados:
-    $ref: "/static/docs/paths/search/search-invitados.yaml"
-  /search-for-playlist:
-    $ref: "/static/docs/paths/search/search-for-playlist.yaml"
-  /search-for-noizzy:
-    $ref: "/static/docs/paths/search/search-for-noizzy.yaml"
   /post-noizzy:
     $ref: "/static/docs/paths/noizzy/post-noizzy.yaml"
   /post-noizzito:
@@ -224,6 +224,8 @@ paths:
     $ref: "/static/docs/paths/notificaciones/get-nuevos-seguidores.yaml"  
   /read-nuevo-seguidor:
     $ref: "/static/docs/paths/notificaciones/read-nuevo-seguidor.yaml"
+  /get-signature:
+    $ref: "/static/docs/paths/cloudinary/get-signature.yaml"
   /connect:
     $ref: "/static/docs/paths/websocket/connect.yaml"
   /disconnect:
