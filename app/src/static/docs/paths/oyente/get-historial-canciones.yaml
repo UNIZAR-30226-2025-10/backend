@@ -1,10 +1,18 @@
 get:
   summary: Obtener historial de canciones
-  description: Devuelve una lista con el historial de canciones reproducidas por el usuario.
+  description: Devuelve una lista con el historial de canciones reproducidas por el usuario. Se puede limitar la cantidad de canciones devueltas.
   security:
     - BearerAuth: []
   tags:
       - Oyente
+  parameters:
+    - in: query
+      name: limite
+      schema:
+        type: integer
+        minimum: 1
+      required: false
+      description: Número máximo de canciones a devolver. Si no se especifica, devuelve todas hasta 50.
   responses:
     200:
       description: Lista de canciones en el historial.

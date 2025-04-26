@@ -1,6 +1,6 @@
 get:
   summary: Obtener playlists públicas de un usuario
-  description: Devuelve una lista con las playlists creadas y en las que participa el usuario, públicas, dado un nombreUsuario.
+  description: Devuelve una lista con las playlists creadas y en las que participa el usuario, públicas, dado un nombreUsuario. Se puede limitar la cantidad de playlists devueltas.
   security:
     - BearerAuth: []
   tags:
@@ -12,6 +12,13 @@ get:
       schema:
         type: string
       description: Nombre de usuario del oyente
+    - in: query
+      name: limite
+      schema:
+        type: integer
+        minimum: 1
+      required: false
+      description: Número máximo de playlists a devolver. Si no se especifica, devuelve todas.
   responses:
     200:
       description: Lista de playlists públicas del usuario.

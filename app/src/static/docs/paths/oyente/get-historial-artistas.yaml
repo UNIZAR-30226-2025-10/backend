@@ -1,10 +1,18 @@
 get:
   summary: Obtener historial de artistas
-  description: Devuelve una lista con los artistas que el usuario ha escuchado.
+  description: Devuelve una lista con los artistas que el usuario ha escuchado. Se puede limitar la cantidad de artistas devueltos.
   security:
     - BearerAuth: []
   tags:
       - Oyente
+  parameters:
+    - in: query
+      name: limite
+      schema:
+        type: integer
+        minimum: 1
+      required: false
+      description: Número máximo de artistas a devolver. Si no se especifica, devuelve todos hasta 50.
   responses:
     200:
       description: Lista de artistas escuchados.

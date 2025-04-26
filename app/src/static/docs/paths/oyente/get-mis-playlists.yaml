@@ -1,10 +1,18 @@
 get:
   summary: Obtener playlists del usuario logueado
-  description: Devuelve una lista con las playlists creadas y en las que participa el usuario logueado.
+  description: Devuelve una lista con las playlists creadas y en las que participa el usuario logueado. Se puede limitar la cantidad de playlists devueltas.
   security:
     - BearerAuth: []
   tags:
       - Oyente
+  parameters:
+    - in: query
+      name: limite
+      schema:
+        type: integer
+        minimum: 1
+      required: false
+      description: Número máximo de playlists a devolver. Si no se especifica, devuelve todas.
   responses:
     200:
       description: Lista de playlists del usuario.

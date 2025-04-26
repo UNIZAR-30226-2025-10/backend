@@ -1,10 +1,24 @@
 get:
   summary: Obtener lista de seguidos
-  description: Devuelve una lista con los usuarios que sigue el usuario con nombreUsuario.
+  description: Devuelve una lista con los usuarios que sigue el usuario con nombreUsuario. Se puede limitar la cantidad de oyentes devueltos.
   security:
     - BearerAuth: []
   tags:
       - Oyente
+  parameters:
+    - name: nombreUsuario
+      in: query
+      required: true
+      schema:
+        type: string
+      description: Nombre de usuario del oyente
+    - in: query
+      name: limite
+      schema:
+        type: integer
+        minimum: 1
+      required: false
+      description: Número máximo de oyentes a devolver. Si no se especifica, devuelve todos.
   responses:
     200:
       description: Lista de usuarios seguidos.

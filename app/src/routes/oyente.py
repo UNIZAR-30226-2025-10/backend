@@ -227,6 +227,9 @@ def get_mis_seguidores():
 @roles_required("oyente", "artista")
 def get_seguidos():
     nombre_usuario = request.args.get("nombreUsuario")
+    limite = request.args.get("limite")
+    limite = int(limite) if limite else None
+
     if not nombre_usuario:
         return jsonify({"error": "Falta el nombreUsuario del usuario."}), 400
     
@@ -239,6 +242,8 @@ def get_seguidos():
                     ).join(Sigue, Sigue.Seguido_correo == Oyente.correo
                     ).where(Sigue.Seguidor_correo == oyente.correo
                     ).order_by(desc(Sigue.fecha))
+        
+        segs = db.execute(stmt).scalars().all()
 
         seguidos = [
             {
@@ -246,7 +251,7 @@ def get_seguidos():
                 "fotoPerfil": s.fotoPerfil,
                 "tipo": s.tipo
             }
-            for s in db.execute(stmt).scalars().all()
+            for s in (segs[:limite] if limite else segs)
         ]
 
     return jsonify({"seguidos": seguidos}), 200
@@ -259,6 +264,9 @@ def get_seguidos():
 @roles_required("oyente", "artista")
 def get_seguidores():
     nombre_usuario = request.args.get("nombreUsuario")
+    limite = request.args.get("limite")
+    limite = int(limite) if limite else None
+
     if not nombre_usuario:
         return jsonify({"error": "Falta el nombreUsuario del usuario."}), 400
     
@@ -272,13 +280,15 @@ def get_seguidores():
                     ).where(Sigue.Seguido_correo == oyente.correo
                     ).order_by(desc(Sigue.fecha))
         
+        segs = db.execute(stmt).scalars().all()
+        
         seguidores = [
             {
                 "nombreUsuario": s.nombreUsuario,
                 "fotoPerfil": s.fotoPerfil,
                 "tipo": s.tipo
             }
-            for s in db.execute(stmt).scalars().all()
+            for s in (segs[:limite] if limite else segs)
         ]
 
     return jsonify({"seguidores": seguidores}), 200
@@ -291,6 +301,8 @@ def get_seguidores():
 @roles_required("oyente", "artista")
 def get_historial_artistas():
     correo = get_jwt_identity()
+    limite = request.args.get("limite")
+    limite = int(limite) if limite else None
 
     with get_db() as db:
         oyente_entry = db.get(Oyente, correo)
@@ -301,7 +313,9 @@ def get_historial_artistas():
         artistas_unicos = set()
         artistas = []
 
-        for h in oyente_entry.historialCancion[:30]:
+        for h in oyente_entry.historialCancion[:50]:
+            if limite is not None and len(artistas) >= limite:
+                break
             clave = (h.cancion.artista.nombreUsuario)
             if clave not in artistas_unicos:
                 artistas_unicos.add(clave)
@@ -321,6 +335,8 @@ def get_historial_artistas():
 @roles_required("oyente", "artista")
 def get_historial_canciones():
     correo = get_jwt_identity()
+    limite = request.args.get("limite")
+    limite = int(limite) if limite else 50
 
     with get_db() as db:
         oyente_entry = db.get(Oyente, correo)
@@ -335,7 +351,7 @@ def get_historial_canciones():
                 "nombre": h.cancion.nombre,
                 "fotoPortada": h.cancion.album.fotoPortada
             }
-            for h in oyente_entry.historialCancion[:30]
+            for h in oyente_entry.historialCancion[:limite]
         ]
     
     return jsonify({"historial_canciones": historial}), 200
@@ -379,6 +395,8 @@ def get_historial_colecciones():
 @roles_required("oyente", "artista")
 def get_mis_playlists():
     correo = get_jwt_identity()
+    limite = request.args.get("limite")
+    limite = int(limite) if limite else None
 
     with get_db() as db:
         oyente_entry = db.get(Oyente, correo)
@@ -392,7 +410,7 @@ def get_mis_playlists():
                 "fotoPortada": s.fotoPortada,
                 "nombre": s.nombre
             }
-            for s in oyente_entry.playlists[:30]
+            for s in oyente_entry.playlists
         ]
 
         participando_playlists = [
@@ -401,14 +419,14 @@ def get_mis_playlists():
                 "fotoPortada": s.fotoPortada,
                 "nombre": s.nombre
             }
-            for s in oyente_entry.participante[:30]
+            for s in oyente_entry.participante
         ]
 
         playlists = mis_playlists + participando_playlists
 
         playlists_ordenadas = sorted(playlists, key=lambda x: x["nombre"])
         
-    return jsonify({"playlists": playlists_ordenadas[:30]}), 200
+    return jsonify({"playlists": playlists_ordenadas[:limite] if limite else playlists_ordenadas}), 200
 
 
 """Devuelve una lista con las playlists públicas del usuario dado un nombreUsuario"""
@@ -418,6 +436,9 @@ def get_mis_playlists():
 @roles_required("oyente", "artista")
 def get_playlists():
     nombre_usuario = request.args.get("nombreUsuario")
+    limite = request.args.get("limite")
+    limite = int(limite) if limite else None
+
     if not nombre_usuario:
         return jsonify({"error": "Falta el nombreUsuario del usuario."}), 400
     
@@ -458,7 +479,7 @@ def get_playlists():
 
         n_playlists = len(playlists_ordenadas)
         
-    return jsonify({"playlists": playlists_ordenadas[:30],
+    return jsonify({"playlists": playlists_ordenadas[:limite] if limite else playlists_ordenadas,
                     "n_playlists": n_playlists}), 200
 
 
