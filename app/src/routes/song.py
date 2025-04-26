@@ -542,6 +542,8 @@ def get_estadisticas_favs():
     if not id:
         return jsonify({"error": "Falta el ID de la cancion."}), 400
     correo = get_jwt_identity()
+    limite = request.args.get("limite")
+    limite = int(limite) if limite else None
     
     with get_db() as db:
         cancion_entry = db.get(Cancion, id)
@@ -568,7 +570,7 @@ def get_estadisticas_favs():
                 "nombreUsuario": oyente.nombreUsuario,
                 "fotoPerfil": oyente.fotoPerfil
             }
-            for oyente in oyentes
+            for oyente in (oyentes[:limite] if limite else oyentes)
         ]
         
     return jsonify({"oyentes_favs": oyentes_favs}), 200
@@ -592,6 +594,9 @@ def get_estadisticas_playlists():
         if cancion_entry.artista.correo != correo and not cancion_entry.artista in cancion_entry.featuring:
             return jsonify({"error": "El artista no puede consultar las estadisticas de esta cancion."}), 403
         
+        limite = request.args.get("limite")
+        limite = int(limite) if limite else None
+        
         stmt = (
             select(Playlist)
             .join(EsParteDePlaylist, EsParteDePlaylist.Playlist_id == Playlist.id)
@@ -611,7 +616,7 @@ def get_estadisticas_playlists():
                 "fotoPortada": playlist.fotoPortada,
                 "creador": playlist.oyente.nombreUsuario
             }
-            for playlist in playlists_publicas
+            for playlist in (playlists_publicas[:limite] if limite else playlists_publicas)
         ]
 
         stmt = (

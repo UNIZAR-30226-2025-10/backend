@@ -1,6 +1,6 @@
 get:
   summary: Devuelve la lista de personas que han dado like a una canción del artista logueado
-  description: Permite a un artista obtener la lista de oyentes que han agregado una de sus canciones a su lista de reproducción "Favoritos".
+  description: Permite a un artista obtener la lista de oyentes que han agregado una de sus canciones a su lista de reproducción "Favoritos". Se puede limitar la cantidad de oyentes devueltos.
   tags:
     - Canción
   security:
@@ -12,6 +12,13 @@ get:
       description: ID de la canción de la que se quieren obtener las estadísticas
       schema:
         type: string
+    - name: limite
+      in: query
+      required: false
+      description: Número máximo de oyentes a devolver. Si no se especifica, se devuelven todos los oyentes.
+      schema:
+        type: integer
+        minimum: 1
   responses:
     200:
       description: Lista de oyentes que han dado like a la canción obtenida con éxito

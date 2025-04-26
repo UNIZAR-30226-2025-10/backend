@@ -1,10 +1,18 @@
 get:
   summary: Devuelve una lista con las canciones del artista logueado
-  description: Permite a un artista obtener la lista de sus canciones con información básica.
+  description: Permite a un artista obtener la lista de sus canciones con información básica. Se puede limitar la cantidad de canciones devueltas.
   security:
     - bearerAuth: []
   tags:
     - Artista
+  parameters:
+    - name: limite
+      in: query
+      required: false
+      description: Número máximo de canciones a devolver. Si no se especifica, se devuelven todas las canciones.
+      schema:
+        type: integer
+        minimum: 1
   responses:
     200:
       description: Lista de canciones del artista obtenida exitosamente.

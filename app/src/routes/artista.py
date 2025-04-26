@@ -126,7 +126,9 @@ def get_mis_datos_artista():
 @roles_required("artista")
 def get_mis_canciones():
     correo = get_jwt_identity()
-    
+    limite = request.args.get("limite")
+    limite = int(limite) if limite else None
+
     with get_db() as db:
         artista = db.get(Artista, correo)
         if not artista:
@@ -138,7 +140,7 @@ def get_mis_canciones():
                     "nombre": cancion.nombre,
                     "fotoPortada": cancion.album.fotoPortada if cancion.album else None
                 }
-                for cancion in artista.canciones
+                for cancion in (artista.canciones[:limite] if limite else artista.canciones)
             ]
     
     return jsonify({"canciones": canciones}), 200
@@ -153,7 +155,9 @@ def get_canciones():
     nombre_usuario = request.args.get("nombreUsuario")
     if not nombre_usuario:
         return jsonify({"error": "Falta el nombreUsuario del artista."}), 400
-    
+    limite = request.args.get("limite")
+    limite = int(limite) if limite else None
+
     with get_db() as db:
         artista = db.query(Artista).filter_by(nombreUsuario=nombre_usuario).first()
         if not artista:
@@ -165,7 +169,7 @@ def get_canciones():
                     "nombre": cancion.nombre,
                     "fotoPortada": cancion.album.fotoPortada if cancion.album else None
                 }
-                for cancion in artista.canciones
+                for cancion in (artista.canciones[:limite] if limite else artista.canciones)
             ]
     
     return jsonify({"canciones": canciones}), 200
@@ -315,6 +319,8 @@ def get_albumes():
     nombre_usuario = request.args.get("nombreUsuario")
     if not nombre_usuario:
         return jsonify({"error": "Falta el nombreUsuario del artista."}), 400
+    limite = request.args.get("limite")
+    limite = int(limite) if limite else None
     
     with get_db() as db:
         artista = db.query(Artista).filter_by(nombreUsuario=nombre_usuario).first()
@@ -327,7 +333,7 @@ def get_albumes():
                 "nombre": album.nombre,
                 "fotoPortada": album.fotoPortada
             }
-            for album in artista.albumes[:30]
+            for album in (artista.albumes[:limite] if limite else artista.albumes)
         ]
     
     return jsonify({"albumes": albumes}), 200
@@ -340,6 +346,8 @@ def get_albumes():
 @roles_required("artista")
 def get_mis_albumes():
     correo = get_jwt_identity()
+    limite = request.args.get("limite")
+    limite = int(limite) if limite else None
 
     with get_db() as db:
         artista_entry = db.get(Artista, correo)
@@ -352,7 +360,7 @@ def get_mis_albumes():
                 "nombre": album.nombre,
                 "fotoPortada": album.fotoPortada
             }
-            for album in artista_entry.albumes[:30]
+            for album in (artista_entry.albumes[:limite] if limite else artista_entry.albumes)
         ]
     
     return jsonify({"albumes": albumes}), 200

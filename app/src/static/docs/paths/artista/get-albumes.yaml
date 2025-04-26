@@ -1,6 +1,6 @@
 get:
   summary: Obtiene la lista de álbumes de un artista
-  description: Devuelve una lista con los álbumes de un artista basado en su nombre de usuario.
+  description: Devuelve una lista con los álbumes de un artista basado en su nombre de usuario. Se puede limitar la cantidad de álbumes devueltos.
   security:
     - bearerAuth: []
   tags:
@@ -12,6 +12,13 @@ get:
       description: Nombre de usuario del artista
       schema:
         type: string
+    - name: limite
+      in: query
+      required: false
+      description: Número máximo de álbumes a devolver. Si no se especifica, se devuelven todos los álbumes.
+      schema:
+        type: integer
+        minimum: 1
   responses:
     200:
       description: Lista de álbumes obtenida exitosamente.

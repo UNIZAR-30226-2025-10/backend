@@ -29,7 +29,7 @@ get:
                       description: URL de la foto de perfil del seguidor.
                     tipo:
                       type: string
-                      description: Tipo de usuario: "oyente" o "artista".
+                      description: Tipo de usuario ∈ ["oyente", "artista"].
           example:
             resultado:
               - nombre: "Juan Pérez"
