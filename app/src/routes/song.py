@@ -229,7 +229,7 @@ def add_reproduccion():
         estaEscuchandoColeccion_entry = db.get(EstaEscuchandoColeccion, correo)
         if estaEscuchandoColeccion_entry:
             # Actualizar historial de colecciones
-            historialColeccion_entry = db.get(HistorialCancion, (correo, estaEscuchandoColeccion_entry.Coleccion_id))
+            historialColeccion_entry = db.get(HistorialColeccion, (correo, estaEscuchandoColeccion_entry.Coleccion_id))
             if not historialColeccion_entry:
                 historialColeccion_entry = HistorialColeccion(Oyente_correo=correo, fecha=datetime.now(pytz.timezone('Europe/Madrid')),
                                                               Coleccion_id=estaEscuchandoColeccion_entry.Coleccion_id)
