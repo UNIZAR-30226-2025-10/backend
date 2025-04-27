@@ -60,7 +60,8 @@ def get_datos_noizzy():
         
         result = {
             "fotoPerfil": noizzy[10],
-            "nombreUsuario": noizzy[9] if not noizzy[12] else noizzy[12],
+            "nombre": noizzy[9] if not noizzy[12] else noizzy[12],
+            "nombreUsuario": noizzy[9],
             "mio": noizzy[9] == oyente_actual.nombreUsuario,
             "fecha": noizzy[1].strftime("%d %m %Y %H %M"),
             "texto": noizzy[2],
@@ -95,7 +96,8 @@ def get_datos_noizzy():
         
         noizzitos = [
             {
-                "nombreUsuario": row[9] if not row[12] else row[12],
+                "nombre": row[9] if not row[12] else row[12],
+                "nombreUsuario": row[9],
                 "mio": row[9] == oyente_actual.nombreUsuario,
                 "fotoPerfil": row[10],
                 "fecha": row[1].strftime("%d %m %y %H %M"),
@@ -160,8 +162,9 @@ def post_noizzito():
     
         # Websockets para notificacion en tiempo real
         if correo != noizzy_entry.Oyente_correo:
-            socketio.emit("nueva-interaccion-ws", {"nombreUsuario": new_entry.oyente.nombreUsuario,
-                                                   "fotoPerfil": new_entry.oyente.fotoPerfil,
+            socketio.emit("nueva-interaccion-ws", { "nombre": new_entry.oyente.nombreUsuario if new_entry.oyente.tipo == "oyente" else new_entry.oyente.nombreArtistico,
+                                                    "nombreUsuario": new_entry.oyente.nombreUsuario,
+                                                    "fotoPerfil": new_entry.oyente.fotoPerfil,
                                                     "noizzy": noizzy,
                                                     "noizzito": new_entry.id,
                                                     "texto": noizzy_entry.texto,
@@ -174,7 +177,9 @@ def post_noizzito():
         activos = db.execute(stmt).scalars().all()    
         
         for activo in activos:
-            socketio.emit("actualizar-noizzito-ws", {"nombreUsuario": usuario.nombreUsuario if usuario.tipo == "oyente" else usuario.nombreArtistico,
+            socketio.emit("actualizar-noizzito-ws", {
+                "nombre": usuario.nombreUsuario if usuario.tipo == "oyente" else usuario.nombreArtistico,
+                "nombreUsuario": usuario.nombreUsuario,
                 "fotoPerfil": usuario.fotoPerfil,
                 "noizzy": noizzy,
                 "id": new_entry.id,
@@ -263,7 +268,8 @@ def get_noizzys():
         noizzys = db.execute(stmt).all()
         noizzys_dict = [
             {
-                "nombreUsuario": nombreUsuario if oyente.tipo == "oyente" else oyente.nombreArtistico,
+                "nombre": nombreUsuario if oyente.tipo == "oyente" else oyente.nombreArtistico,
+                "nombreUsuario": nombreUsuario,
                 "fotoPerfil": oyente.fotoPerfil,
                 "fecha": row[1].strftime("%d %m %y %H %M"),
                 "id": row[0],
@@ -318,7 +324,8 @@ def get_mis_noizzys():
         noizzys = db.execute(stmt).all()
         noizzys_dict = [
             {
-                "nombreUsuario": usuario_entry.nombreUsuario if usuario_entry.tipo == "oyente" else usuario_entry.nombreArtistico,
+                "nombre": usuario_entry.nombreUsuario if usuario_entry.tipo == "oyente" else usuario_entry.nombreArtistico,
+                "nombreUsuario": usuario_entry.nombreUsuario,
                 "fotoPerfil": usuario_entry.fotoPerfil,
                 "fecha": row[1].strftime("%d %m %y %H %M"),
                 "id": row[0],
@@ -395,7 +402,9 @@ def post_noizzy():
         activos = db.execute(stmt).scalars().all()    
         
         for activo in activos:
-            socketio.emit("actualizar-noizzy-ws", {"nombreUsuario": usuario.nombreUsuario if usuario.tipo == "oyente" else usuario.nombreArtistico,
+            socketio.emit("actualizar-noizzy-ws", {
+                "nombre": usuario.nombreUsuario if usuario.tipo == "oyente" else usuario.nombreArtistico,
+                "nombreUsuario": usuario.nombreUsuario,
                 "fotoPerfil": usuario.fotoPerfil,
                 "mio": activo == correo,
                 "id": noizzy.id,
@@ -456,8 +465,9 @@ def change_like():
         
         # Websockets para notificacion en tiempo real
         if like and correo != noizzy_entry.Oyente_correo:
-            socketio.emit("nueva-interaccion-ws", {"nombreUsuario": like_entry.oyente.nombreUsuario,
-                                                   "fotoPerfil": like_entry.oyente.fotoPerfil,
+            socketio.emit("nueva-interaccion-ws", { "nombre": like_entry.oyente.nombreUsuario if like_entry.oyente.tipo == "oyente" else like_entry.oyente.nombreArtistico,
+                                                    "nombreUsuario": like_entry.oyente.nombreUsuario,
+                                                    "fotoPerfil": like_entry.oyente.fotoPerfil,
                                                     "noizzy": like_entry.noizzy.id,
                                                     "noizzito": None,
                                                     "texto": like_entry.noizzy.texto,

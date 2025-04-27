@@ -279,7 +279,8 @@ def get_interacciones():
         while i < len(respuestas) and j < len(likes):
             if respuestas[i].fecha > likes[j].fecha:
                 resultado.append({
-                    "fotoPerfil": respuestas[i].oyente.fotoperfil,
+                    "fotoPerfil": respuestas[i].oyente.fotoPerfil,
+                    "nombre": respuestas[i].oyente.nombreUsuario if respuestas[i].oyente.tipo == "oyente" else respuestas[i].oyente.nombreArtistico,
                     "nombreUsuario": respuestas[i].oyente.nombreUsuario,
                     "noizzy": respuestas[i].noizzy.id,
                     "texto": respuestas[i].noizzy.texto,
@@ -289,7 +290,8 @@ def get_interacciones():
                 i += 1
             else:
                 resultado.append({
-                    "fotoPerfil": likes[j].oyente.fotoperfil,
+                    "fotoPerfil": likes[j].oyente.fotoPerfil,
+                    "nombre": likes[j].oyente.nombreUsuario if likes[j].oyente.tipo == "oyente" else likes[j].oyente.nombreArtistico,
                     "nombreUsuario": likes[j].oyente.nombreUsuario,
                     "noizzy": likes[j].noizzy.id,
                     "texto": likes[j].noizzy.texto,
@@ -300,7 +302,8 @@ def get_interacciones():
 
         for r in respuestas[i:]:
             resultado.append({
-                    "fotoPerfil": r.oyente.fotoperfil,
+                    "fotoPerfil": r.oyente.fotoPerfil,
+                    "nombre": r.oyente.nombreUsuario if r.oyente.tipo == "oyente" else r.oyente.nombreArtistico,
                     "nombreUsuario": r.oyente.nombreUsuario,
                     "noizzy": r.noizzy.id,
                     "texto": r.noizzy.texto,
@@ -310,7 +313,8 @@ def get_interacciones():
 
         for l in likes[j:]:
             resultado.append({
-                    "fotoPerfil": l.oyente.fotoperfil,
+                    "fotoPerfil": l.oyente.fotoPerfil,
+                    "nombre": l.oyente.nombreUsuario if l.oyente.tipo == "oyente" else l.oyente.nombreArtistico,
                     "nombreUsuario": l.oyente.nombreUsuario,
                     "noizzy": l.noizzy.id,
                     "texto": l.noizzy.texto,

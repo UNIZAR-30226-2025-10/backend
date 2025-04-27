@@ -11,24 +11,35 @@ info:
 
     Algunas peticiones HTTP emiten eventos WebSocket que el cliente puede escuchar:
 
-      - **Álbum y Canción**:
+    - **Álbum y Canción**:
 
-        - `novedad-musical-ws`: Se emite a los seguidores de un artista cuando saca un nuevo álbumo una nueva canción para Notificaciones.
-    
-      - **Noizzy**:
+      - `novedad-musical-ws`: Se emite a los seguidores de un artista cuando saca un nuevo álbum o una nueva canción para Notificaciones.  
+        Ver: `/create-album`, `/create-cancion`
 
-        - `new-noizzy-ws`: Se emite a los seguidores de un usuario cuando postea un nuevo noizzy para Notificaciones.
-        - `actualizar-noizzy-ws`: Se emite a los usuarios logueados cuando un usuario postea un nuevo noizzy para actualizar sin recargar.
-        - `nueva-interaccion-ws`: Se emite a un usuario cuando otro comenta o da like a uno de sus noizzys para Notificaciones.
-        - `actualizar-noizzito-ws`: Se emite a los usuarios logueados cuando un usuario comenta en un noizzy para actualizar sin recargar.
-    
-      - **Oyente**:
+    - **Noizzy**:
 
-        - `nuevo-seguidor-ws`: Se emite a un usuario cuando otro empieza a seguirlo para Notificaciones.
-    
-      - **Playlist**:
+      - `new-noizzy-ws`: Se emite a los seguidores de un usuario cuando postea un nuevo noizzy para Notificaciones.  
+        Ver: `/post-noizzy`
 
-        - `invite-to-playlist-ws`: Se emite a un usuario cuando es invitado a participar en una playlist para Notificaciones.
+      - `actualizar-noizzy-ws`: Se emite a los usuarios logueados cuando un usuario postea un nuevo noizzy para actualizar sin recargar.  
+        Ver: `/post-noizzy`
+
+      - `nueva-interaccion-ws`: Se emite a un usuario cuando otro comenta o da like a uno de sus noizzys para Notificaciones.  
+        Ver: `/post-noizzito`, `/change-like`
+
+      - `actualizar-noizzito-ws`: Se emite a los usuarios logueados cuando un usuario comenta en un noizzy para actualizar sin recargar.  
+        Ver: `/post-noizzito`
+
+    - **Oyente**:
+
+      - `nuevo-seguidor-ws`: Se emite a un usuario cuando otro empieza a seguirlo para Notificaciones.  
+        Ver: `/change-follow`
+
+    - **Playlist**:
+
+      - `invite-to-playlist-ws`: Se emite a un usuario cuando es invitado a participar en una playlist para Notificaciones.  
+        Ver: `/invite-to-playlist`
+
 
 servers:
   - url: http://api-noizz.onrender.com
