@@ -18,6 +18,9 @@ get:
                 items:
                   type: object
                   properties:
+                    nombre:
+                      type: string
+                      description: Nombre visible del seguido (nombre de usuario si es oyente, nombre artístico si es artista)
                     nombreUsuario:
                       type: string
                       description: Nombre de usuario del seguido
@@ -32,11 +35,13 @@ get:
                       description: Indica si el usuario seguido tiene noizzys sin leer
           example:
             seguidos:
-              - nombreUsuario: "usuario1"
+              - nombre: "usuario1"
+                nombreUsuario: "usuario1"
                 fotoPerfil: "https://example.com/perfil1.jpg"
                 tipo: "oyente"
                 sinLeer: true
-              - nombreUsuario: "Usuario Artista"
+              - nombre: "Artista"
+                nombreUsuario: "Usuario Artista"
                 fotoPerfil: "https://example.com/perfil2.jpg"
                 tipo: "artista"
                 sinLeer: false

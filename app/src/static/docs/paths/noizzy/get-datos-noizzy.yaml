@@ -83,6 +83,9 @@ get:
                     texto:
                       type: string
                       description: Contenido del Noizzito
+                    nombre:
+                      type: string
+                      description: Nombre visible del usuario que creó el Noizzito (nombre de usuario si es oyente, nombre artístico si es artista)
                     nombreUsuario:
                       type: string
                       description: Nombre del usuario que creó el Noizzito
@@ -118,6 +121,8 @@ get:
             fotoPerfil: "https://example.com/perfil.jpg"
             fecha: "2025-04-25T14:30:00Z"
             texto: "¡Disfrutando esta canción increíble!"
+            nombre: "Usuario"
+            nombreUsuario: "Usuario"
             num_likes: 42
             num_comentarios: 5
             like: true

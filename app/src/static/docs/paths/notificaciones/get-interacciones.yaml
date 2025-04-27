@@ -18,6 +18,9 @@ get:
                 fotoPerfil:
                   type: string
                   description: URL de la foto de perfil del usuario que generó la interacción.
+                nombre:
+                  type: string
+                  description: Nombre visible del usuario que generó la interacción (nombre de usuario si es oyente, nombre artístico si es artista)
                 nombreUsuario:
                   type: string
                   description: Nombre de usuario que generó la interacción.
@@ -36,12 +39,14 @@ get:
                   description: ID del noizzito si tipo == "respuesta"
           example:
             - fotoPerfil: "https://cloudinary.com/lucas123.jpg"
+              nombre: "lucas123"
               nombreUsuario: "lucas123"
               noizzy: 87
               texto: "¡Buen tema!"
               tipo: "respuesta"
               noizzito: 88
             - fotoPerfil: "https://cloudinary.com/sofia_m.jpg"
+              nombre: "sofia_m"
               nombreUsuario: "sofia_m"
               noizzy: 87
               texto: "¡Buen tema!"
