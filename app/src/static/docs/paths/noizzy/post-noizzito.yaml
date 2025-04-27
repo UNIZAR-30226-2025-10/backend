@@ -9,9 +9,11 @@ post:
         ```json
           {   
             nombreUsuario             string
-                                      nombre de usuario del usuario que da like
+                                      nombre de usuario del usuario que sube el noizzito
+            nombre                    string
+                                      nombre visible del usuario que sube el noizzito (nombre de usuario si es oyente, nombre artístico si es artista)
             fotoPerfil                string
-                                      link cloudinary de la foto de perfil del usuario que da like
+                                      link cloudinary de la foto de perfil del usuario que sube el noizzito
             noizzy                    integer
                                       ID del noizzy con el que se interactúa
             noizzito                  integer
@@ -26,6 +28,7 @@ post:
         ```json
           { 
             "nombreUsuario":"usuario1",
+            "nombre": "usuario1",
             "fotoPerfil": "https://example.com/usuario1.jpg",
             "noizzy":87 ,
             "noizzito": 88,
@@ -40,9 +43,11 @@ post:
         ```json
           {   
             nombreUsuario             string
-                                      nombre de usuario del usuario que da like
+                                      nombre de usuario del usuario que sube el noizzito
+            nombre                    string
+                                      nombre visible del usuario que sube el noizzito (nombre de usuario si es oyente, nombre artístico si es artista)
             fotoPerfil                string
-                                      link cloudinary de la foto de perfil del usuario que da like
+                                      link cloudinary de la foto de perfil del usuario que sube el noizzito
             noizzy                    integer
                                       ID del noizzy con el que se interactúa
             id                        integer
@@ -68,6 +73,7 @@ post:
         ```json
           { 
             "nombreUsuario":"usuario1",
+            "nombre": "usuario1",
             "fotoPerfil": "https://example.com/usuario1.jpg",
             "noizzy":87,
             "id": 88,

@@ -10,6 +10,8 @@ put:
           {   
             nombreUsuario             string
                                       nombre de usuario del usuario que da like
+            nombre                    string
+                                      nombre visible del usuario que da like (nombre de usuario si es oyente, nombre artístico si es artista)
             fotoPerfil                string
                                       link cloudinary de la foto de perfil del usuario que da like
             noizzy                    integer
@@ -26,6 +28,7 @@ put:
         ```json
           { 
             "nombreUsuario":"usuario1",
+            "nombre": "usuario1",
             "fotoPerfil": "https://example.com/usuario1.jpg",
             "noizzy":87 ,
             "noizzito": None,
