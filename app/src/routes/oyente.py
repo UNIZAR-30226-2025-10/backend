@@ -69,26 +69,29 @@ def get_datos_oyente():
         stmt = select(exists(select(Sigue).where(and_(Sigue.Seguidor_correo == correo_actual, Sigue.Seguido_correo == oyente.correo))))
         siguiendo = db.execute(stmt).scalar_one()
         
-        subquery_num_comentarios = (select(func.count(Noizzito.id))
-                                    .where(Noizzito.Noizzy_id == Noizzy.id)
-                                    .scalar_subquery())
+        # Subquery para contar comentarios
+        noizzito_table = Noizzito.__table__
+        subquery_num_comentarios = select(func.count(noizzito_table.c.Noizzy_id)).where(noizzito_table.c.Noizzy_id == Noizzy.id).scalar_subquery()
+
+        # Subquery para contar likes totales
+        subquery_num_likes = select(func.count(Like.Noizzy_id)).where(Like.Noizzy_id == Noizzy.id).scalar_subquery()
         
-        stmt = (select(Noizzy.id, Noizzy.fecha, Noizzy.texto, Noizzy.Cancion_id,
-                      func.count(Like.Noizzy_id).label("num_likes"),
-                      subquery_num_comentarios.label("num_comentarios"),
-                      func.count(Like.Noizzy_id).filter(Like.Oyente_correo == correo_actual).label("user_like_exists"),
-                      Artista.nombreArtistico, Coleccion.fotoPortada, Cancion.nombre)
-                .outerjoin(Like, Like.Noizzy_id == Noizzy.id)
-                .outerjoin(Cancion, Cancion.id == Noizzy.Cancion_id)
-                .outerjoin(Artista, Artista.correo == Cancion.Artista_correo)
-                .outerjoin(Coleccion, Coleccion.id == Cancion.Album_id)
-                .where(and_(Noizzy.tipo == 'noizzy', Noizzy.Oyente_correo == oyente.correo))
-                .order_by(Noizzy.fecha.desc())
-                .limit(1))
+        # Subquery para verificar si el usuario dio like
+        subquery_user_like = select(func.count(Like.Noizzy_id)).where((Like.Noizzy_id == Noizzy.id) & (Like.Oyente_correo == correo_actual)).scalar_subquery()
         
+        stmt = select(Noizzy.id, Noizzy.fecha, Noizzy.texto, Noizzy.Cancion_id,
+                subquery_num_likes.label("num_likes"),
+                subquery_num_comentarios.label("num_comentarios"),
+                subquery_user_like.label("user_like_exists"),
+                Artista.nombreArtistico, Coleccion.fotoPortada, Cancion.nombre,
+            ).outerjoin(Cancion, Cancion.id == Noizzy.Cancion_id
+            ).outerjoin(Artista, Artista.correo == Cancion.Artista_correo
+            ).outerjoin(Coleccion, Coleccion.id == Cancion.Album_id
+            ).where(and_(Noizzy.tipo == 'noizzy', Noizzy.Oyente_correo == oyente.correo)
+            ).order_by(Noizzy.fecha.desc()
+            ).limit(1)
+
         noizzy = db.execute(stmt).first()
-        
-        print(noizzy)
 
         ultimo_noizzy_data = {
             "id": noizzy[0],
