@@ -29,7 +29,8 @@ get:
                       description: URL de la foto de perfil del seguidor.
                     tipo:
                       type: string
-                      description: Tipo de usuario ∈ ["oyente", "artista"].
+                      enum: ["oyente", "artista"]
+                      description: Tipo de usuario.
           example:
             resultado:
               - nombre: "Juan Pérez"

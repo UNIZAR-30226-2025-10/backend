@@ -46,6 +46,8 @@ post:
                                       nombre de usuario del usuario que sube el noizzito
             nombre                    string
                                       nombre visible del usuario que sube el noizzito (nombre de usuario si es oyente, nombre artístico si es artista)
+            tipo                      string ∈ ["oyente", "artista"]
+                                      tipo del usuario que sube el noizzito
             fotoPerfil                string
                                       link cloudinary de la foto de perfil del usuario que sube el noizzito
             noizzy                    integer
@@ -74,6 +76,7 @@ post:
           { 
             "nombreUsuario":"usuario1",
             "nombre": "usuario1",
+            "tipo": "oyente",
             "fotoPerfil": "https://example.com/usuario1.jpg",
             "noizzy":87,
             "id": 88,

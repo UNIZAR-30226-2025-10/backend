@@ -46,6 +46,10 @@ get:
                     like:
                       type: boolean
                       description: Indica si el usuario autenticado le ha dado like
+                    tipo:
+                      type: string
+                      enum: ["oyente", "artista"]
+                      description: Tipo del usuario que publicó el Noizzy
                     nombre:
                       type: string
                       description: Nombre visible del usuario propietario del Noizzy (nombre de usuario si es oyente, nombre artístico si es artista)
@@ -77,6 +81,7 @@ get:
                 num_likes: 10
                 num_comentarios: 5
                 like: true
+                tipo: "oyente"
                 nombre: "UsuarioEjemplo"
                 nombreUsuario: "usuarioEjemplo"
                 cancion:

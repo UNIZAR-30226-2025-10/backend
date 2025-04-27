@@ -36,6 +36,16 @@ get:
               texto:
                 type: string
                 description: Contenido del Noizzy
+              tipo:
+                type: string
+                enum: ["oyente", "artista"]
+                description: Tipo del usuario que publicó el Noizzy
+              nombre:
+                type: string
+                description: Nombre visible del usuario que publicó el Noizzy (nombre de usuario si es oyente, nombre artístico si es artista)
+              nombreUsuario:
+                type: string
+                description: Nombre del usuario que publicó el Noizzy
               num_likes:
                 type: integer
                 description: Número de likes del Noizzy
@@ -83,6 +93,10 @@ get:
                     texto:
                       type: string
                       description: Contenido del Noizzito
+                    tipo:
+                      type: string
+                      enum: ["oyente", "artista"]
+                      description: Tipo del usuario que creó el Noizzito
                     nombre:
                       type: string
                       description: Nombre visible del usuario que creó el Noizzito (nombre de usuario si es oyente, nombre artístico si es artista)
@@ -121,6 +135,7 @@ get:
             fotoPerfil: "https://example.com/perfil.jpg"
             fecha: "2025-04-25T14:30:00Z"
             texto: "¡Disfrutando esta canción increíble!"
+            tipo: "oyente"
             nombre: "Usuario"
             nombreUsuario: "Usuario"
             num_likes: 42
@@ -137,6 +152,8 @@ get:
                 fotoPerfil: "https://example.com/usuario1.jpg"
                 fecha: "2025-04-25T15:00:00Z"
                 texto: "¡También me encanta!"
+                tipo: "oyente"
+                nombre: "usuario123"
                 nombreUsuario: "usuario123"
                 like: true
                 num_likes: 10
@@ -151,6 +168,8 @@ get:
                 fotoPerfil: "https://example.com/usuario2.jpg"
                 fecha: "2025-04-25T15:05:00Z"
                 texto: "Buen gusto!"
+                tipo: "oyente"
+                nombre: "musicalover"
                 nombreUsuario: "musicalover"
                 like: false
                 num_likes: 3

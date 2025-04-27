@@ -60,6 +60,7 @@ def get_datos_noizzy():
         
         result = {
             "fotoPerfil": noizzy[10],
+            "tipo": "oyente" if not noizzy[12] else "artista",
             "nombre": noizzy[9] if not noizzy[12] else noizzy[12],
             "nombreUsuario": noizzy[9],
             "mio": noizzy[9] == oyente_actual.nombreUsuario,
@@ -96,6 +97,7 @@ def get_datos_noizzy():
         
         noizzitos = [
             {
+                "tipo": "oyente" if not row[12] else "artista",
                 "nombre": row[9] if not row[12] else row[12],
                 "nombreUsuario": row[9],
                 "mio": row[9] == oyente_actual.nombreUsuario,
@@ -178,6 +180,7 @@ def post_noizzito():
         
         for activo in activos:
             socketio.emit("actualizar-noizzito-ws", {
+                "tipo": usuario.tipo,
                 "nombre": usuario.nombreUsuario if usuario.tipo == "oyente" else usuario.nombreArtistico,
                 "nombreUsuario": usuario.nombreUsuario,
                 "fotoPerfil": usuario.fotoPerfil,
@@ -268,6 +271,7 @@ def get_noizzys():
         noizzys = db.execute(stmt).all()
         noizzys_dict = [
             {
+                "tipo": oyente.tipo,
                 "nombre": nombreUsuario if oyente.tipo == "oyente" else oyente.nombreArtistico,
                 "nombreUsuario": nombreUsuario,
                 "fotoPerfil": oyente.fotoPerfil,
@@ -323,7 +327,8 @@ def get_mis_noizzys():
 
         noizzys = db.execute(stmt).all()
         noizzys_dict = [
-            {
+            {   
+                "tipo": usuario_entry.tipo,
                 "nombre": usuario_entry.nombreUsuario if usuario_entry.tipo == "oyente" else usuario_entry.nombreArtistico,
                 "nombreUsuario": usuario_entry.nombreUsuario,
                 "fotoPerfil": usuario_entry.fotoPerfil,
@@ -403,6 +408,7 @@ def post_noizzy():
         
         for activo in activos:
             socketio.emit("actualizar-noizzy-ws", {
+                "tipo": usuario.tipo,
                 "nombre": usuario.nombreUsuario if usuario.tipo == "oyente" else usuario.nombreArtistico,
                 "nombreUsuario": usuario.nombreUsuario,
                 "fotoPerfil": usuario.fotoPerfil,
