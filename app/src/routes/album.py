@@ -236,6 +236,8 @@ def get_estadisticas_album_favs():
     id = request.args.get("id")
     if not id:
         return jsonify({"error": "Falta el id del álbum."}), 400
+    limite = request.args.get("limite")
+    limite = int(limite) if limite else None
 
     with get_db() as db:     
         album = db.get(Album, id)
@@ -265,7 +267,7 @@ def get_estadisticas_album_favs():
                 "nombreUsuario": oyente.nombreUsuario,
                 "fotoPerfil": oyente.fotoPerfil
             }
-            for oyente in personas_fav
+            for oyente in (personas_fav[:limite] if limite else personas_fav)
         ]
         
     return jsonify({"oyentes_favs": oyentes_favs}), 200

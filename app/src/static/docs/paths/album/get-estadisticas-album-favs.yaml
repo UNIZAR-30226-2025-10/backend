@@ -1,6 +1,6 @@
 get:
   summary: Obtener oyentes que dieron me gusta a canciones de un álbum
-  description: Devuelve la lista de oyentes que han añadido alguna canción del álbum a su playlist de "Favoritos".
+  description: Devuelve la lista de oyentes que han añadido alguna canción del álbum a su playlist de "Favoritos". Se puede limitar la cantidad de oyentes devueltos.
   security:
     - BearerAuth: []
   tags:
@@ -12,6 +12,13 @@ get:
       description: ID del álbum a consultar.
       schema:
         type: string
+    - name: limite
+      in: query
+      required: false
+      description: Número máximo de oyentes a devolver. Si no se especifica, se devuelven todos los oyentes.
+      schema:
+        type: integer
+        minimum: 1
   responses:
     200:
       description: Lista de oyentes obtenida exitosamente.
