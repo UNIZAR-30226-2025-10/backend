@@ -185,6 +185,7 @@ def post_noizzito():
                 "nombreUsuario": usuario.nombreUsuario,
                 "fotoPerfil": usuario.fotoPerfil,
                 "noizzy": noizzy,
+                "mio": activo == correo,
                 "id": new_entry.id,
                 "texto": new_entry.texto,
                 "fecha": new_entry.fecha.strftime("%d %m %y %H %M"),

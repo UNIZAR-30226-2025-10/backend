@@ -52,6 +52,8 @@ post:
                                       link cloudinary de la foto de perfil del usuario que sube el noizzito
             noizzy                    integer
                                       ID del noizzy con el que se interactúa
+            mio                       bool
+                                      si el usuario logueado es el mismo que sube el noizzito
             id                        integer
                                       ID del noizzito que se añade
             texto                     string
@@ -79,6 +81,7 @@ post:
             "tipo": "oyente",
             "fotoPerfil": "https://example.com/usuario1.jpg",
             "noizzy":87,
+            "mio": false,
             "id": 88,
             "texto": "Texto del noizzito",
             "fecha": "19 05 2024 21:45",
