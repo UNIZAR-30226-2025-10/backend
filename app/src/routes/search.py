@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import select, or_, case, and_, not_
 from sqlalchemy.orm import selectinload
 from db.db import get_db
-from db.models import Cancion, Playlist, Album, Artista, Oyente, Sigue, invitado_table, participante_table, EsParteDePlaylist, featuring_table
+from db.models import Cancion, Playlist, Album, Artista, Oyente, Sigue, invitado_table, participante_table, EsParteDePlaylist, featuring_table, GeneroMusical, pertenece_table
 from utils.decorators import roles_required, tokenVersion_required
 import re
 
@@ -80,7 +80,16 @@ def search():
             ).order_by(
                 case((Oyente.nombreUsuario.ilike(f"{termino_no_spaces}%"), 1), else_=2), 
                 Oyente.nombreUsuario.asc()
-            ).limit(LIMITE)         
+            ).limit(LIMITE)
+
+        # Buscar géneros musicales
+        stmt_generos = select(GeneroMusical
+            ).where(
+                GeneroMusical.nombre.ilike(f"%{termino}%")
+            ).order_by(
+                case((GeneroMusical.nombre.ilike(f"{termino}%"), 1), else_=2),
+                GeneroMusical.nombre.asc()
+            ).limit(LIMITE)
 
         canciones = db.execute(stmt_canciones).scalars().all()
         canciones_id = {c.id for c in canciones}
@@ -92,9 +101,31 @@ def search():
         artistas_correos = {a.correo for a in artistas}
         perfiles = db.execute(stmt_perfiles).scalars().all()
         perfiles_correos = {p.correo for p in perfiles}
+        generos = db.execute(stmt_generos).scalars().all()
+
+        # Busca genero musical
+        if len(generos) > 0 and len(canciones) < MAX:
+            # Añadir canciones del genero buscado
+            i = 0
+            while len(canciones) < LIMITE and i < len(generos):
+                stmt_canciones = select(Cancion
+                    ).join(pertenece_table, pertenece_table.c.Cancion_id == Cancion.id
+                    ).where(and_(
+                        pertenece_table.c.GeneroMusical_nombre == generos[i].nombre,
+                        Cancion.id.notin_(canciones_id))
+                    ).options(
+                        selectinload(Cancion.album),  
+                        selectinload(Cancion.artista)
+                    ).order_by(Cancion.reproducciones.desc()
+                    ).limit(LIMITE - len(canciones))
+                
+                nuevas_canciones = db.execute(stmt_canciones).scalars().all()
+                canciones += nuevas_canciones
+                canciones_id.update(p.id for p in nuevas_canciones)
+                i += 1
 
         # Busca artista
-        if len(artistas) > 0 and len(artistas) < MAX:
+        elif len(artistas) > 0 and len(artistas) < MAX:
             # Añadir canciones del artista buscado
             i = 0
             while len(canciones) < LIMITE and i < len(artistas):
@@ -212,7 +243,7 @@ def search():
                 playlists += nuevas_playlists
                 playlists_id.update(p.id for p in nuevas_playlists)
                 i += 1
-
+        
         # Busca cancion
         elif len(canciones) > 0 and len(canciones) < MAX:
             # Añadir artistas de la cancion buscada
@@ -445,6 +476,27 @@ def search_for_playlist():
                 ).limit(LIMITE - len(canciones))
             
             canciones += db.execute(stmt_albumes).scalars().all() 
+
+        # Añadir canciones del género buscado
+        if len(canciones) < LIMITE:
+            stmt_genero = select(Cancion).join(pertenece_table, pertenece_table.c.Cancion_id == Cancion.id
+                ).join(
+                    GeneroMusical, pertenece_table.c.GeneroMusical_nombre == GeneroMusical.nombre
+                ).where(and_(
+                    GeneroMusical.nombre.ilike(f"%{termino}%"),
+                    Cancion.id.notin_(
+                        select(EsParteDePlaylist.Cancion_id).where(EsParteDePlaylist.Playlist_id == playlist)
+                    ),
+                    Cancion.id.notin_(canciones_id)
+                )).options(
+                    selectinload(Cancion.album),
+                    selectinload(Cancion.artista)
+                ).order_by(
+                    case((GeneroMusical.nombre.ilike(f"{termino}%"), 1), else_=2),
+                    Cancion.reproducciones.desc()
+                ).limit(LIMITE - len(canciones))
+
+            canciones += db.execute(stmt_genero).scalars().all()
 
         resultados = [{"fotoPortada":c.album.fotoPortada, "id": c.id, "nombre": c.nombre, 
                       "nombreArtisticoArtista":c.artista.nombreArtistico} for c in canciones]
