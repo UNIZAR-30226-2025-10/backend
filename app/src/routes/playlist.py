@@ -356,7 +356,8 @@ def change_playlist():
         if not playlist:
             return jsonify({"error": "Playlist no encontrada."}), 404
 
-        if playlist.Oyente_correo != correo:
+        participantes = [p.correo for p in playlist.participantes]
+        if playlist.Oyente_correo != correo and correo not in participantes:
             return jsonify({"error": "No tienes permiso para modificar esta playlist."}), 403
 
         if playlist.nombre == "Favoritos":
