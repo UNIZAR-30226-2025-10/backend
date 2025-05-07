@@ -53,7 +53,8 @@ def get_datos_playlist():
             ).join(EsParteDePlaylist, EsParteDePlaylist.Cancion_id == Cancion.id
             ).join(Album, Album.id == Cancion.Album_id
             ).join(Artista, Artista.correo == Cancion.Artista_correo
-            ).where(EsParteDePlaylist.Playlist_id == id)
+            ).where(EsParteDePlaylist.Playlist_id == id
+            ).order_by(EsParteDePlaylist.fecha)
 
         canciones_entry = db.execute(canciones_stmt).fetchall()
 
