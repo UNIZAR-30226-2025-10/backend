@@ -64,6 +64,7 @@ def get_datos_album():
                 "fotoPortada": album.fotoPortada,
                 "nombre": cancion.nombre,
                 "duracion": cancion.duracion,
+                "reproducciones": cancion.reproducciones,
                 "fechaPublicacion": cancion.fecha.date().isoformat(),
                 "fav": cancion.id in favoritos_set,
                 "featuring": [f.nombreArtistico for f in cancion.featuring],
