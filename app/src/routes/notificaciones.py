@@ -94,6 +94,7 @@ def get_novedades_musicales():
         # Función para extraer la información de Cancion
         def format_cancion(cancion):
             return {"id": cancion.id,
+                    "album": cancion.Album_id,
                     "nombre": cancion.nombre,
                     "tipo": "cancion",
                     "fotoPortada": cancion.album.fotoPortada,
@@ -103,6 +104,7 @@ def get_novedades_musicales():
         # Función para extraer la información de Album
         def format_album(album):
             return {"id": album.id,
+                    "album": album.id,
                     "nombre": album.nombre,
                     "tipo": "album",
                     "fotoPortada": album.fotoPortada,

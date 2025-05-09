@@ -21,6 +21,9 @@ get:
                     id:
                       type: string
                       description: ID del elemento (canción o álbum)
+                    album:
+                      type: string
+                      description: ID del album (solo para las canciones)
                     nombre:
                       type: string
                       description: Nombre de la canción o álbum
@@ -42,12 +45,14 @@ get:
           example:
             resultado:
               - id: "45"
+                album: "5"
                 nombre: "Midnight Rain"
                 tipo: "cancion"
                 fotoPortada: "https://example.com/midnights.jpg"
                 nombreArtisticoArtista: "Taylor Swift"
                 featuring: []
               - id: "12"
+                album: "12"
                 nombre: "Evermore"
                 tipo: "album"
                 fotoPortada: "https://example.com/evermore.jpg"

@@ -10,6 +10,8 @@ post:
           {   
             id                        integer
                                       ID del album
+            album                     integer
+                                      ID del album
             nombre                    string
                                       nombre del album
             fotoPortada               string
@@ -25,6 +27,7 @@ post:
         - **Example Value**:
         ```json
           {   
+            "id": 4,
             "id": 4,
             "nombre":"Reputation",
             "fotoPortada": "https://example.com/reputation.jpg",

@@ -128,6 +128,7 @@ def create_album():
             # Websockets para notificacion en tiempo real
             for seguidor in artista_actual.seguidores:
                 socketio.emit("novedad-musical-ws", {"id": nuevo_album.id,
+                                                     "album": nuevo_album.id,
                                                     "nombre": nuevo_album.nombre,
                                                     "fotoPortada": nuevo_album.fotoPortada,
                                                     "nombreArtisticoArtista": nuevo_album.artista.nombreArtistico,

@@ -9,6 +9,8 @@ post:
           {   
             id                        integer
                                       ID de la cancion
+            album                     integer
+                                      ID del album
             nombre                    string
                                       nombre de la cancion
             fotoPortada               string
@@ -25,6 +27,7 @@ post:
         ```json
           {   
             "id": 30,
+            "album": 4,
             "nombre": "Shake It Off",
             "fotoPortada": "https://example.com/1989.jpg",
             "nombreArtisticoArtista": "Taylor Swift",

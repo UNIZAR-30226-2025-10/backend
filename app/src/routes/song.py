@@ -452,6 +452,7 @@ def create_cancion():
             # Websockets para notificacion en tiempo real
             for seguidor in artista_actual.seguidores:
                 socketio.emit("novedad-musical-ws", {"id": nueva_cancion.id,
+                                                     "album": nueva_cancion.Album_id,
                                                     "nombre": nueva_cancion.nombre,
                                                     "fotoPortada": nueva_cancion.album.fotoPortada,
                                                     "nombreArtisticoArtista": nueva_cancion.artista.nombreArtistico,
