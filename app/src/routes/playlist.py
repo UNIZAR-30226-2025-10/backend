@@ -39,7 +39,7 @@ def get_datos_playlist():
             return jsonify({"error": "La playlist no existe."}), 404
         
         participantes = [p.correo for p in playlist_entry.participantes]
-        if playlist_entry.privacidad and (playlist_entry.Oyente_correo != correo or correo not in participantes):
+        if playlist_entry.privacidad and playlist_entry.Oyente_correo != correo and (correo not in participantes):
             return jsonify({"error": "No tienes acceso a esta playlist."}), 403
  
         creador_entry = db.get(Oyente, playlist_entry.Oyente_correo)
