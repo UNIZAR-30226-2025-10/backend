@@ -457,7 +457,9 @@ def search_for_playlist():
                     Cancion.reproducciones.desc()
                 ).limit(LIMITE - len(canciones))
             
-            canciones += db.execute(stmt_artistas).scalars().all()    
+            nuevas_canciones = db.execute(stmt_artistas).scalars().all()
+            canciones += nuevas_canciones
+            canciones_id.update(p.id for p in nuevas_canciones)   
 
         # Añadir canciones del album buscado
         if len(canciones) < LIMITE:
@@ -475,7 +477,9 @@ def search_for_playlist():
                     Cancion.reproducciones.desc()
                 ).limit(LIMITE - len(canciones))
             
-            canciones += db.execute(stmt_albumes).scalars().all() 
+            nuevas_canciones = db.execute(stmt_albumes).scalars().all()
+            canciones += nuevas_canciones
+            canciones_id.update(p.id for p in nuevas_canciones)   
 
         # Añadir canciones del género buscado
         if len(canciones) < LIMITE:
@@ -496,7 +500,9 @@ def search_for_playlist():
                     Cancion.reproducciones.desc()
                 ).limit(LIMITE - len(canciones))
 
-            canciones += db.execute(stmt_genero).scalars().all()
+            nuevas_canciones = db.execute(stmt_genero).scalars().all()
+            canciones += nuevas_canciones
+            canciones_id.update(p.id for p in nuevas_canciones)   
 
         resultados = [{"fotoPortada":c.album.fotoPortada, "id": c.id, "nombre": c.nombre, 
                       "nombreArtisticoArtista":c.artista.nombreArtistico} for c in canciones]
